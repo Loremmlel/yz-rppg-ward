@@ -1,30 +1,19 @@
 #include <QApplication>
-#include <QFile>
-#include <QTextStream>
-
 #include "core/AppController.h"
+#include "util/StyleLoader.h"
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
-    // 加载并合并样式表
-    QString styleSheet;
+    // 从资源加载样式并应用
     const QStringList styleFiles = {
-        ":/styles/MainWindow.qss",
-        ":/styles/VideoWidget.qss",
-        ":/styles/MetricsWidget.qss",
-        ":/styles/MetricCard.qss"
+            ":/styles/MainWindow.qss",
+            ":/styles/VideoWidget.qss",
+            ":/styles/MetricsWidget.qss",
+            ":/styles/MetricCard.qss"
     };
 
-    for (const QString &fileName : styleFiles) {
-        QFile file(fileName);
-        if (file.open(QFile::ReadOnly | QFile::Text)) {
-            QTextStream stream(&file);
-            styleSheet += stream.readAll();
-            styleSheet += "\n"; // 确保样式表之间有分隔
-        }
-    }
-    app.setStyleSheet(styleSheet);
+    app.setStyleSheet(StyleLoader::loadStyleSheets(styleFiles));
 
     AppController controller;
     controller.start();
