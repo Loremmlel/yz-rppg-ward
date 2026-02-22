@@ -5,5 +5,10 @@
         <file>styles/MetricsWidget.qss</file>
         <file>styles/MetricCard.qss</file>
     </qresource>
+    <qresource prefix="/">
+        <file>icons/Heartbeat.png</file>
+        <file>icons/SpO2.png</file>
+        <file>icons/RespiratoryRate.png</file>
+    </qresource>
 </RCC>
 

@@ -14,16 +14,22 @@ public:
     /**
      * @brief 构造函数
      * @param title 指标标题
-     * @param emoji 图标（Emoji）
+     * @param icon 图标（Emoji或图片路径，如 ":/icons/hr.svg"）
      * @param parent 父组件
      */
-    explicit MetricCard(const QString& title, const QString& emoji, QWidget *parent = nullptr);
+    explicit MetricCard(const QString& title, const QString& icon, QWidget *parent = nullptr);
 
     /**
      * @brief 设置显示数值
      * @param value 数值字符串
      */
     void setValue(const QString& value);
+
+    /**
+     * @brief 设置图标内容
+     * @param iconStr 图标字符串，可以是 Emoji 也可以是图片路径 (PNG, SVG, etc.)
+     */
+    void setIcon(const QString& iconStr);
 
 private:
     QLabel* m_iconLabel;
