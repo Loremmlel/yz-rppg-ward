@@ -24,14 +24,26 @@ VideoWidget::VideoWidget(QWidget *parent) : QWidget(parent){
     }
 
     m_videoOutput = new QVideoWidget(this);
+    m_videoOutput->setAspectRatioMode(Qt::KeepAspectRatioByExpanding);
+
     m_captureSession = new QMediaCaptureSession(this);
     // 默认选用系统的首选/主摄像头设备
     m_camera = new QCamera(cameras.first(), this);
 
+    QCameraFormat bestFormat;
+    for (const QCameraFormat &format : m_camera->cameraDevice().videoFormats()) {
+        if (format.resolution() == QSize(1280, 720) && format.maxFrameRate() >= 30.0) {
+            bestFormat = format;
+            break;
+        }
+    }
+    if (!bestFormat.isNull()) {
+        m_camera->setCameraFormat(bestFormat);
+    }
     m_captureSession->setCamera(m_camera);
     m_captureSession->setVideoOutput(m_videoOutput);
 
     layout->addWidget(m_videoOutput);
-    
+
     m_camera->start();
 }
