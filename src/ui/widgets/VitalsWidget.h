@@ -1,23 +1,24 @@
 #pragma once
 
-#include <QTimer>
 #include <QScrollArea>
 #include "VitalCard.h"
+#include "../../model/VitalData.h"
 
 /**
  * @brief 指标监控看板
- * 维护并管理一组健康指标卡片，并通过定时器模拟/更新实时数据状态。
+ * 维护并管理一组健康指标卡片，并通过同步 Service 获取实时数据。
  */
 class VitalsWidget : public QWidget {
     Q_OBJECT
 public:
     explicit VitalsWidget(QWidget *parent = nullptr);
 
-private slots:
+public slots:
     /**
-     * @brief 定时更新槽函数，用于刷新看板内所有卡片的数值
+     * @brief 更新体征指标视图
+     * @param data 最新的体征指标快照
      */
-    void updateVitals();
+    void updateData(const VitalData& data);
 
 private:
     /**
@@ -32,8 +33,4 @@ private:
     QVBoxLayout* m_listLayout;
     QScrollArea* m_scrollArea;
     QWidget* m_container;
-    /**
-     * @brief 数据刷新定时器，驱动 UI 实时变动
-     */
-    QTimer* m_timer;
 };

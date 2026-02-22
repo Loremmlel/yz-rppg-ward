@@ -17,6 +17,13 @@ public:
      * @param parent 窗口的父级容器
      */
     explicit MainWindow(QWidget *parent = nullptr);
+
+    /**
+     * @brief 提供对指标监控区的访问，方便控制器进行数据绑定或信号透传
+     * @return 成员变量 vitals 看板实例
+     */
+    VitalsWidget* getVitalsWidget() const { return m_vitalsWidget; }
+
 private:
     /**
      * @brief 分栏器，支持用户动态拖放调整监控和数据的显示权重

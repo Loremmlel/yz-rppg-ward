@@ -1,6 +1,6 @@
 #include "VitalsWidget.h"
 #include <QVBoxLayout>
-#include <QRandomGenerator>
+#include <QLabel>
 #include <QScrollArea>
 
 VitalsWidget::VitalsWidget(QWidget *parent) : QWidget(parent) {
@@ -50,23 +50,14 @@ VitalsWidget::VitalsWidget(QWidget *parent) : QWidget(parent) {
 
     m_scrollArea->setWidget(m_container);
     mainLayout->addWidget(m_scrollArea);
-
-    // 启用 1s 周期的定时器，驱动 UI 数据层的实时跃动
-    m_timer = new QTimer(this);
-    connect(m_timer, &QTimer::timeout, this, &VitalsWidget::updateVitals);
-    m_timer->start(1000);
 }
 
 /**
- * @brief 驱动数值更新逻辑
- * 目前采用随机数模拟真实链路的数据反馈。
+ * @brief 更新体征指标视图
+ * 接收来自核心业务层的结构化数据快照并解包到对应卡片组件。
  */
-void VitalsWidget::updateVitals() {
-    int hr = QRandomGenerator::global()->bounded(60, 100);
-    int sp = QRandomGenerator::global()->bounded(95, 100);
-    int rr = QRandomGenerator::global()->bounded(12, 22);
-
-    m_cardHR->setValue(QString("%1 bpm").arg(hr));
-    m_cardSpO2->setValue(QString("%1 %").arg(sp));
-    m_cardRR->setValue(QString("%1 rpm").arg(rr));
+void VitalsWidget::updateData(const VitalData& data) {
+    m_cardHR->setValue(QString("%1 bpm").arg(data.heartRate));
+    m_cardSpO2->setValue(QString("%1 %").arg(data.oxygenLevel));
+    m_cardRR->setValue(QString("%1 rpm").arg(data.respirationRate));
 }
