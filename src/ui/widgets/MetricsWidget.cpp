@@ -1,7 +1,6 @@
 #include "MetricsWidget.h"
 #include <QVBoxLayout>
 #include <QRandomGenerator>
-#include <QResizeEvent>
 #include <QScrollArea>
 
 MetricsWidget::MetricsWidget(QWidget *parent) : QWidget(parent) {
@@ -17,7 +16,7 @@ MetricsWidget::MetricsWidget(QWidget *parent) : QWidget(parent) {
     mainLayout->addWidget(titleLabel);
 
     m_scrollArea = new QScrollArea(this);
-    m_scrollArea->setWidgetResizable(true);
+    m_scrollArea->setWidgetResizable(true); // 让内部 widget 自动调整宽度
     m_scrollArea->setFrameShape(QFrame::NoFrame);
     m_scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -25,17 +24,29 @@ MetricsWidget::MetricsWidget(QWidget *parent) : QWidget(parent) {
     m_container = new QWidget(m_scrollArea);
     m_container->setObjectName("MetricsContainer");
 
-    m_gridLayout = new QGridLayout(m_container);
-    m_gridLayout->setContentsMargins(15, 10, 15, 10);
-    m_gridLayout->setSpacing(15);
+    // 使用垂直布局，无需手动计算 Grid 位置
+    m_listLayout = new QVBoxLayout(m_container);
+    m_listLayout->setContentsMargins(15, 10, 15, 10);
+    m_listLayout->setSpacing(15);
+    // 顶部对齐，防止卡片数量少时分散
+    m_listLayout->setAlignment(Qt::AlignTop);
 
-    m_cardHR = new MetricCard(QStringLiteral("心率"), "❤️", "#FF5252", m_container);
-    m_cardSpO2 = new MetricCard(QStringLiteral("血氧"), "🩸", "#4CAF50", m_container);
-    m_cardRR = new MetricCard(QStringLiteral("呼吸率"), "🫁", "#2196F3", m_container);
+    // 初始化指标卡片并设置对象名称，用于 QSS 样式定制
+    m_cardHR = new MetricCard(QStringLiteral("心率"), "❤️", m_container);
+    m_cardHR->setObjectName("CardHR");
+    m_cardHR->setFixedHeight(110); // 固定高度，长方形效果
 
-    m_gridLayout->addWidget(m_cardHR, 0, 0);
-    m_gridLayout->addWidget(m_cardSpO2, 1, 0);
-    m_gridLayout->addWidget(m_cardRR, 2, 0);
+    m_cardSpO2 = new MetricCard(QStringLiteral("血氧"), "🩸", m_container);
+    m_cardSpO2->setObjectName("CardSpO2");
+    m_cardSpO2->setFixedHeight(110);
+
+    m_cardRR = new MetricCard(QStringLiteral("呼吸率"), "🫁", m_container);
+    m_cardRR->setObjectName("CardRR");
+    m_cardRR->setFixedHeight(110);
+
+    m_listLayout->addWidget(m_cardHR);
+    m_listLayout->addWidget(m_cardSpO2);
+    m_listLayout->addWidget(m_cardRR);
 
     m_scrollArea->setWidget(m_container);
     mainLayout->addWidget(m_scrollArea);
@@ -45,24 +56,6 @@ MetricsWidget::MetricsWidget(QWidget *parent) : QWidget(parent) {
     m_timer->start(1000);
 }
 
-void MetricsWidget::resizeEvent(QResizeEvent* event) {
-    QWidget::resizeEvent(event);
-    rearrangeLayout();
-}
-
-void MetricsWidget::rearrangeLayout() {
-    int spacing = m_gridLayout->spacing();
-    QMargins margins = m_gridLayout->contentsMargins();
-
-    // Set a fixed height for rectangular cards
-    int cardHeight = 110;
-
-    // Use minimumWidth to ensure it doesn't shrink too much,
-    // but don't set fixed size to allow width filling
-    m_cardHR->setFixedHeight(cardHeight);
-    m_cardSpO2->setFixedHeight(cardHeight);
-    m_cardRR->setFixedHeight(cardHeight);
-}
 
 void MetricsWidget::updateMetrics() {
     int hr = QRandomGenerator::global()->bounded(60, 100);

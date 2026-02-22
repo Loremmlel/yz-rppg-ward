@@ -7,7 +7,10 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if (WIN32)
-    set(CMAKE_PREFIX_PATH "E:/compiler/Qt/6.9.2/mingw_64")
+    # 优先查找 Qt，如果找不到且路径存在，则使用硬编码路径
+    if (NOT DEFINED CMAKE_PREFIX_PATH AND EXISTS "E:/compiler/Qt/6.9.2/mingw_64")
+        set(CMAKE_PREFIX_PATH "E:/compiler/Qt/6.9.2/mingw_64")
+    endif ()
 endif ()
 
 find_package(Qt6 COMPONENTS

@@ -1,0 +1,6 @@
+/* 视频组件样式 */
+#VideoWidget {
+    border-radius: 8px;
+    border: 1px solid #DEE2E6;
+    background-color: #000000;
+}

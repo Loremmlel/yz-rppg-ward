@@ -1,6 +1,9 @@
 <RCC>
     <qresource prefix="/">
-        <file alias="style.qss">../src/ui/style.qss</file>
+        <file>styles/MainWindow.qss</file>
+        <file>styles/VideoWidget.qss</file>
+        <file>styles/MetricsWidget.qss</file>
+        <file>styles/MetricCard.qss</file>
     </qresource>
 </RCC>
 

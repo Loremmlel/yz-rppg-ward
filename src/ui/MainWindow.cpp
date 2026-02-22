@@ -23,7 +23,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     // 如果不希望用户把某一边完全拖没，可以设置最小宽度
     m_videoWidget->setMinimumWidth(400);
     m_metricsWidget->setMinimumWidth(300);
-    m_metricsWidget->setMaximumWidth(1000); // 限制最大宽度，防止卡片因变宽而过度变高
 
     // 将 Splitter 设置为主窗口的中心部件
     this->setCentralWidget(m_mainSplitter);

@@ -1,0 +1,10 @@
+/* 主窗口样式 */
+QMainWindow, QWidget#centralWidget {
+    background-color: #F8F9FA;
+}
+
+QSplitter::handle {
+    background-color: #E9ECEF;
+    width: 2px;
+}
+
