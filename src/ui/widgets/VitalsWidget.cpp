@@ -58,6 +58,6 @@ VitalsWidget::VitalsWidget(QWidget *parent) : QWidget(parent) {
  */
 void VitalsWidget::updateData(const VitalData& data) {
     m_cardHR->setValue(QString("%1 bpm").arg(data.heartRate));
-    m_cardSpO2->setValue(QString("%1 %").arg(data.oxygenLevel));
+    m_cardSpO2->setValue(QString("%1 %").arg(data.SpO2));
     m_cardRR->setValue(QString("%1 rpm").arg(data.respirationRate));
 }

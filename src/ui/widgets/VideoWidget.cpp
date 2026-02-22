@@ -32,9 +32,6 @@ VideoWidget::VideoWidget(QWidget *parent) : QWidget(parent){
     m_captureSession->setVideoOutput(m_videoOutput);
 
     layout->addWidget(m_videoOutput);
-
-    if (m_camera) {
-        // 尝试激活图形采集链路
-        m_camera->start();
-    }
+    
+    m_camera->start();
 }

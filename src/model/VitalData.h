@@ -7,12 +7,12 @@
  */
 struct VitalData {
     int heartRate;      ///< 心率 (bpm)
-    int oxygenLevel;    ///< 血氧饱和度 (%)
+    int SpO2;    ///< 血氧饱和度 (%)
     int respirationRate; ///< 呼吸频率 (rpm)
 
-    VitalData() : heartRate(0), oxygenLevel(0), respirationRate(0) {}
+    VitalData() : heartRate(0), SpO2(0), respirationRate(0) {}
     VitalData(int hr, int sp, int rr)
-        : heartRate(hr), oxygenLevel(sp), respirationRate(rr) {}
+        : heartRate(hr), SpO2(sp), respirationRate(rr) {}
 };
 
 Q_DECLARE_METATYPE(VitalData)
