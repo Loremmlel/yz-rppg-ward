@@ -10,13 +10,14 @@ MetricsWidget::MetricsWidget(QWidget *parent) : QWidget(parent) {
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
 
-    auto* titleLabel = new QLabel(QStringLiteral("实时健康指标"), this);
+    auto* titleLabel = new QLabel(QStringLiteral("实时健康指标监控"), this);
     titleLabel->setObjectName("MetricsTitle");
     titleLabel->setAlignment(Qt::AlignCenter);
     mainLayout->addWidget(titleLabel);
 
+    // 配置滚动区域以兼容未来更多指标项的扩展显示
     m_scrollArea = new QScrollArea(this);
-    m_scrollArea->setWidgetResizable(true); // 让内部 widget 自动调整宽度
+    m_scrollArea->setWidgetResizable(true);
     m_scrollArea->setFrameShape(QFrame::NoFrame);
     m_scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -24,14 +25,13 @@ MetricsWidget::MetricsWidget(QWidget *parent) : QWidget(parent) {
     m_container = new QWidget(m_scrollArea);
     m_container->setObjectName("MetricsContainer");
 
-    // 使用垂直布局，无需手动计算 Grid 位置
     m_listLayout = new QVBoxLayout(m_container);
     m_listLayout->setContentsMargins(15, 10, 15, 10);
     m_listLayout->setSpacing(15);
-    // 顶部对齐，防止卡片数量少时分散
+    // 强制顶部对齐，维持卡片布局的垂向紧凑性
     m_listLayout->setAlignment(Qt::AlignTop);
 
-    // 初始化指标卡片并设置对象名称，用于 QSS 样式定制
+    // 批量初始化各监测维度卡片，预设高度以固定显示比例
     m_cardHR = new MetricCard(QStringLiteral("心率"), ":/icons/Heartbeat.png", m_container);
     m_cardHR->setObjectName("CardHR");
     m_cardHR->setFixedHeight(110); // 固定高度，长方形效果
@@ -51,12 +51,16 @@ MetricsWidget::MetricsWidget(QWidget *parent) : QWidget(parent) {
     m_scrollArea->setWidget(m_container);
     mainLayout->addWidget(m_scrollArea);
 
+    // 启用 1s 周期的定时器，驱动 UI 数据层的实时跃动
     m_timer = new QTimer(this);
     connect(m_timer, &QTimer::timeout, this, &MetricsWidget::updateMetrics);
     m_timer->start(1000);
 }
 
-
+/**
+ * @brief 驱动数值更新逻辑
+ * 目前采用随机数模拟真实链路的数据反馈。
+ */
 void MetricsWidget::updateMetrics() {
     int hr = QRandomGenerator::global()->bounded(60, 100);
     int sp = QRandomGenerator::global()->bounded(95, 100);

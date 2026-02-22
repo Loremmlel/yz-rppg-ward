@@ -5,23 +5,23 @@
 #include <QVBoxLayout>
 
 /**
- * @brief 指标卡片组件
- * 用于显示单一健康指标，包含图标、标题和数值。
+ * @brief 健康指标可视化卡片
+ * 该组件采用水平布局，左侧展示图标与指标名称，右侧显著展示实时采集的数值。
  */
 class MetricCard : public QFrame {
     Q_OBJECT
 public:
     /**
-     * @brief 构造函数
-     * @param title 指标标题
-     * @param icon 图标（Emoji或图片路径，如 ":/icons/hr.svg"）
-     * @param parent 父组件
+     * @brief 构建一个带标题指引与视觉图标的卡片
+     * @param title 指标的可读名称（如“心率”）
+     * @param icon 图标路径或字符标识
+     * @param parent 挂载的父容器
      */
     explicit MetricCard(const QString& title, const QString& icon, QWidget *parent = nullptr);
 
     /**
-     * @brief 设置显示数值
-     * @param value 数值字符串
+     * @brief 更新卡片内显示的数值文本
+     * @param value 待显示的测量数值
      */
     void setValue(const QString& value);
 
@@ -32,7 +32,16 @@ public:
     void setIcon(const QString& iconStr);
 
 private:
+    /**
+     * @brief 指标状态图标容器
+     */
     QLabel* m_iconLabel;
+    /**
+     * @brief 指标名称文本容器
+     */
     QLabel* m_titleLabel;
+    /**
+     * @brief 测量结果主数值容器
+     */
     QLabel* m_valueLabel;
 };

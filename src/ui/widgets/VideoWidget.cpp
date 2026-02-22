@@ -9,11 +9,13 @@ VideoWidget::VideoWidget(QWidget *parent) : QWidget(parent){
     auto* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
 
+    // 获取系统所有已链接的视频采集设备
     const auto cameras = QMediaDevices::videoInputs();
     if (cameras.isEmpty()) {
-        auto* label = new QLabel(QStringLiteral("未检测到摄像头"), this);
+        // 若无可用设备，则展示醒目的状态提示，并终止采集流程初始化
+        auto* label = new QLabel(QStringLiteral("未检测到有效摄像头设备"), this);
         label->setAlignment(Qt::AlignCenter);
-        label->setStyleSheet("color: white; font-size: 18px;");
+        label->setStyleSheet("color: #ff4d4f; font-size: 18px; font-weight: bold;");
         layout->addWidget(label);
         m_videoOutput = nullptr;
         m_captureSession = nullptr;
@@ -23,6 +25,7 @@ VideoWidget::VideoWidget(QWidget *parent) : QWidget(parent){
 
     m_videoOutput = new QVideoWidget(this);
     m_captureSession = new QMediaCaptureSession(this);
+    // 默认选用系统的首选/主摄像头设备
     m_camera = new QCamera(cameras.first(), this);
 
     m_captureSession->setCamera(m_camera);
@@ -31,6 +34,7 @@ VideoWidget::VideoWidget(QWidget *parent) : QWidget(parent){
     layout->addWidget(m_videoOutput);
 
     if (m_camera) {
+        // 尝试激活图形采集链路
         m_camera->start();
     }
 }
