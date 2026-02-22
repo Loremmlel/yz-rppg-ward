@@ -2,8 +2,8 @@
     <qresource prefix="/">
         <file>styles/MainWindow.qss</file>
         <file>styles/VideoWidget.qss</file>
-        <file>styles/MetricsWidget.qss</file>
-        <file>styles/MetricCard.qss</file>
+        <file>styles/VitalsWidget.qss</file>
+        <file>styles/VitalCard.qss</file>
     </qresource>
     <qresource prefix="/">
         <file>icons/Heartbeat.png</file>

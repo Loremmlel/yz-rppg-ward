@@ -1,5 +1,5 @@
 /* 监控指标组件样式 */
-#MetricsWidget {
+#VitalsWidget {
     background-color: #F0F2F5;
     border-left: 1px solid #DEE2E6;
 }
@@ -10,12 +10,12 @@ QScrollArea {
     background-color: transparent;
 }
 
-#MetricsContainer {
+#VitalsContainer {
     background-color: transparent;
 }
 
 /* 标题样式 */
-#MetricsTitle {
+#VitalsTitle {
     color: #212529;
     font-size: 20px;
     font-weight: bold;

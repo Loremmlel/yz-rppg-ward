@@ -1,35 +1,32 @@
 #pragma once
 
-#include <QLabel>
 #include <QTimer>
-#include <QWidget>
-#include <QVBoxLayout>
 #include <QScrollArea>
-#include "MetricCard.h"
+#include "VitalCard.h"
 
 /**
  * @brief 指标监控看板
- * 维护并管理一组健康指标卡片（MetricCard），并通过定时器模拟/更新实时数据状态。
+ * 维护并管理一组健康指标卡片，并通过定时器模拟/更新实时数据状态。
  */
-class MetricsWidget : public QWidget {
+class VitalsWidget : public QWidget {
     Q_OBJECT
 public:
-    explicit MetricsWidget(QWidget *parent = nullptr);
+    explicit VitalsWidget(QWidget *parent = nullptr);
 
 private slots:
     /**
      * @brief 定时更新槽函数，用于刷新看板内所有卡片的数值
      */
-    void updateMetrics();
+    void updateVitals();
 
 private:
     /**
      * @name 核心指标卡片
      * @{
      */
-    MetricCard* m_cardHR;    ///< 心率监测卡片
-    MetricCard* m_cardSpO2;  ///< 血氧饱和度监测卡片
-    MetricCard* m_cardRR;    ///< 呼吸频率监测卡片
+    VitalCard* m_cardHR;    ///< 心率监测卡片
+    VitalCard* m_cardSpO2;  ///< 血氧饱和度监测卡片
+    VitalCard* m_cardRR;    ///< 呼吸频率监测卡片
     /** @} */
 
     QVBoxLayout* m_listLayout;

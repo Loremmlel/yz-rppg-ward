@@ -8,7 +8,7 @@
  * @brief 健康指标可视化卡片
  * 该组件采用水平布局，左侧展示图标与指标名称，右侧显著展示实时采集的数值。
  */
-class MetricCard : public QFrame {
+class VitalCard : public QFrame {
     Q_OBJECT
 public:
     /**
@@ -17,7 +17,7 @@ public:
      * @param icon 图标路径或字符标识
      * @param parent 挂载的父容器
      */
-    explicit MetricCard(const QString& title, const QString& icon, QWidget *parent = nullptr);
+    explicit VitalCard(const QString& title, const QString& icon, QWidget *parent = nullptr);
 
     /**
      * @brief 更新卡片内显示的数值文本

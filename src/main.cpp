@@ -15,8 +15,8 @@ int main(int argc, char *argv[]) {
     const QStringList styleFiles = {
             ":/styles/MainWindow.qss",
             ":/styles/VideoWidget.qss",
-            ":/styles/MetricsWidget.qss",
-            ":/styles/MetricCard.qss"
+            ":/styles/VitalsWidget.qss",
+            ":/styles/VitalCard.qss"
     };
 
     app.setStyleSheet(StyleLoader::loadStyleSheets(styleFiles));

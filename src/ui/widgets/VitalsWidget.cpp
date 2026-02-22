@@ -1,17 +1,17 @@
-#include "MetricsWidget.h"
+#include "VitalsWidget.h"
 #include <QVBoxLayout>
 #include <QRandomGenerator>
 #include <QScrollArea>
 
-MetricsWidget::MetricsWidget(QWidget *parent) : QWidget(parent) {
-    this->setObjectName("MetricsWidget");
+VitalsWidget::VitalsWidget(QWidget *parent) : QWidget(parent) {
+    this->setObjectName("VitalsWidget");
 
     auto* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
 
     auto* titleLabel = new QLabel(QStringLiteral("实时健康指标监控"), this);
-    titleLabel->setObjectName("MetricsTitle");
+    titleLabel->setObjectName("VitalsTitle");
     titleLabel->setAlignment(Qt::AlignCenter);
     mainLayout->addWidget(titleLabel);
 
@@ -23,7 +23,7 @@ MetricsWidget::MetricsWidget(QWidget *parent) : QWidget(parent) {
     m_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
     m_container = new QWidget(m_scrollArea);
-    m_container->setObjectName("MetricsContainer");
+    m_container->setObjectName("VitalsContainer");
 
     m_listLayout = new QVBoxLayout(m_container);
     m_listLayout->setContentsMargins(15, 10, 15, 10);
@@ -32,15 +32,15 @@ MetricsWidget::MetricsWidget(QWidget *parent) : QWidget(parent) {
     m_listLayout->setAlignment(Qt::AlignTop);
 
     // 批量初始化各监测维度卡片，预设高度以固定显示比例
-    m_cardHR = new MetricCard(QStringLiteral("心率"), ":/icons/Heartbeat.png", m_container);
+    m_cardHR = new VitalCard(QStringLiteral("心率"), ":/icons/Heartbeat.png", m_container);
     m_cardHR->setObjectName("CardHR");
     m_cardHR->setFixedHeight(110); // 固定高度，长方形效果
 
-    m_cardSpO2 = new MetricCard(QStringLiteral("血氧"), ":/icons/SpO2.png", m_container);
+    m_cardSpO2 = new VitalCard(QStringLiteral("血氧"), ":/icons/SpO2.png", m_container);
     m_cardSpO2->setObjectName("CardSpO2");
     m_cardSpO2->setFixedHeight(110);
 
-    m_cardRR = new MetricCard(QStringLiteral("呼吸率"), ":/icons/RespiratoryRate.png", m_container);
+    m_cardRR = new VitalCard(QStringLiteral("呼吸率"), ":/icons/RespiratoryRate.png", m_container);
     m_cardRR->setObjectName("CardRR");
     m_cardRR->setFixedHeight(110);
 
@@ -53,7 +53,7 @@ MetricsWidget::MetricsWidget(QWidget *parent) : QWidget(parent) {
 
     // 启用 1s 周期的定时器，驱动 UI 数据层的实时跃动
     m_timer = new QTimer(this);
-    connect(m_timer, &QTimer::timeout, this, &MetricsWidget::updateMetrics);
+    connect(m_timer, &QTimer::timeout, this, &VitalsWidget::updateVitals);
     m_timer->start(1000);
 }
 
@@ -61,7 +61,7 @@ MetricsWidget::MetricsWidget(QWidget *parent) : QWidget(parent) {
  * @brief 驱动数值更新逻辑
  * 目前采用随机数模拟真实链路的数据反馈。
  */
-void MetricsWidget::updateMetrics() {
+void VitalsWidget::updateVitals() {
     int hr = QRandomGenerator::global()->bounded(60, 100);
     int sp = QRandomGenerator::global()->bounded(95, 100);
     int rr = QRandomGenerator::global()->bounded(12, 22);

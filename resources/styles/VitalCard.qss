@@ -1,43 +1,43 @@
 /* 指标卡片样式 */
-MetricCard {
+VitalCard {
     background-color: #FFFFFF;
     border: 1px solid #E0E4E8;
     border-radius: 12px;
 }
 
-MetricCard:hover {
+VitalCard:hover {
     background-color: #F8F9FA;
     border: 1px solid #CED4DA;
 }
 
 /* 图标样式 */
-#MetricIcon {
+#VitalIcon {
     font-size: 32px;
 }
 
 /* 标题样式 */
-#MetricTitle {
+#VitalTitle {
     color: #6C757D;
     font-size: 14px;
     font-weight: 500;
 }
 
 /* 数值样式 */
-#MetricValue {
+#VitalValue {
     font-size: 32px;
     font-weight: bold;
     font-family: "Segoe UI", "PingFang SC", sans-serif;
 }
 
 /* 针对特定卡片的颜色定义 */
-#CardHR #MetricValue {
+#CardHR #VitalValue {
     color: #FF5252;
 }
 
-#CardSpO2 #MetricValue {
+#CardSpO2 #VitalValue {
     color: #4CAF50;
 }
 
-#CardRR #MetricValue {
+#CardRR #VitalValue {
     color: #2196F3;
 }

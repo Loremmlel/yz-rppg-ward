@@ -2,7 +2,7 @@
 #include <QMainWindow>
 #include <QSplitter>
 
-#include "widgets/MetricsWidget.h"
+#include "widgets/VitalsWidget.h"
 #include "widgets/VideoWidget.h"
 
 /**
@@ -29,5 +29,5 @@ private:
     /**
      * @brief 多指标聚合看板组件
      */
-    MetricsWidget* m_metricsWidget;
+    VitalsWidget* m_vitalsWidget;
 };
