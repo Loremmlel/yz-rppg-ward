@@ -3,31 +3,14 @@
 #include <QLabel>
 #include <QCameraDevice>
 #include <QVideoSink>
-#include <QDir>
-#include <QtConcurrent/QtConcurrent>
 
 #include "../../util/ImageHelper.h"
 
-VideoWidget::VideoWidget(QWidget *parent) : QWidget(parent), m_currentFaceRect(0, 0, 0, 0){
+VideoWidget::VideoWidget(QWidget *parent) : QWidget(parent) {
     this->setObjectName("VideoWidget");
 
     auto* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
-
-    const auto path = loadModel("face_detection_yunet_2023mar.onnx");
-    if (path.isEmpty()) {
-        qWarning() << "人脸检测模型加载失败";
-    }
-    try {
-        m_faceDetector = cv::FaceDetectorYN::create(
-            path.toStdString(), "", cv::Size(320, 320),
-            0.6f,
-            0.3f,
-            5000
-            );
-    } catch (const cv::Exception& e) {
-        qWarning() << "人脸检测模型初始化失败：" << e.what();
-    }
 
     m_displayLabel = new QLabel(this);
     m_displayLabel->setAlignment(Qt::AlignCenter);
@@ -66,9 +49,10 @@ VideoWidget::~VideoWidget() {
     if (m_camera) {
         m_camera->stop();
     }
-    if (m_processingFuture.isRunning()) {
-        m_processingFuture.waitForFinished();
-    }
+}
+
+void VideoWidget::setVideoService(VideoService *service) {
+    m_videoService = service;
 }
 
 void VideoWidget::processVideoFrame(const QVideoFrame &frame) {
@@ -78,30 +62,23 @@ void VideoWidget::processVideoFrame(const QVideoFrame &frame) {
         return;
     }
 
-    // 转换为 Mat (为了方便裁剪和显示)
-    // 注意：这里为了性能，如果仅显示可以用 QVideoFrame 直接转 QPixmap，
-    // 但为了后续裁剪传输，我们先转 Mat。
     const auto mat = ImageHelper::QImage2CvMat(image);
 
-    // 人脸检测，低频执行
-    m_frameSkipCounter++;
-
-    if (const auto shouldDetect = m_frameSkipCounter % 5 == 0;
-        shouldDetect && !m_faceDetector.empty() && !m_isProcessing.load()) {
-        m_isProcessing.store(true);
-        m_processingFuture = QtConcurrent::run([this, matClone = mat.clone()] {
-            detectAndUpdateRect(matClone);
-        });
+    // 将图像交给后台 Service 进行处理（检测、传输等）
+    if (m_videoService) {
+        m_videoService->processFrame(mat);
     }
 
     auto displayMat = mat.clone();
 
+    // 从 Service 获取最新的人脸检测结果用于 UI 渲染
     cv::Rect faceToDraw;
-    {
-        std::lock_guard lock(m_faceRectMutex);
-        faceToDraw = m_currentFaceRect;
+    bool hasFace = false;
+    if (m_videoService) {
+        faceToDraw = m_videoService->currentFaceRect();
+        hasFace = m_videoService->isFaceLocked();
     }
-    const bool hasFace = (faceToDraw.width > 0 && faceToDraw.height > 0);
+
     if (hasFace) {
         cv::rectangle(displayMat, faceToDraw, cv::Scalar(0, 255, 0), 2);
     }
@@ -110,62 +87,10 @@ void VideoWidget::processVideoFrame(const QVideoFrame &frame) {
     cv::cvtColor(displayMat, displayMat, cv::COLOR_BGR2RGB);
     QImage displayImage(displayMat.data, displayMat.cols, displayMat.rows, displayMat.step, QImage::Format_RGB888);
 
-    // 更新 UI (直接更新，无需 invokeMethod，因为 processVideoFrame 通常就在主线程
+    // 更新 UI (直接更新，无需 invokeMethod，因为 processVideoFrame 通常就在主线程)
     m_displayLabel->setPixmap(QPixmap::fromImage(displayImage)
         .scaled(m_displayLabel->size(), Qt::KeepAspectRatioByExpanding, Qt::FastTransformation));
     m_warningLabel->setVisible(!hasFace);
-
-    if (hasFace) {
-        // TODO: 裁剪256*256并传输给后端
-    }
-}
-
-void VideoWidget::detectAndUpdateRect(cv::Mat mat) {
-    double scale;
-
-    cv::Mat detectionMat;
-
-    if (constexpr int targetDetWidth = 640; mat.cols > targetDetWidth) {
-        scale = static_cast<double>(mat.cols) / targetDetWidth;
-        cv::resize(mat, detectionMat, cv::Size(targetDetWidth, static_cast<int>(mat.rows / scale)));
-    } else {
-        detectionMat = mat;
-        scale = 1.0;
-    }
-
-    m_faceDetector->setInputSize(detectionMat.size());
-    cv::Mat faces;
-    m_faceDetector->detect(detectionMat, faces);
-
-    cv::Rect newRect(0,0,0,0);
-    if (faces.rows > 0) {
-        // 策略：取最大的人脸
-        int maxArea = 0;
-        int maxIndex = 0;
-        for (int i = 0; i < faces.rows; i++) {
-            const int w = static_cast<int>(faces.at<float>(i, 2) * scale);
-            const int h = static_cast<int>(faces.at<float>(i, 3) * scale);
-            if (w * h > maxArea) {
-                maxArea = w * h;
-                maxIndex = i;
-            }
-        }
-
-        // 映射回原图坐标
-        const int x = static_cast<int>(faces.at<float>(maxIndex, 0) * scale);
-        const int y = static_cast<int>(faces.at<float>(maxIndex, 1) * scale);
-        const int w = static_cast<int>(faces.at<float>(maxIndex, 2) * scale);
-        const int h = static_cast<int>(faces.at<float>(maxIndex, 3) * scale);
-
-        newRect = cv::Rect(x, y, w, h);
-    }
-
-    // 更新缓存坐标
-    {
-        std::lock_guard lock(m_faceRectMutex);
-        m_currentFaceRect = newRect;
-    }
-    m_isProcessing.store(false);
 }
 
 void VideoWidget::setupCameraFormat() const {
@@ -187,20 +112,3 @@ void VideoWidget::setupCameraFormat() const {
     }
 }
 
-QString VideoWidget::loadModel(const QString &modelName) {
-    const QString qrcPath = ":/models/" + modelName;
-    QFile modelFile(qrcPath);
-    QString localPath = QDir::currentPath() + QDir::separator() + modelName;
-
-    if (QFile::exists(localPath)) {
-        qDebug() << "人脸检测模型已存在：" << localPath;
-    } else {
-        if (modelFile.copy(localPath)) {
-            qDebug() << "人脸检测模型复制到：" << localPath;
-        } else {
-            qDebug() << "人脸检测模型复制失败，从：" << qrcPath << "到" << localPath << "原因：" << modelFile.errorString();
-            return "";
-        }
-    }
-    return localPath;
-}

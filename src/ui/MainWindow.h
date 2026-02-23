@@ -24,6 +24,11 @@ public:
      */
     VitalsWidget* getVitalsWidget() const { return m_vitalsWidget; }
 
+    /**
+     * @brief 提供对监控显示区的访问
+     */
+    VideoWidget* getVideoWidget() const { return m_videoWidget; }
+
 private:
     /**
      * @brief 分栏器，支持用户动态拖放调整监控和数据的显示权重

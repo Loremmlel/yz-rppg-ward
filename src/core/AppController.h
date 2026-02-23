@@ -5,6 +5,8 @@
 #include "../ui/MainWindow.h"
 #include "../service/VitalService.h"
 
+#include "../service/VideoService.h"
+
 
 /**
  * @brief 应用程序核心控制器
@@ -27,11 +29,17 @@ public:
      */
     VitalService* getVitalService() const { return m_vitalService.get(); }
 
+    /**
+     * @brief 提供对 Video 服务的访问句柄
+     */
+    VideoService* getVideoService() const { return m_videoService.get(); }
+
 private:
     /**
      * @brief 生命周期受控的业务服务组件
      * 由 Controller 维护所有 Service 的生命周期，确保数据在视图层生命周期前初始化。
      */
     std::unique_ptr<VitalService> m_vitalService;
+    std::unique_ptr<VideoService> m_videoService;
     std::unique_ptr<MainWindow> m_mainWindow;
 };
