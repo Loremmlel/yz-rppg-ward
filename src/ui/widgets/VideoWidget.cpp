@@ -6,6 +6,8 @@
 #include <QDir>
 #include <QtConcurrent/QtConcurrent>
 
+#include "../../util/ImageHelper.h"
+
 VideoWidget::VideoWidget(QWidget *parent) : QWidget(parent){
     this->setObjectName("VideoWidget");
 
@@ -72,6 +74,12 @@ void VideoWidget::processVideoFrame(const QVideoFrame &frame) {
         return;
     }
 
+    // 每两帧处理一次，降低 CPU 占用
+    m_frameSkipCounter++;
+    if (m_frameSkipCounter % 3 != 0) {
+        return;
+    }
+
     if (!frame.isValid() || m_faceDetector.empty()) {
         return;
     }
@@ -82,21 +90,16 @@ void VideoWidget::processVideoFrame(const QVideoFrame &frame) {
         return;
     }
 
-    // 转换为RGB888
-    image = image.convertToFormat(QImage::Format_RGB888);
-
     m_isProcessing.store(true);
 
-   m_processingFuture = QtConcurrent::run([this, image] {
-      processFrameBackend(image);
-   });
+    m_processingFuture = QtConcurrent::run([this, image] {
+          processFrameBackend(image);
+    });
 }
 
 void VideoWidget::processFrameBackend(QImage image) {
-    // 1. QImage 转 cv::Mat
-    cv::Mat mat(image.height(), image.width(), CV_8UC3, image.bits(), image.bytesPerLine());
-    cv::Mat bgrMat;
-    cv::cvtColor(mat, bgrMat, cv::COLOR_RGB2BGR);
+    // 1. 【关键优化】高效的 QImage -> Mat 转换
+    cv::Mat mat = ImageHelper::QImage2CvMat(image);
 
     // 2. 【关键优化】降低检测分辨率
     // 人脸检测不需要 720P 或 1080P，缩小到 640 宽度即可大幅降低 CPU 占用
@@ -104,11 +107,11 @@ void VideoWidget::processFrameBackend(QImage image) {
     cv::Mat detectionMat;
     int targetDetWidth = 640;
 
-    if (bgrMat.cols > targetDetWidth) {
-        scale = static_cast<double>(bgrMat.cols) / targetDetWidth;
-        cv::resize(bgrMat, detectionMat, cv::Size(targetDetWidth, static_cast<int>(bgrMat.rows / scale)));
+    if (mat.cols > targetDetWidth) {
+        scale = static_cast<double>(mat.cols) / targetDetWidth;
+        cv::resize(mat, detectionMat, cv::Size(targetDetWidth, static_cast<int>(mat.rows / scale)));
     } else {
-        detectionMat = bgrMat;
+        detectionMat = mat;
     }
 
     // 3. 人脸检测
@@ -137,17 +140,17 @@ void VideoWidget::processFrameBackend(QImage image) {
             // 边界检查
             x = std::max(0, x);
             y = std::max(0, y);
-            w = std::min(w, bgrMat.cols - x);
-            h = std::min(h, bgrMat.rows - y);
+            w = std::min(w, mat.cols - x);
+            h = std::min(h, mat.rows - y);
 
-            cv::rectangle(bgrMat, cv::Rect(x, y, w, h), cv::Scalar(0, 255, 0), 2);
+            cv::rectangle(mat, cv::Rect(x, y, w, h), cv::Scalar(0, 255, 0), 2);
         }
     }
 
     // 5. 转回 QImage 显示
-    cv::cvtColor(bgrMat, bgrMat, cv::COLOR_BGR2RGB);
+    cv::cvtColor(mat, mat, cv::COLOR_BGR2RGB);
     // 这里必须深拷贝，因为 bgrMat 是局部变量，函数结束就销毁了
-    QImage finalImage(bgrMat.data, bgrMat.cols, bgrMat.rows, bgrMat.step, QImage::Format_RGB888);
+    QImage finalImage(mat.data, mat.cols, mat.rows, mat.step, QImage::Format_RGB888);
     QPixmap pixmap = QPixmap::fromImage(finalImage.copy());
 
     // 6. 更新 UI (必须切回主线程)

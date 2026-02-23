@@ -43,9 +43,11 @@ private:
 
     cv::Ptr<cv::FaceDetectorYN> m_faceDetector;
 
-    const int TARGET_WIDTH = 1280;
-    const int TARGET_HEIGHT = 720;
-
     std::atomic<bool> m_isProcessing{false};
     QFuture<void> m_processingFuture;
+
+    int m_frameSkipCounter = 0;  // 帧跳过计数器，只处理三分之一的帧
+
+    const int TARGET_WIDTH = 1280;
+    const int TARGET_HEIGHT = 720;
 };
