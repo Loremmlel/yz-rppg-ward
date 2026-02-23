@@ -4,6 +4,7 @@
 #include <QCamera>
 #include <QVideoWidget>
 #include <QMediaCaptureSession>
+#include <QFuture>
 
 #include  <opencv2/opencv.hpp>
 #include <opencv2//objdetect.hpp>
@@ -17,7 +18,7 @@ class VideoWidget : public QWidget {
     Q_OBJECT
 public:
     explicit VideoWidget(QWidget *parent = nullptr);
-    ~VideoWidget() override = default;
+    ~VideoWidget() override;
 private slots:
     /**
      * @brief 拦截并处理摄像头的每一帧画面
@@ -29,9 +30,10 @@ private:
      */
     void setupCameraFormat();
 
-
     static QString loadModel(const QString& modelName);
-private:
+
+    void processFrameBackend(QImage image);
+
     QCamera* m_camera;
     QMediaCaptureSession* m_captureSession;
 
@@ -43,4 +45,7 @@ private:
 
     const int TARGET_WIDTH = 1280;
     const int TARGET_HEIGHT = 720;
+
+    std::atomic<bool> m_isProcessing{false};
+    QFuture<void> m_processingFuture;
 };

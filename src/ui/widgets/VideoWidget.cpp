@@ -4,6 +4,7 @@
 #include <QCameraDevice>
 #include <QVideoSink>
 #include <QDir>
+#include <QtConcurrent/QtConcurrent>
 
 VideoWidget::VideoWidget(QWidget *parent) : QWidget(parent){
     this->setObjectName("VideoWidget");
@@ -59,7 +60,18 @@ VideoWidget::VideoWidget(QWidget *parent) : QWidget(parent){
     m_camera->start();
 }
 
+VideoWidget::~VideoWidget() {
+    if (m_processingFuture.isRunning()) {
+        m_processingFuture.waitForFinished();
+    }
+}
+
 void VideoWidget::processVideoFrame(const QVideoFrame &frame) {
+    // 帧丢弃
+    if (m_isProcessing.load()) {
+        return;
+    }
+
     if (!frame.isValid() || m_faceDetector.empty()) {
         return;
     }
@@ -73,57 +85,83 @@ void VideoWidget::processVideoFrame(const QVideoFrame &frame) {
     // 转换为RGB888
     image = image.convertToFormat(QImage::Format_RGB888);
 
-    // 转换为OpenCV Mat
+    m_isProcessing.store(true);
+
+   m_processingFuture = QtConcurrent::run([this, image] {
+      processFrameBackend(image);
+   });
+}
+
+void VideoWidget::processFrameBackend(QImage image) {
+    // 1. QImage 转 cv::Mat
     cv::Mat mat(image.height(), image.width(), CV_8UC3, image.bits(), image.bytesPerLine());
     cv::Mat bgrMat;
     cv::cvtColor(mat, bgrMat, cv::COLOR_RGB2BGR);
 
-    if (bgrMat.cols > TARGET_WIDTH) {
-        cv::resize(bgrMat, bgrMat, cv::Size(TARGET_WIDTH, bgrMat.rows * TARGET_WIDTH / bgrMat.cols));
+    // 2. 【关键优化】降低检测分辨率
+    // 人脸检测不需要 720P 或 1080P，缩小到 640 宽度即可大幅降低 CPU 占用
+    double scale = 1.0;
+    cv::Mat detectionMat;
+    int targetDetWidth = 640;
+
+    if (bgrMat.cols > targetDetWidth) {
+        scale = static_cast<double>(bgrMat.cols) / targetDetWidth;
+        cv::resize(bgrMat, detectionMat, cv::Size(targetDetWidth, static_cast<int>(bgrMat.rows / scale)));
+    } else {
+        detectionMat = bgrMat;
     }
 
-    // 人脸检测
-    m_faceDetector->setInputSize(cv::Size(bgrMat.cols, bgrMat.rows));
+    // 3. 人脸检测
+    // 注意：这里传入的是缩小后的 Mat
+    m_faceDetector->setInputSize(detectionMat.size());
     cv::Mat faces;
-    m_faceDetector->detect(bgrMat, faces);
+    m_faceDetector->detect(detectionMat, faces);
+
+    // 4. 绘制
+    // 如果为了性能，可以在小图上画，然后放大回大图；或者把坐标放大后画回原图。
+    // 这里演示画回原图- 保持高清晰度显示
 
     bool hasFace = faces.rows > 0;
-    // 在图像上画框
+
+    // 必须锁一下模型或者确保模型是线程安全的，OpenCV DNN 推理通常不建议多线程并发调用同一个实例
+    // 但由于加了 m_isProcessing 锁，这里同一时间只有一个线程在用 m_faceDetector，所以是安全的。
+
     if (hasFace) {
         for (int i = 0; i < faces.rows; i++) {
-            int x = static_cast<int>(faces.at<float>(i, 0));
-            int y = static_cast<int>(faces.at<float>(i, 1));
-            int w = static_cast<int>(faces.at<float>(i, 2));
-            int h = static_cast<int>(faces.at<float>(i, 3));
+            // 检测结果的坐标是基于缩小后的图，需要映射回原图
+            int x = static_cast<int>(faces.at<float>(i, 0) * scale);
+            int y = static_cast<int>(faces.at<float>(i, 1) * scale);
+            int w = static_cast<int>(faces.at<float>(i, 2) * scale);
+            int h = static_cast<int>(faces.at<float>(i, 3) * scale);
 
-            // 确保框在图像范围内
+            // 边界检查
             x = std::max(0, x);
             y = std::max(0, y);
             w = std::min(w, bgrMat.cols - x);
             h = std::min(h, bgrMat.rows - y);
 
-            // 画绿色矩形框
             cv::rectangle(bgrMat, cv::Rect(x, y, w, h), cv::Scalar(0, 255, 0), 2);
         }
     }
 
-    // 转换回RGB
+    // 5. 转回 QImage 显示
     cv::cvtColor(bgrMat, bgrMat, cv::COLOR_BGR2RGB);
+    // 这里必须深拷贝，因为 bgrMat 是局部变量，函数结束就销毁了
     QImage finalImage(bgrMat.data, bgrMat.cols, bgrMat.rows, bgrMat.step, QImage::Format_RGB888);
-    // 深拷贝一份确保内存安全
-    auto pixmap = QPixmap::fromImage(finalImage.copy());
+    QPixmap pixmap = QPixmap::fromImage(finalImage.copy());
 
-    // 更新UI
-    m_displayLabel->setPixmap(pixmap.scaled(m_displayLabel->size(), Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
+    // 6. 更新 UI (必须切回主线程)
+    QMetaObject::invokeMethod(this, [this, pixmap, hasFace]() {
+        m_displayLabel->setPixmap(pixmap.scaled(m_displayLabel->size(), Qt::KeepAspectRatioByExpanding, Qt::FastTransformation));
+        m_warningLabel->setVisible(!hasFace);
+        if (!hasFace) {
+            m_warningLabel->resize(m_displayLabel->width(), 40);
+            m_warningLabel->move(0, 0);
+        }
 
-    // 显示警告
-    m_warningLabel->setVisible(!hasFace);
-    if (!hasFace) {
-        m_warningLabel->resize(m_displayLabel->width(), 40);
-        m_warningLabel->move(0, 0);
-    }
-
-    // TODO: 网络传输
+        // 处理完成，解除锁定，允许接收新帧
+        m_isProcessing.store(false);
+    }, Qt::QueuedConnection);
 }
 
 void VideoWidget::setupCameraFormat() {
