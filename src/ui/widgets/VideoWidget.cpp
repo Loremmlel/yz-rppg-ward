@@ -14,7 +14,7 @@ VideoWidget::VideoWidget(QWidget *parent) : QWidget(parent), m_currentFaceRect(0
     auto* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
 
-    auto path = loadModel("face_detection_yunet_2023mar.onnx");
+    const auto path = loadModel("face_detection_yunet_2023mar.onnx");
     if (path.isEmpty()) {
         qWarning() << "人脸检测模型加载失败";
     }
@@ -62,11 +62,18 @@ VideoWidget::VideoWidget(QWidget *parent) : QWidget(parent), m_currentFaceRect(0
     m_camera->start();
 }
 
-VideoWidget::~VideoWidget() = default;
+VideoWidget::~VideoWidget() {
+    if (m_camera) {
+        m_camera->stop();
+    }
+    if (m_processingFuture.isRunning()) {
+        m_processingFuture.waitForFinished();
+    }
+}
 
 void VideoWidget::processVideoFrame(const QVideoFrame &frame) {
     // Qt视频帧转换为QImage
-    auto image = frame.toImage();
+    const auto image = frame.toImage();
     if (image.isNull()) {
         return;
     }
@@ -74,16 +81,16 @@ void VideoWidget::processVideoFrame(const QVideoFrame &frame) {
     // 转换为 Mat (为了方便裁剪和显示)
     // 注意：这里为了性能，如果仅显示可以用 QVideoFrame 直接转 QPixmap，
     // 但为了后续裁剪传输，我们先转 Mat。
-    auto mat = ImageHelper::QImage2CvMat(image);
+    const auto mat = ImageHelper::QImage2CvMat(image);
 
     // 人脸检测，低频执行
     m_frameSkipCounter++;
-    bool shouldDetect = (m_frameSkipCounter % 5 == 0); // 每5帧检测一次
 
-    if (shouldDetect && !m_faceDetector.empty() && !m_isProcessing.load()) {
+    if (const auto shouldDetect = m_frameSkipCounter % 5 == 0;
+        shouldDetect && !m_faceDetector.empty() && !m_isProcessing.load()) {
         m_isProcessing.store(true);
-        QtConcurrent::run([this, mat] {
-            detectAndUpdateRect(mat.clone());
+        m_processingFuture = QtConcurrent::run([this, matClone = mat.clone()] {
+            detectAndUpdateRect(matClone);
         });
     }
 
@@ -114,12 +121,11 @@ void VideoWidget::processVideoFrame(const QVideoFrame &frame) {
 }
 
 void VideoWidget::detectAndUpdateRect(cv::Mat mat) {
-    double scale = 1.0;
+    double scale;
 
     cv::Mat detectionMat;
-    int targetDetWidth = 640;
 
-    if (mat.cols > targetDetWidth) {
+    if (constexpr int targetDetWidth = 640; mat.cols > targetDetWidth) {
         scale = static_cast<double>(mat.cols) / targetDetWidth;
         cv::resize(mat, detectionMat, cv::Size(targetDetWidth, static_cast<int>(mat.rows / scale)));
     } else {
@@ -137,8 +143,8 @@ void VideoWidget::detectAndUpdateRect(cv::Mat mat) {
         int maxArea = 0;
         int maxIndex = 0;
         for (int i = 0; i < faces.rows; i++) {
-            int w = static_cast<int>(faces.at<float>(i, 2) * scale);
-            int h = static_cast<int>(faces.at<float>(i, 3) * scale);
+            const int w = static_cast<int>(faces.at<float>(i, 2) * scale);
+            const int h = static_cast<int>(faces.at<float>(i, 3) * scale);
             if (w * h > maxArea) {
                 maxArea = w * h;
                 maxIndex = i;
@@ -146,10 +152,10 @@ void VideoWidget::detectAndUpdateRect(cv::Mat mat) {
         }
 
         // 映射回原图坐标
-        int x = static_cast<int>(faces.at<float>(maxIndex, 0) * scale);
-        int y = static_cast<int>(faces.at<float>(maxIndex, 1) * scale);
-        int w = static_cast<int>(faces.at<float>(maxIndex, 2) * scale);
-        int h = static_cast<int>(faces.at<float>(maxIndex, 3) * scale);
+        const int x = static_cast<int>(faces.at<float>(maxIndex, 0) * scale);
+        const int y = static_cast<int>(faces.at<float>(maxIndex, 1) * scale);
+        const int w = static_cast<int>(faces.at<float>(maxIndex, 2) * scale);
+        const int h = static_cast<int>(faces.at<float>(maxIndex, 3) * scale);
 
         newRect = cv::Rect(x, y, w, h);
     }
@@ -162,7 +168,7 @@ void VideoWidget::detectAndUpdateRect(cv::Mat mat) {
     m_isProcessing.store(false);
 }
 
-void VideoWidget::setupCameraFormat() {
+void VideoWidget::setupCameraFormat() const {
     QCameraFormat bestFormat;
     // 寻找最接近 720p 30fps 的硬件输出格式
     for (const auto& format : m_camera->cameraDevice().videoFormats()) {

@@ -28,10 +28,16 @@ private:
     /**
      * @brief 尝试设置摄像头的最佳硬件分辨率 (720p 30fps)
      */
-    void setupCameraFormat();
+    void setupCameraFormat() const;
 
+    /**
+     * @brief 把模型复制到可执行文件目录下，返回绝对路径
+     */
     static QString loadModel(const QString& modelName);
 
+    /**
+     * @brief 执行人脸检测，然后更新当前人脸坐标缓存
+     */
     void detectAndUpdateRect(cv::Mat mat);
 
     QCamera* m_camera;
@@ -44,6 +50,7 @@ private:
     cv::Ptr<cv::FaceDetectorYN> m_faceDetector;
 
     std::atomic<bool> m_isProcessing{false};
+    QFuture<void> m_processingFuture;
 
     int m_frameSkipCounter = 0;  // 帧跳过计数器
 
