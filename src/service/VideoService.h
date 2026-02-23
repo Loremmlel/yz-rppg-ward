@@ -36,7 +36,7 @@ private:
     /**
      * @brief 内部执行人脸检测核心逻辑，由单独的工作线程调用
      */
-    void detectAndUpdateRect(cv::Mat mat);
+    void detectWorker(cv::Mat mat);
 
     /**
      * @brief 模型资源加载辅助
@@ -47,5 +47,7 @@ private:
     std::atomic<bool> m_isProcessing{false};
     QFuture<void> m_processingFuture;
 
+    QRect m_currentFaceRect;
+    bool m_hasFace = false;
     int m_frameSkipCounter = 0;
 };

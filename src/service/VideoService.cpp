@@ -13,7 +13,7 @@ VideoService::VideoService(QObject *parent) : QObject(parent) {
     }
     try {
         m_faceDetector = cv::FaceDetectorYN::create(
-            path.toStdString(), "", cv::Size(320, 320),
+            path.toStdString(), "", cv::Size(640, 480),
             0.6f,
             0.3f,
             5000
@@ -32,20 +32,34 @@ VideoService::~VideoService() {
 void VideoService::processFrame(const QImage &image) {
     if (image.isNull()) return;
 
-    m_frameSkipCounter++;
+    // ========================================================
+    // 流管线 A：rPPG 高频传输流 (严格按摄像头帧率运行)
+    // ========================================================
+    if (m_hasFace && m_currentFaceRect.isValid()) {
+        if (auto safeRect = m_currentFaceRect.intersected(image.rect());
+            safeRect.width() > 0 && safeRect.height() > 0) {
+            auto roiImage = image.copy(safeRect).scaled(256, 256, Qt::KeepAspectRatioByExpanding,
+                                                        Qt::FastTransformation);
+            emit faceRoiExtracted(roiImage);
+        }
+    }
 
+    // ========================================================
+    // 流管线 B：人脸检测低频更新流 (降频执行，防止吃满 CPU)
+    // ========================================================
+    m_frameSkipCounter++;
     if (m_frameSkipCounter % 5 == 0 && !m_faceDetector.empty() && !m_isProcessing.load()) {
         m_isProcessing.store(true);
 
         auto mat = ImageHelper::QImage2CvMat(image);
 
         m_processingFuture = QtConcurrent::run([this, mat] {
-            detectAndUpdateRect(mat);
+            detectWorker(mat);
         });
     }
 }
 
-void VideoService::detectAndUpdateRect(cv::Mat mat) {
+void VideoService::detectWorker(cv::Mat mat) {
     double scale;
     cv::Mat detectionMat;
 
@@ -62,7 +76,7 @@ void VideoService::detectAndUpdateRect(cv::Mat mat) {
     cv::Mat faces;
     m_faceDetector->detect(detectionMat, faces);
 
-    cv::Rect newRect(0, 0, 0, 0);
+    QRect newRect;
     bool hasFace = false;
     if (faces.rows > 0) {
         // 策略：取最大的人脸
@@ -84,37 +98,15 @@ void VideoService::detectAndUpdateRect(cv::Mat mat) {
         const int w = static_cast<int>(faces.at<float>(maxIndex, 2) * scale);
         const int h = static_cast<int>(faces.at<float>(maxIndex, 3) * scale);
 
-        newRect = cv::Rect(x, y, w, h);
-
-        const int cx = x + w / 2;
-        const int cy = y + h / 2;
-
-        constexpr int cropSize = 256;
-        constexpr int halfCrop = cropSize / 2;
-        cv::Rect targetRect(cx - halfCrop, cy - halfCrop, cropSize, cropSize);
-
-        if (auto validRect = targetRect & cv::Rect(0, 0, mat.cols, mat.rows);
-            validRect.width > 0 && validRect.height > 0) {
-            auto validRoi = mat(validRect);
-            // 创建黑色背景的最终图像
-            cv::Mat cropRoi(cropSize, cropSize, mat.type(), cv::Scalar::all(0));
-
-            // 将有效区域复制到中心位置
-            const int offsetX = validRect.x - targetRect.x;
-            const int offsetY = validRect.y - targetRect.y;
-            validRoi.copyTo(cropRoi(cv::Rect(offsetX, offsetY, validRect.width, validRect.height)));
-
-            // 转化为RGB并发送
-            cv::cvtColor(cropRoi, cropRoi, cv::COLOR_BGR2RGB);
-            QImage faceImage(cropRoi.data, cropRoi.cols, cropRoi.rows, cropRoi.step, QImage::Format_RGB888);
-            emit faceRoiExtracted(faceImage.copy());
-        }
+        newRect = QRect(x, y, w, h);
     }
+    QMetaObject::invokeMethod(this, [this, newRect, hasFace] {
+        this->m_currentFaceRect = newRect;
+        this->m_hasFace = hasFace;
 
-    QRect qRect(newRect.x, newRect.y, newRect.width, newRect.height);
-
-    emit facePositionUpdated(qRect, hasFace);
-    m_isProcessing.store(false);
+        emit facePositionUpdated(newRect, hasFace);
+        this->m_isProcessing.store(false);
+    }, Qt::QueuedConnection);
 }
 
 QString VideoService::loadModel(const QString &modelName) {

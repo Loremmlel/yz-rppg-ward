@@ -4,6 +4,7 @@
 #include <QCameraDevice>
 #include <QPainter>
 #include <QVideoSink>
+#include <QMediaCaptureSession>
 
 #include "../../util/ImageHelper.h"
 
