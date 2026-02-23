@@ -36,9 +36,9 @@ void VideoService::processFrame(const QImage &image) {
     // 流管线 A：rPPG 高频传输流 (严格按摄像头帧率运行)
     // ========================================================
     if (m_hasFace && m_currentFaceRect.isValid()) {
-        if (auto safeRect = m_currentFaceRect.intersected(image.rect());
+        if (const auto safeRect = m_currentFaceRect.intersected(image.rect());
             safeRect.width() > 0 && safeRect.height() > 0) {
-            auto roiImage = image.copy(safeRect).scaled(256, 256, Qt::KeepAspectRatioByExpanding,
+            const auto roiImage = image.copy(safeRect).scaled(256, 256, Qt::KeepAspectRatioByExpanding,
                                                         Qt::FastTransformation);
             emit faceRoiExtracted(roiImage);
         }

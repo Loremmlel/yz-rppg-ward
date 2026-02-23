@@ -3,9 +3,13 @@
 AppController::AppController(QObject *parent)
     : QObject(parent),
       m_vitalService(std::make_unique<VitalService>(this)),
-      m_videoService(std::make_unique<VideoService>(this)),
+      m_videoService(std::make_unique<VideoService>()),
       m_networkService(std::make_unique<NetworkService>(this)),
+      m_videoThread(std::make_unique<QThread>(this)),
       m_mainWindow(std::make_unique<MainWindow>()) {
+    m_videoService->moveToThread(m_videoThread.get());
+    m_videoThread->start();
+
     // 体征数据流向UI
     connect(m_vitalService.get(), &VitalService::dataUpdated,
             m_mainWindow->getVitalsWidget(), &VitalsWidget::updateData);
@@ -23,7 +27,12 @@ AppController::AppController(QObject *parent)
             m_networkService.get(), &NetworkService::sendFaceRoiStream);
 }
 
-AppController::~AppController() = default;
+AppController::~AppController() {
+    if (m_videoThread->isRunning()) {
+        m_videoThread->quit();
+        m_videoThread->wait();
+    }
+}
 
 void AppController::start() {
     // 启动体征采集流水线

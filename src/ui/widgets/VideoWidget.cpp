@@ -66,8 +66,6 @@ void VideoWidget::processVideoFrame(const QVideoFrame &frame) {
 
     emit frameCaptured(image);
 
-    image = image.convertToFormat(QImage::Format_RGB888);
-
     if (m_hasFace) {
         QPainter painter(&image);
         QPen pen(Qt::green);

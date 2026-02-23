@@ -45,4 +45,6 @@ private:
     std::unique_ptr<VideoService> m_videoService;
     std::unique_ptr<NetworkService> m_networkService;
     std::unique_ptr<MainWindow> m_mainWindow;
+
+    std::unique_ptr<QThread> m_videoThread;
 };
