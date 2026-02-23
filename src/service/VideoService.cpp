@@ -59,7 +59,7 @@ void VideoService::processFrame(const QImage &image) {
     }
 }
 
-void VideoService::detectWorker(cv::Mat mat) {
+void VideoService::detectWorker(const cv::Mat &mat) {
     double scale;
     cv::Mat detectionMat;
 

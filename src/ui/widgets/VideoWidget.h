@@ -39,7 +39,7 @@ private slots:
 
 private:
     /**
-     * @brief 尝试设置摄像头的最佳硬件分辨率 (720p 30fps)
+     * @brief 尝试设置摄像头的最佳硬件分辨率
      */
     void setupCameraFormat() const;
 
@@ -52,6 +52,6 @@ private:
     QRect m_currentFaceRect;
     bool m_hasFace = false;
 
-    const int TARGET_WIDTH = 1280;
-    const int TARGET_HEIGHT = 720;
+    const int TARGET_WIDTH = 1920;
+    const int TARGET_HEIGHT = 1080;
 };

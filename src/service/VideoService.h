@@ -36,7 +36,7 @@ private:
     /**
      * @brief 内部执行人脸检测核心逻辑，由单独的工作线程调用
      */
-    void detectWorker(cv::Mat mat);
+    void detectWorker(const cv::Mat &mat);
 
     /**
      * @brief 模型资源加载辅助

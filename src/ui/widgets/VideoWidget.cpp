@@ -82,7 +82,6 @@ void VideoWidget::processVideoFrame(const QVideoFrame &frame) {
 
 void VideoWidget::setupCameraFormat() const {
     QCameraFormat bestFormat;
-    // 寻找最接近 720p 30fps 的硬件输出格式
     for (const auto &format: m_camera->cameraDevice().videoFormats()) {
         if (format.resolution() == QSize(TARGET_WIDTH, TARGET_HEIGHT) &&
             format.maxFrameRate() >= 25.0f && format.maxFrameRate() <= 30.0f) {
@@ -95,6 +94,7 @@ void VideoWidget::setupCameraFormat() const {
         m_camera->setCameraFormat(bestFormat);
         qDebug() << "成功设置摄像头硬件格式为:" << bestFormat.resolution() << bestFormat.maxFrameRate() << "FPS";
     } else {
-        qWarning() << "未能找到 720p@30FPS 硬件格式，将使用系统默认，并在后续进行软件降采样。";
+        auto defaultFormat = m_camera->cameraDevice().videoFormats().first();
+        qWarning() << "未能找到合适的硬件格式，将使用系统默认。格式为：" << defaultFormat.resolution() << defaultFormat.maxFrameRate() << "FPS";
     }
 }
