@@ -21,16 +21,11 @@ public slots:
     void updateData(const VitalData& data);
 
 private:
-    /**
-     * @name 核心指标卡片
-     * @{
-     */
-    VitalCard* m_cardHR;    ///< 心率监测卡片
-    VitalCard* m_cardSpO2;  ///< 血氧饱和度监测卡片
-    VitalCard* m_cardRR;    ///< 呼吸频率监测卡片
-    /** @} */
+    void addVitalCard(const QString& key, const QString& title, const QString& iconPath);
 
     QVBoxLayout* m_listLayout;
     QScrollArea* m_scrollArea;
     QWidget* m_container;
+
+    QMap<QString, VitalCard*> m_cards;
 };

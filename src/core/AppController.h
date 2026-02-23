@@ -4,7 +4,7 @@
 
 #include "../ui/MainWindow.h"
 #include "../service/VitalService.h"
-
+#include "../service/NetworkService.h"
 #include "../service/VideoService.h"
 
 
@@ -41,5 +41,6 @@ private:
      */
     std::unique_ptr<VitalService> m_vitalService;
     std::unique_ptr<VideoService> m_videoService;
+    std::unique_ptr<NetworkService> m_networkService;
     std::unique_ptr<MainWindow> m_mainWindow;
 };

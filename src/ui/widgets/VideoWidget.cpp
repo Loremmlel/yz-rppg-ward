@@ -2,6 +2,7 @@
 #include <QMediaDevices>
 #include <QLabel>
 #include <QCameraDevice>
+#include <QPainter>
 #include <QVideoSink>
 
 #include "../../util/ImageHelper.h"
@@ -51,46 +52,30 @@ VideoWidget::~VideoWidget() {
     }
 }
 
-void VideoWidget::setVideoService(VideoService *service) {
-    m_videoService = service;
+void VideoWidget::updateFaceDetection(const QRect &rect, bool hasFace) {
+    m_currentFaceRect = rect;
+    m_hasFace = hasFace;
+    m_warningLabel->setVisible(!hasFace);
 }
 
 void VideoWidget::processVideoFrame(const QVideoFrame &frame) {
-    // Qt视频帧转换为QImage
-    const auto image = frame.toImage();
-    if (image.isNull()) {
-        return;
+    auto image = frame.toImage();
+    if (image.isNull()) return;
+
+    emit frameCaptured(image);
+
+    image = image.convertToFormat(QImage::Format_RGB888);
+
+    if (m_hasFace) {
+        QPainter painter(&image);
+        QPen pen(Qt::green);
+        pen.setWidth(4);
+        painter.setPen(pen);
+        painter.drawRect(m_currentFaceRect);
     }
 
-    const auto mat = ImageHelper::QImage2CvMat(image);
-
-    // 将图像交给后台 Service 进行处理（检测、传输等）
-    if (m_videoService) {
-        m_videoService->processFrame(mat);
-    }
-
-    auto displayMat = mat.clone();
-
-    // 从 Service 获取最新的人脸检测结果用于 UI 渲染
-    cv::Rect faceToDraw;
-    bool hasFace = false;
-    if (m_videoService) {
-        faceToDraw = m_videoService->currentFaceRect();
-        hasFace = m_videoService->isFaceLocked();
-    }
-
-    if (hasFace) {
-        cv::rectangle(displayMat, faceToDraw, cv::Scalar(0, 255, 0), 2);
-    }
-
-    // 转回QImage显示
-    cv::cvtColor(displayMat, displayMat, cv::COLOR_BGR2RGB);
-    QImage displayImage(displayMat.data, displayMat.cols, displayMat.rows, displayMat.step, QImage::Format_RGB888);
-
-    // 更新 UI (直接更新，无需 invokeMethod，因为 processVideoFrame 通常就在主线程)
-    m_displayLabel->setPixmap(QPixmap::fromImage(displayImage)
+    m_displayLabel->setPixmap(QPixmap::fromImage(image)
         .scaled(m_displayLabel->size(), Qt::KeepAspectRatioByExpanding, Qt::FastTransformation));
-    m_warningLabel->setVisible(!hasFace);
 }
 
 void VideoWidget::setupCameraFormat() const {

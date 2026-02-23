@@ -4,7 +4,9 @@
 #include <QDebug>
 #include <QtConcurrent/QtConcurrent>
 
-VideoService::VideoService(QObject *parent) : QObject(parent), m_currentFaceRect(0, 0, 0, 0) {
+#include "../util/ImageHelper.h"
+
+VideoService::VideoService(QObject *parent) : QObject(parent) {
     const auto path = loadModel("face_detection_yunet_2023mar.onnx");
     if (path.isEmpty()) {
         qWarning() << "人脸检测模型加载失败";
@@ -27,32 +29,20 @@ VideoService::~VideoService() {
     }
 }
 
-void VideoService::processFrame(const cv::Mat& mat) {
+void VideoService::processFrame(const QImage &image) {
+    if (image.isNull()) return;
+
     m_frameSkipCounter++;
 
-    // 控制检测间隔，且确保当前没有正在处理的后台任务
-    if (const auto shouldDetect = m_frameSkipCounter % 5 == 0;
-        shouldDetect && !m_faceDetector.empty() && !m_isProcessing.load()) {
-
+    if (m_frameSkipCounter % 5 == 0 && !m_faceDetector.empty() && !m_isProcessing.load()) {
         m_isProcessing.store(true);
-        m_processingFuture = QtConcurrent::run([this, matClone = mat.clone()] {
-            detectAndUpdateRect(matClone);
+
+        auto mat = ImageHelper::QImage2CvMat(image);
+
+        m_processingFuture = QtConcurrent::run([this, mat] {
+           detectAndUpdateRect(mat);
         });
     }
-
-    if (isFaceLocked()) {
-        // TODO: 裁剪256*256并通过网络服务传输给后端 (即 userRequest 提到的传输部分)
-    }
-}
-
-cv::Rect VideoService::currentFaceRect() const {
-    std::lock_guard lock(m_faceRectMutex);
-    return m_currentFaceRect;
-}
-
-bool VideoService::isFaceLocked() const {
-    std::lock_guard lock(m_faceRectMutex);
-    return m_currentFaceRect.width > 0 && m_currentFaceRect.height > 0;
 }
 
 void VideoService::detectAndUpdateRect(cv::Mat mat) {
@@ -73,8 +63,10 @@ void VideoService::detectAndUpdateRect(cv::Mat mat) {
     m_faceDetector->detect(detectionMat, faces);
 
     cv::Rect newRect(0, 0, 0, 0);
+    bool hasFace = false;
     if (faces.rows > 0) {
         // 策略：取最大的人脸
+        hasFace = true;
         int maxArea = 0;
         int maxIndex = 0;
         for (int i = 0; i < faces.rows; i++) {
@@ -93,15 +85,23 @@ void VideoService::detectAndUpdateRect(cv::Mat mat) {
         const int h = static_cast<int>(faces.at<float>(maxIndex, 3) * scale);
 
         newRect = cv::Rect(x, y, w, h);
+
+        if (auto roiRect = newRect & cv::Rect(0, 0, mat.cols, mat.rows);
+            roiRect.width > 0 && roiRect.height > 0) {
+            auto faceRoi = mat(roiRect);
+            cv::Mat resizedRoi;
+            cv::resize(faceRoi, resizedRoi, cv::Size(256,256));
+
+            cv::cvtColor(resizedRoi, resizedRoi, cv::COLOR_BGR2RGB);
+            QImage roiImage(resizedRoi.data, resizedRoi.cols, resizedRoi.rows, resizedRoi.step, QImage::Format_RGB888);
+
+            emit faceRoiExtracted(roiImage.copy());
+        }
     }
 
-    // 更新缓存坐标
-    {
-        std::lock_guard lock(m_faceRectMutex);
-        m_currentFaceRect = newRect;
-    }
+    QRect qRect(newRect.x, newRect.y, newRect.width, newRect.height);
 
-    emit facePositionUpdated(newRect);
+    emit facePositionUpdated(qRect, hasFace);
     m_isProcessing.store(false);
 }
 
