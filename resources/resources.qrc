@@ -10,5 +10,8 @@
         <file>icons/SpO2.png</file>
         <file>icons/RespiratoryRate.png</file>
     </qresource>
+    <qresource prefix="/">
+        <file>models/face_detection_yunet_2023mar.onnx</file>
+    </qresource>
 </RCC>
 
