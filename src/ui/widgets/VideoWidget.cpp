@@ -8,7 +8,7 @@
 
 #include "../../util/ImageHelper.h"
 
-VideoWidget::VideoWidget(QWidget *parent) : QWidget(parent){
+VideoWidget::VideoWidget(QWidget *parent) : QWidget(parent), m_currentFaceRect(0, 0, 0, 0){
     this->setObjectName("VideoWidget");
 
     auto* layout = new QVBoxLayout(this);
@@ -62,48 +62,60 @@ VideoWidget::VideoWidget(QWidget *parent) : QWidget(parent){
     m_camera->start();
 }
 
-VideoWidget::~VideoWidget() {
-    if (m_processingFuture.isRunning()) {
-        m_processingFuture.waitForFinished();
-    }
-}
+VideoWidget::~VideoWidget() = default;
 
 void VideoWidget::processVideoFrame(const QVideoFrame &frame) {
-    // 帧丢弃
-    if (m_isProcessing.load()) {
-        return;
-    }
-
-    // 每三帧处理一次，降低 CPU 占用
-    m_frameSkipCounter++;
-    if (m_frameSkipCounter % 3 != 0) {
-        return;
-    }
-
-    if (!frame.isValid() || m_faceDetector.empty()) {
-        return;
-    }
-
     // Qt视频帧转换为QImage
     auto image = frame.toImage();
     if (image.isNull()) {
         return;
     }
 
-    m_isProcessing.store(true);
+    // 转换为 Mat (为了方便裁剪和显示)
+    // 注意：这里为了性能，如果仅显示可以用 QVideoFrame 直接转 QPixmap，
+    // 但为了后续裁剪传输，我们先转 Mat。
+    auto mat = ImageHelper::QImage2CvMat(image);
 
-    m_processingFuture = QtConcurrent::run([this, image] {
-          processFrameBackend(image);
-    });
+    // 人脸检测，低频执行
+    m_frameSkipCounter++;
+    bool shouldDetect = (m_frameSkipCounter % 5 == 0); // 每5帧检测一次
+
+    if (shouldDetect && !m_faceDetector.empty() && !m_isProcessing.load()) {
+        m_isProcessing.store(true);
+        QtConcurrent::run([this, mat] {
+            detectAndUpdateRect(mat.clone());
+        });
+    }
+
+    auto displayMat = mat.clone();
+
+    cv::Rect faceToDraw;
+    {
+        std::lock_guard lock(m_faceRectMutex);
+        faceToDraw = m_currentFaceRect;
+    }
+    const bool hasFace = (faceToDraw.width > 0 && faceToDraw.height > 0);
+    if (hasFace) {
+        cv::rectangle(displayMat, faceToDraw, cv::Scalar(0, 255, 0), 2);
+    }
+
+    // 转回QImage显示
+    cv::cvtColor(displayMat, displayMat, cv::COLOR_BGR2RGB);
+    QImage displayImage(displayMat.data, displayMat.cols, displayMat.rows, displayMat.step, QImage::Format_RGB888);
+
+    // 更新 UI (直接更新，无需 invokeMethod，因为 processVideoFrame 通常就在主线程
+    m_displayLabel->setPixmap(QPixmap::fromImage(displayImage)
+        .scaled(m_displayLabel->size(), Qt::KeepAspectRatioByExpanding, Qt::FastTransformation));
+    m_warningLabel->setVisible(!hasFace);
+
+    if (hasFace) {
+        // TODO: 裁剪256*256并传输给后端
+    }
 }
 
-void VideoWidget::processFrameBackend(QImage image) {
-    // 1. 【关键优化】高效的 QImage -> Mat 转换
-    cv::Mat mat = ImageHelper::QImage2CvMat(image);
-
-    // 2. 【关键优化】降低检测分辨率
-    // 人脸检测不需要 720P 或 1080P，缩小到 640 宽度即可大幅降低 CPU 占用
+void VideoWidget::detectAndUpdateRect(cv::Mat mat) {
     double scale = 1.0;
+
     cv::Mat detectionMat;
     int targetDetWidth = 640;
 
@@ -112,59 +124,42 @@ void VideoWidget::processFrameBackend(QImage image) {
         cv::resize(mat, detectionMat, cv::Size(targetDetWidth, static_cast<int>(mat.rows / scale)));
     } else {
         detectionMat = mat;
+        scale = 1.0;
     }
 
-    // 3. 人脸检测
-    // 注意：这里传入的是缩小后的 Mat
     m_faceDetector->setInputSize(detectionMat.size());
     cv::Mat faces;
     m_faceDetector->detect(detectionMat, faces);
 
-    // 4. 绘制
-    // 如果为了性能，可以在小图上画，然后放大回大图；或者把坐标放大后画回原图。
-    // 这里演示画回原图- 保持高清晰度显示
-
-    bool hasFace = faces.rows > 0;
-
-    // 必须锁一下模型或者确保模型是线程安全的，OpenCV DNN 推理通常不建议多线程并发调用同一个实例
-    // 但由于加了 m_isProcessing 锁，这里同一时间只有一个线程在用 m_faceDetector，所以是安全的。
-
-    if (hasFace) {
+    cv::Rect newRect(0,0,0,0);
+    if (faces.rows > 0) {
+        // 策略：取最大的人脸
+        int maxArea = 0;
+        int maxIndex = 0;
         for (int i = 0; i < faces.rows; i++) {
-            // 检测结果的坐标是基于缩小后的图，需要映射回原图
-            int x = static_cast<int>(faces.at<float>(i, 0) * scale);
-            int y = static_cast<int>(faces.at<float>(i, 1) * scale);
             int w = static_cast<int>(faces.at<float>(i, 2) * scale);
             int h = static_cast<int>(faces.at<float>(i, 3) * scale);
-
-            // 边界检查
-            x = std::max(0, x);
-            y = std::max(0, y);
-            w = std::min(w, mat.cols - x);
-            h = std::min(h, mat.rows - y);
-
-            cv::rectangle(mat, cv::Rect(x, y, w, h), cv::Scalar(0, 255, 0), 2);
+            if (w * h > maxArea) {
+                maxArea = w * h;
+                maxIndex = i;
+            }
         }
+
+        // 映射回原图坐标
+        int x = static_cast<int>(faces.at<float>(maxIndex, 0) * scale);
+        int y = static_cast<int>(faces.at<float>(maxIndex, 1) * scale);
+        int w = static_cast<int>(faces.at<float>(maxIndex, 2) * scale);
+        int h = static_cast<int>(faces.at<float>(maxIndex, 3) * scale);
+
+        newRect = cv::Rect(x, y, w, h);
     }
 
-    // 5. 转回 QImage 显示
-    cv::cvtColor(mat, mat, cv::COLOR_BGR2RGB);
-    // 这里必须深拷贝，因为 bgrMat 是局部变量，函数结束就销毁了
-    QImage finalImage(mat.data, mat.cols, mat.rows, mat.step, QImage::Format_RGB888);
-    QPixmap pixmap = QPixmap::fromImage(finalImage.copy());
-
-    // 6. 更新 UI (必须切回主线程)
-    QMetaObject::invokeMethod(this, [this, pixmap, hasFace] {
-        m_displayLabel->setPixmap(pixmap.scaled(m_displayLabel->size(), Qt::KeepAspectRatioByExpanding, Qt::FastTransformation));
-        m_warningLabel->setVisible(!hasFace);
-        if (!hasFace) {
-            m_warningLabel->resize(m_displayLabel->width(), 40);
-            m_warningLabel->move(0, 0);
-        }
-
-        // 处理完成，解除锁定，允许接收新帧
-        m_isProcessing.store(false);
-    }, Qt::QueuedConnection);
+    // 更新缓存坐标
+    {
+        std::lock_guard lock(m_faceRectMutex);
+        m_currentFaceRect = newRect;
+    }
+    m_isProcessing.store(false);
 }
 
 void VideoWidget::setupCameraFormat() {
