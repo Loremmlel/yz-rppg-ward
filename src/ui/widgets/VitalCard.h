@@ -1,8 +1,6 @@
 #pragma once
 
-#include <QFrame>
 #include <QLabel>
-#include <QVBoxLayout>
 
 /**
  * @brief 健康指标可视化卡片

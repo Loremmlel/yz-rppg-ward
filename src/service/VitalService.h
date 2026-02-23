@@ -1,6 +1,5 @@
 #pragma once
 
-#include <QObject>
 #include <QTimer>
 #include "../model/VitalData.h"
 

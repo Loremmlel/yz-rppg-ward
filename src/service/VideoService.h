@@ -1,7 +1,5 @@
 #pragma once
 
-#include <QObject>
-#include <QFuture>
 #include <QtConcurrent/QtConcurrent>
 #include <atomic>
 #include <opencv2/opencv.hpp>

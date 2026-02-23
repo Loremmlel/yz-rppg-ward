@@ -3,7 +3,6 @@
 #include <QVBoxLayout>
 #include <QCamera>
 #include <QVideoWidget>
-#include <QMediaCaptureSession>
 
 #include "../../service/VideoService.h"
 
@@ -19,11 +18,6 @@ public:
     explicit VideoWidget(QWidget *parent = nullptr);
 
     ~VideoWidget() override;
-
-    /**
-     * @brief 注入视频处理服务
-     */
-    void setVideoService(VideoService *service);
 
 signals:
     /**

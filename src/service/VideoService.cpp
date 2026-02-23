@@ -78,7 +78,7 @@ void VideoService::detectAndUpdateRect(cv::Mat mat) {
             }
         }
 
-        // 映射回���图坐标
+        // 坐标转换回原图尺度
         const int x = static_cast<int>(faces.at<float>(maxIndex, 0) * scale);
         const int y = static_cast<int>(faces.at<float>(maxIndex, 1) * scale);
         const int w = static_cast<int>(faces.at<float>(maxIndex, 2) * scale);

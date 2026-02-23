@@ -1,6 +1,8 @@
 #pragma once
 
 #include <QScrollArea>
+#include <QVBoxLayout>
+
 #include "VitalCard.h"
 #include "../../model/VitalData.h"
 
