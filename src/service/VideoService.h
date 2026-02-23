@@ -13,22 +13,26 @@
  */
 class VideoService : public QObject {
     Q_OBJECT
+
 public:
     explicit VideoService(QObject *parent = nullptr);
+
     ~VideoService() override;
+
 public slots:
-    void processFrame(const QImage& image);
+    void processFrame(const QImage &image);
+
 signals:
     /**
      * @brief 当检测结果发生显著更新时发射
      */
-    void facePositionUpdated(const QRect& rect, bool hasFace);
+    void facePositionUpdated(const QRect &rect, bool hasFace);
 
     /**
      * 提取出人脸特征图，发送给NetworkService
      * @param roiImage
      */
-    void faceRoiExtracted(const QImage& roiImage);
+    void faceRoiExtracted(const QImage &roiImage);
 
 private:
     /**
@@ -39,7 +43,7 @@ private:
     /**
      * @brief 模型资源加载辅助
      */
-    static QString loadModel(const QString& modelName);
+    static QString loadModel(const QString &modelName);
 
     cv::Ptr<cv::FaceDetectorYN> m_faceDetector;
     std::atomic<bool> m_isProcessing{false};
@@ -47,4 +51,3 @@ private:
 
     int m_frameSkipCounter = 0;
 };
-

@@ -10,6 +10,7 @@
  */
 class VitalsWidget : public QWidget {
     Q_OBJECT
+
 public:
     explicit VitalsWidget(QWidget *parent = nullptr);
 
@@ -18,14 +19,14 @@ public slots:
      * @brief 更新体征指标视图
      * @param data 最新的体征指标快照
      */
-    void updateData(const VitalData& data);
+    void updateData(const VitalData &data);
 
 private:
-    void addVitalCard(const QString& key, const QString& title, const QString& iconPath);
+    void addVitalCard(const QString &key, const QString &title, const QString &iconPath);
 
-    QVBoxLayout* m_listLayout;
-    QScrollArea* m_scrollArea;
-    QWidget* m_container;
+    QVBoxLayout *m_listLayout;
+    QScrollArea *m_scrollArea;
+    QWidget *m_container;
 
-    QMap<QString, VitalCard*> m_cards;
+    QMap<QString, VitalCard *> m_cards;
 };

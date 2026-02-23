@@ -6,11 +6,11 @@
 VitalsWidget::VitalsWidget(QWidget *parent) : QWidget(parent) {
     this->setObjectName("VitalsWidget");
 
-    auto* mainLayout = new QVBoxLayout(this);
+    auto *mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
 
-    auto* titleLabel = new QLabel(QStringLiteral("实时健康指标监控"), this);
+    auto *titleLabel = new QLabel(QStringLiteral("实时健康指标监控"), this);
     titleLabel->setObjectName("VitalsTitle");
     titleLabel->setAlignment(Qt::AlignCenter);
     mainLayout->addWidget(titleLabel);
@@ -43,7 +43,7 @@ VitalsWidget::VitalsWidget(QWidget *parent) : QWidget(parent) {
  * @brief 更新体征指标视图
  * 接收来自核心业务层的结构化数据快照并解包到对应卡片组件。
  */
-void VitalsWidget::updateData(const VitalData& data) {
+void VitalsWidget::updateData(const VitalData &data) {
     if (m_cards.contains("HR")) m_cards["HR"]->setValue(QString("%1 bpm").arg(data.heartRate));
     if (m_cards.contains("SpO2")) m_cards["SpO2"]->setValue(QString("%1 %").arg(data.SpO2));
     if (m_cards.contains("RR")) m_cards["RR"]->setValue(QString("%1 rpm").arg(data.respirationRate));

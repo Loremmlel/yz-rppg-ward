@@ -17,8 +17,8 @@ VideoService::VideoService(QObject *parent) : QObject(parent) {
             0.6f,
             0.3f,
             5000
-            );
-    } catch (const cv::Exception& e) {
+        );
+    } catch (const cv::Exception &e) {
         qWarning() << "人脸检测模型初始化失败：" << e.what();
     }
 }
@@ -40,7 +40,7 @@ void VideoService::processFrame(const QImage &image) {
         auto mat = ImageHelper::QImage2CvMat(image);
 
         m_processingFuture = QtConcurrent::run([this, mat] {
-           detectAndUpdateRect(mat);
+            detectAndUpdateRect(mat);
         });
     }
 }
@@ -90,7 +90,7 @@ void VideoService::detectAndUpdateRect(cv::Mat mat) {
             roiRect.width > 0 && roiRect.height > 0) {
             auto faceRoi = mat(roiRect);
             cv::Mat resizedRoi;
-            cv::resize(faceRoi, resizedRoi, cv::Size(256,256));
+            cv::resize(faceRoi, resizedRoi, cv::Size(256, 256));
 
             cv::cvtColor(resizedRoi, resizedRoi, cv::COLOR_BGR2RGB);
             QImage roiImage(resizedRoi.data, resizedRoi.cols, resizedRoi.rows, resizedRoi.step, QImage::Format_RGB888);
@@ -120,4 +120,3 @@ QString VideoService::loadModel(const QString &modelName) {
 
     return "";
 }
-

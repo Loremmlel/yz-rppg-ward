@@ -5,19 +5,18 @@
 #include <QFile>
 #include <QPixmap>
 
-VitalCard::VitalCard(const QString& title, const QString& icon, QWidget *parent)
+VitalCard::VitalCard(const QString &title, const QString &icon, QWidget *parent)
     : QFrame(parent) {
-
     // 绑定对象名称以精准适配外部 QSS 样式定义
     this->setObjectName("VitalCard");
     this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     this->setFrameShape(QFrame::StyledPanel);
 
-    auto* layout = new QHBoxLayout(this);
+    auto *layout = new QHBoxLayout(this);
     layout->setContentsMargins(20, 15, 20, 15);
     layout->setSpacing(15);
 
-    auto* leftContainer = new QVBoxLayout();
+    auto *leftContainer = new QVBoxLayout();
     leftContainer->setSpacing(5);
 
     m_iconLabel = new QLabel(this);
@@ -39,7 +38,7 @@ VitalCard::VitalCard(const QString& title, const QString& icon, QWidget *parent)
     layout->addWidget(m_valueLabel);
 }
 
-void VitalCard::setIcon(const QString& iconStr) {
+void VitalCard::setIcon(const QString &iconStr) {
     if (iconStr.isEmpty()) return;
 
     // 解析资源路径或本地文件系统路径
@@ -58,6 +57,6 @@ void VitalCard::setIcon(const QString& iconStr) {
     m_iconLabel->setText(iconStr);
 }
 
-void VitalCard::setValue(const QString& value) {
+void VitalCard::setValue(const QString &value) {
     m_valueLabel->setText(value);
 }

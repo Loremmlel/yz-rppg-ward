@@ -13,10 +13,10 @@ int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
     const QStringList styleFiles = {
-            ":/styles/MainWindow.qss",
-            ":/styles/VideoWidget.qss",
-            ":/styles/VitalsWidget.qss",
-            ":/styles/VitalCard.qss"
+        ":/styles/MainWindow.qss",
+        ":/styles/VideoWidget.qss",
+        ":/styles/VitalsWidget.qss",
+        ":/styles/VitalCard.qss"
     };
 
     app.setStyleSheet(StyleLoader::loadStyleSheets(styleFiles));

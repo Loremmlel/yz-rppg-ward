@@ -11,6 +11,7 @@
  */
 class MainWindow : public QMainWindow {
     Q_OBJECT
+
 public:
     /**
      * @brief 构造函数，构建界面分栏框架
@@ -22,24 +23,24 @@ public:
      * @brief 提供对指标监控区的访问，方便控制器进行数据绑定或信号透传
      * @return 成员变量 vitals 看板实例
      */
-    VitalsWidget* getVitalsWidget() const { return m_vitalsWidget; }
+    VitalsWidget *getVitalsWidget() const { return m_vitalsWidget; }
 
     /**
      * @brief 提供对监控显示区的访问
      */
-    VideoWidget* getVideoWidget() const { return m_videoWidget; }
+    VideoWidget *getVideoWidget() const { return m_videoWidget; }
 
 private:
     /**
      * @brief 分栏器，支持用户动态拖放调整监控和数据的显示权重
      */
-    QSplitter* m_mainSplitter;
+    QSplitter *m_mainSplitter;
     /**
      * @brief 视频流实时显示区域
      */
-    VideoWidget* m_videoWidget;
+    VideoWidget *m_videoWidget;
     /**
      * @brief 多指标聚合看板组件
      */
-    VitalsWidget* m_vitalsWidget;
+    VitalsWidget *m_vitalsWidget;
 };

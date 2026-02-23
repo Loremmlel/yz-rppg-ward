@@ -2,9 +2,9 @@
 #include <QFile>
 #include <QTextStream>
 
-QString StyleLoader::loadStyleSheets(const QStringList& styleFiles) {
+QString StyleLoader::loadStyleSheets(const QStringList &styleFiles) {
     QString combinedStyle;
-    for (const QString &fileName : styleFiles) {
+    for (const QString &fileName: styleFiles) {
         QFile file(fileName);
         // 以只读文本模式读取每个 QSS 段落，并追加到最终样式表中
         if (file.open(QFile::ReadOnly | QFile::Text)) {

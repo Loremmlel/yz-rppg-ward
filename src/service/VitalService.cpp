@@ -3,7 +3,6 @@
 
 VitalService::VitalService(QObject *parent)
     : QObject(parent), m_timer(new QTimer(this)) {
-
     // 初始化更新间隔，后期可根据不同业务策略或网络报文频率动态调整
     connect(m_timer, &QTimer::timeout, this, &VitalService::fetchLatestData);
 }
@@ -32,4 +31,3 @@ void VitalService::fetchLatestData() {
     // 发射更新通知
     emit dataUpdated(m_lastData);
 }
-

@@ -10,7 +10,7 @@
 VideoWidget::VideoWidget(QWidget *parent) : QWidget(parent) {
     this->setObjectName("VideoWidget");
 
-    auto* layout = new QVBoxLayout(this);
+    auto *layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
 
     m_displayLabel = new QLabel(this);
@@ -19,7 +19,8 @@ VideoWidget::VideoWidget(QWidget *parent) : QWidget(parent) {
 
     m_warningLabel = new QLabel("未检测到患者人脸", this);
     m_warningLabel->setAlignment(Qt::AlignCenter);
-    m_warningLabel->setStyleSheet("background-color: rgba(255, 0, 0, 150); color: white; font-size: 16px; font-weight: bold; padding: 10px;");
+    m_warningLabel->setStyleSheet(
+        "background-color: rgba(255, 0, 0, 150); color: white; font-size: 16px; font-weight: bold; padding: 10px;");
     m_warningLabel->setVisible(false);
     m_warningLabel->setParent(m_displayLabel);
 
@@ -81,12 +82,12 @@ void VideoWidget::processVideoFrame(const QVideoFrame &frame) {
 void VideoWidget::setupCameraFormat() const {
     QCameraFormat bestFormat;
     // 寻找最接近 720p 30fps 的硬件输出格式
-    for (const auto& format : m_camera->cameraDevice().videoFormats()) {
+    for (const auto &format: m_camera->cameraDevice().videoFormats()) {
         if (format.resolution() == QSize(TARGET_WIDTH, TARGET_HEIGHT) &&
             format.maxFrameRate() >= 25.0f && format.maxFrameRate() <= 30.0f) {
             bestFormat = format;
             break;
-            }
+        }
     }
 
     if (!bestFormat.isNull()) {
@@ -96,4 +97,3 @@ void VideoWidget::setupCameraFormat() const {
         qWarning() << "未能找到 720p@30FPS 硬件格式，将使用系统默认，并在后续进行软件降采样。";
     }
 }
-

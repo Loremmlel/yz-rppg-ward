@@ -14,8 +14,10 @@
  */
 class AppController : public QObject {
     Q_OBJECT
+
 public:
     explicit AppController(QObject *parent = nullptr);
+
     ~AppController() override;
 
     /**
@@ -27,12 +29,12 @@ public:
      * @brief 提供对 Vital 服务的访问句柄，以供其他模块进行必要的同步
      * @return 这里的 VitalService 实例处于活跃采集状态
      */
-    VitalService* getVitalService() const { return m_vitalService.get(); }
+    VitalService *getVitalService() const { return m_vitalService.get(); }
 
     /**
      * @brief 提供对 Video 服务的访问句柄
      */
-    VideoService* getVideoService() const { return m_videoService.get(); }
+    VideoService *getVideoService() const { return m_videoService.get(); }
 
 private:
     /**

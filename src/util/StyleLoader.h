@@ -14,6 +14,5 @@ public:
      * @param styleFiles 样式文件的路径列表（支持 qrc 虚拟路径）
      * @return 合并后的完整样式表内容字符串
      */
-    static QString loadStyleSheets(const QStringList& styleFiles);
+    static QString loadStyleSheets(const QStringList &styleFiles);
 };
-

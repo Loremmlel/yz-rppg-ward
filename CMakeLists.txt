@@ -22,8 +22,8 @@ find_package(Qt6 COMPONENTS
         REQUIRED)
 
 file(GLOB_RECURSE SRC_FILES
-    "src/*.cpp"
-    "src/*.h"
+        "src/*.cpp"
+        "src/*.h"
 )
 set(RESOURCES "resources/resources.qrc")
 

@@ -14,41 +14,46 @@
  */
 class VideoWidget : public QWidget {
     Q_OBJECT
+
 public:
     explicit VideoWidget(QWidget *parent = nullptr);
+
     ~VideoWidget() override;
 
     /**
      * @brief 注入视频处理服务
      */
-    void setVideoService(VideoService* service);
+    void setVideoService(VideoService *service);
 
 signals:
     /**
      * @brief 向外抛出原始视频帧
      */
-    void frameCaptured(const QImage& image);
+    void frameCaptured(const QImage &image);
+
 public slots:
     /**
      * @brief 接收传回来的检测结果，画框框
      */
-    void updateFaceDetection(const QRect& rect, bool hasFace);
+    void updateFaceDetection(const QRect &rect, bool hasFace);
+
 private slots:
     /**
      * @brief 拦截并处理摄像头的每一帧画面
      */
     void processVideoFrame(const QVideoFrame &frame);
+
 private:
     /**
      * @brief 尝试设置摄像头的最佳硬件分辨率 (720p 30fps)
      */
     void setupCameraFormat() const;
 
-    QCamera* m_camera;
-    QMediaCaptureSession* m_captureSession;
-    QVideoSink* m_videoSink;
-    QLabel* m_displayLabel;
-    QLabel* m_warningLabel;
+    QCamera *m_camera;
+    QMediaCaptureSession *m_captureSession;
+    QVideoSink *m_videoSink;
+    QLabel *m_displayLabel;
+    QLabel *m_warningLabel;
 
     QRect m_currentFaceRect;
     bool m_hasFace = false;
@@ -56,4 +61,3 @@ private:
     const int TARGET_WIDTH = 1280;
     const int TARGET_HEIGHT = 720;
 };
-

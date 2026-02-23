@@ -11,8 +11,10 @@
  */
 class VitalService : public QObject {
     Q_OBJECT
+
 public:
     explicit VitalService(QObject *parent = nullptr);
+
     ~VitalService() override;
 
     /**
@@ -36,7 +38,7 @@ signals:
      * @brief 信号：当有新的体征数据到达时发射
      * @param data 包含最新指标的结构体对象
      */
-    void dataUpdated(const VitalData& data);
+    void dataUpdated(const VitalData &data);
 
 private slots:
     /**
@@ -46,6 +48,5 @@ private slots:
 
 private:
     VitalData m_lastData;
-    QTimer* m_timer;
+    QTimer *m_timer;
 };
-
