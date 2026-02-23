@@ -74,7 +74,7 @@ void VideoWidget::processVideoFrame(const QVideoFrame &frame) {
         return;
     }
 
-    // 每两帧处理一次，降低 CPU 占用
+    // 每三帧处理一次，降低 CPU 占用
     m_frameSkipCounter++;
     if (m_frameSkipCounter % 3 != 0) {
         return;
@@ -154,7 +154,7 @@ void VideoWidget::processFrameBackend(QImage image) {
     QPixmap pixmap = QPixmap::fromImage(finalImage.copy());
 
     // 6. 更新 UI (必须切回主线程)
-    QMetaObject::invokeMethod(this, [this, pixmap, hasFace]() {
+    QMetaObject::invokeMethod(this, [this, pixmap, hasFace] {
         m_displayLabel->setPixmap(pixmap.scaled(m_displayLabel->size(), Qt::KeepAspectRatioByExpanding, Qt::FastTransformation));
         m_warningLabel->setVisible(!hasFace);
         if (!hasFace) {
