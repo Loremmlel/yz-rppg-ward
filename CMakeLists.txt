@@ -27,6 +27,9 @@ file(GLOB_RECURSE SRC_FILES
 )
 set(RESOURCES "resources/resources.qrc")
 
+find_package(OpenCV REQUIRED)
+include_directories(${OPENCV_INCLUDE_DIRS})
+
 add_executable(ward ${SRC_FILES} ${RESOURCES})
 
 target_link_libraries(ward
@@ -35,7 +38,9 @@ target_link_libraries(ward
         Qt6::Widgets
         Qt6::Multimedia
         Qt6::MultimediaWidgets
+        ${OpenCV_LIBS}
 )
+
 if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     set(QT_INSTALL_PATH "${CMAKE_PREFIX_PATH}")
     if (NOT EXISTS "${QT_INSTALL_PATH}/bin")
