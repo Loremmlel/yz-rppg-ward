@@ -86,16 +86,28 @@ void VideoService::detectAndUpdateRect(cv::Mat mat) {
 
         newRect = cv::Rect(x, y, w, h);
 
-        if (auto roiRect = newRect & cv::Rect(0, 0, mat.cols, mat.rows);
-            roiRect.width > 0 && roiRect.height > 0) {
-            auto faceRoi = mat(roiRect);
-            cv::Mat resizedRoi;
-            cv::resize(faceRoi, resizedRoi, cv::Size(256, 256));
+        const int cx = x + w / 2;
+        const int cy = y + h / 2;
 
-            cv::cvtColor(resizedRoi, resizedRoi, cv::COLOR_BGR2RGB);
-            QImage roiImage(resizedRoi.data, resizedRoi.cols, resizedRoi.rows, resizedRoi.step, QImage::Format_RGB888);
+        constexpr int cropSize = 256;
+        constexpr int halfCrop = cropSize / 2;
+        cv::Rect targetRect(cx - halfCrop, cy - halfCrop, cropSize, cropSize);
 
-            emit faceRoiExtracted(roiImage.copy());
+        if (auto validRect = targetRect & cv::Rect(0, 0, mat.cols, mat.rows);
+            validRect.width > 0 && validRect.height > 0) {
+            auto validRoi = mat(validRect);
+            // 创建黑色背景的最终图像
+            cv::Mat cropRoi(cropSize, cropSize, mat.type(), cv::Scalar::all(0));
+
+            // 将有效区域复制到中心位置
+            const int offsetX = validRect.x - targetRect.x;
+            const int offsetY = validRect.y - targetRect.y;
+            validRoi.copyTo(cropRoi(cv::Rect(offsetX, offsetY, validRect.width, validRect.height)));
+
+            // 转化为RGB并发送
+            cv::cvtColor(cropRoi, cropRoi, cv::COLOR_BGR2RGB);
+            QImage faceImage(cropRoi.data, cropRoi.cols, cropRoi.rows, cropRoi.step, QImage::Format_RGB888);
+            emit faceRoiExtracted(faceImage.copy());
         }
     }
 
