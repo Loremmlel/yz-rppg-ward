@@ -60,33 +60,12 @@ void MainWindow::initUI() {
     m_stackedWidget = new QStackedWidget(m_centralWidget);
     mainLayout->addWidget(m_stackedWidget);
 
-    // --- 页面1：主页 content ---
-    m_homePage = new QWidget();
-    auto *homeLayout = new QVBoxLayout(m_homePage);
-    homeLayout->setContentsMargins(0, 0, 0, 0);
-
-    m_mainSplitter = new QSplitter(Qt::Horizontal, m_homePage);
-    m_videoWidget = new VideoWidget(m_mainSplitter);
-    m_vitalsWidget = new VitalsWidget(m_mainSplitter);
-
-    m_mainSplitter->addWidget(m_videoWidget);
-    m_mainSplitter->addWidget(m_vitalsWidget);
-    m_mainSplitter->setStretchFactor(0, 1);
-    m_mainSplitter->setStretchFactor(1, 1);
-
-    m_videoWidget->setMinimumWidth(400);
-    m_vitalsWidget->setMinimumWidth(300);
-
-    homeLayout->addWidget(m_mainSplitter);
+    // --- 页面1：主页 ---
+    m_homePage = new HomePage();
     m_stackedWidget->addWidget(m_homePage);
 
-    // --- 页面2：设置 content ---
-    m_settingsPage = new QWidget();
-    auto *settingsLayout = new QVBoxLayout(m_settingsPage);
-    auto *placeholder = new QLabel(QStringLiteral("设置页面"), m_settingsPage);
-    placeholder->setAlignment(Qt::AlignCenter);
-    settingsLayout->addWidget(placeholder);
-
+    // --- 页面2：设置 ---
+    m_settingsPage = new SettingsPage();
     m_stackedWidget->addWidget(m_settingsPage);
 }
 

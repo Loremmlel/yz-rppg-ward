@@ -1,12 +1,11 @@
 #pragma once
 #include <QMainWindow>
-#include <QSplitter>
 #include <QStackedWidget>
 #include <QPushButton>
 #include <QFrame>
 
-#include "widgets/VitalsWidget.h"
-#include "widgets/VideoWidget.h"
+#include "pages/HomePage.h"
+#include "pages/SettingsPage.h"
 
 /**
  * @brief 应用程序主视图窗口
@@ -26,12 +25,12 @@ public:
      * @brief 提供对指标监控区的访问，方便控制器进行数据绑定或信号透传
      * @return 成员变量 vitals 看板实例
      */
-    VitalsWidget *getVitalsWidget() const { return m_vitalsWidget; }
+    [[nodiscard]] VitalsWidget *getVitalsWidget() const { return m_homePage->getVitalsWidget(); }
 
     /**
      * @brief 提供对监控显示区的访问
      */
-    VideoWidget *getVideoWidget() const { return m_videoWidget; }
+    [[nodiscard]] VideoWidget *getVideoWidget() const { return m_homePage->getVideoWidget(); }
 
 private slots:
     void onTabChanged(int index) const;
@@ -56,19 +55,6 @@ private:
     QPushButton *m_settingsBtn{};
 
     // 页面内容
-    QWidget *m_homePage{};
-    QWidget *m_settingsPage{};
-
-    /**
-     * @brief 分栏器，支持用户动态拖放调整监控和数据的显示权重
-     */
-    QSplitter *m_mainSplitter{};
-    /**
-     * @brief 视频流实时显示区域
-     */
-    VideoWidget *m_videoWidget{};
-    /**
-     * @brief 多指标聚合看板组件
-     */
-    VitalsWidget *m_vitalsWidget{};
+    HomePage *m_homePage{};
+    SettingsPage *m_settingsPage{};
 };
