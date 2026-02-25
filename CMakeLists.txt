@@ -19,6 +19,7 @@ find_package(Qt6 COMPONENTS
         Widgets
         Multimedia
         MultimediaWidgets
+        WebSockets
         REQUIRED)
 
 file(GLOB_RECURSE SRC_FILES
@@ -38,6 +39,7 @@ target_link_libraries(ward
         Qt6::Widgets
         Qt6::Multimedia
         Qt6::MultimediaWidgets
+        Qt6::WebSockets
         ${OpenCV_LIBS}
 )
 

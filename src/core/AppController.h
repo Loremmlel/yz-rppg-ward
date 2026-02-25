@@ -1,16 +1,29 @@
 #pragma once
-#include <qobject.h>
+#include <QObject>
+#include <QThread>
 #include <memory>
 
 #include "../ui/MainWindow.h"
 #include "../service/VitalService.h"
 #include "../service/NetworkService.h"
 #include "../service/VideoService.h"
+#include "../service/WebSocketClient.h"
 
 
 /**
  * @brief 应用程序核心控制器
- * 负责管理主窗口生命周期、业务流转及资源调度。
+ *
+ * 职责：
+ *  - 组装所有 Service 的生命周期
+ *  - 完成各 Service 与 UI 之间的信号槽连接（Mediator 模式）
+ *  - 管理后台线程
+ *
+ * 数据流：
+ *  Camera → VideoWidget --frameCaptured--> VideoService --faceRoiExtracted-->
+ *  NetworkService --sendBinaryMessage--> WebSocketClient --ws--> Server
+ *
+ *  Server --ws text--> WebSocketClient --textMessageReceived--> VitalService
+ *  --dataUpdated--> VitalsWidget
  */
 class AppController : public QObject {
     Q_OBJECT
@@ -36,15 +49,22 @@ public:
      */
     VideoService *getVideoService() const { return m_videoService.get(); }
 
+    /**
+     * @brief 提供对 WebSocketClient 服务的访问句柄
+     */
+    WebSocketClient *getWsClient() const { return m_wsClient.get(); }
+
 private:
     /**
      * @brief 生命周期受控的业务服务组件
      * 由 Controller 维护所有 Service 的生命周期，确保数据在视图层生命周期前初始化。
      */
+    std::unique_ptr<WebSocketClient> m_wsClient;
     std::unique_ptr<VitalService> m_vitalService;
     std::unique_ptr<VideoService> m_videoService;
     std::unique_ptr<NetworkService> m_networkService;
     std::unique_ptr<MainWindow> m_mainWindow;
 
     std::unique_ptr<QThread> m_videoThread;
+    std::unique_ptr<QThread> m_wsThread;   ///< WebSocketClient 专属线程
 };

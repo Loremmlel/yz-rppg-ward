@@ -5,47 +5,60 @@
 
 /**
  * @brief 健康数据服务中心
- * 核心逻辑层，负责数据的获取、处理与分发。
- * 未来将连接网络接口或传感器驱动，当前版本暂时模拟数据生成。
+ *
+ * 数据来源策略（双模式）：
+ *  - **在线模式**：监听 WebSocketClient::textMessageReceived 信号，
+ *    解析服务器推送的 JSON 并发射 dataUpdated。
+ *  - **降级模式**：WebSocket 断开时自动切换为 QTimer 驱动的随机模拟数据，
+ *    方便离线调试，不影响 UI 层逻辑。
+ *
+ * UI 层只需关注 dataUpdated 信号，无需感知当前处于哪种模式。
  */
 class VitalService : public QObject {
     Q_OBJECT
 
 public:
     explicit VitalService(QObject *parent = nullptr);
-
     ~VitalService() override;
 
-    /**
-     * @brief 获取当前最新的体征快照数据
-     * @return 当前存储的体征实体模型
-     */
-    VitalData currentData() const { return m_lastData; }
+    /** 获取当前最新的体征快照数据 */
+    [[nodiscard]] VitalData currentData() const { return m_lastData; }
 
-    /**
-     * @brief 开始数据抓取与更新
-     */
+    /** 开始数据抓取与更新（启动降级模拟定时器） */
     void startCollection() const;
 
-    /**
-     * @brief 暂停数据更新
-     */
+    /** 暂停数据更新（停止降级模拟定时器） */
     void stopCollection() const;
 
 signals:
-    /**
-     * @brief 信号：当有新的体征数据到达时发射
-     * @param data 包含最新指标的结构体对象
-     */
+    /** 新的体征数据到达（在线数据或模拟数据均通过此信号发出） */
     void dataUpdated(const VitalData &data);
 
-private slots:
+public slots:
     /**
-     * @brief 私有槽函数，负责在模拟模式下周期性重构数据
+     * @brief 接收 WebSocket 推送的体征 JSON，解析后发射 dataUpdated
+     *        连接到 WebSocketClient::textMessageReceived
+     *
+     * 期望的 JSON 格式：
+     * @code
+     * { "heart_rate": 72, "spo2": 98, "respiration_rate": 16 }
+     * @endcode
      */
+    void onServerMessage(const QString &jsonText);
+
+    /** WebSocket 已连接：暂停模拟，切换为在线模式 */
+    void onWsConnected();
+
+    /** WebSocket 已断开：恢复模拟，切换为降级模式 */
+    void onWsDisconnected();
+
+private slots:
+    /** 降级模式：周期性生成随机体征数据 */
     void fetchLatestData();
 
 private:
     VitalData m_lastData;
-    QTimer *m_timer;
+    QTimer   *m_timer;
+
+    bool m_onlineMode {false}; ///< true = 使用 WebSocket 数据；false = 使用模拟数据
 };
