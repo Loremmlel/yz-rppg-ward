@@ -2,6 +2,7 @@
 #include <QDir>
 #include <QFile>
 #include <QDebug>
+#include <QPainter>
 #include <QtConcurrent/QtConcurrent>
 
 #include "../util/ImageHelper.h"
@@ -36,10 +37,25 @@ void VideoService::processFrame(const QImage &image) {
     // 流管线 A：rPPG 高频传输流 (严格按摄像头帧率运行)
     // ========================================================
     if (m_hasFace && m_currentFaceRect.isValid()) {
-        if (const auto safeRect = m_currentFaceRect.intersected(image.rect());
-            safeRect.width() > 0 && safeRect.height() > 0) {
-            const auto roiImage = image.copy(safeRect).scaled(256, 256, Qt::KeepAspectRatio,
-                                                        Qt::FastTransformation);
+        if (m_currentFaceRect.intersected(image.rect()).width() > 0) {
+            constexpr int OUTPUT_SIZE = 256;
+            // 以人脸矩形中心为基准，裁剪固定 256x256 区域
+            const QPoint center = m_currentFaceRect.center();
+            constexpr int half = OUTPUT_SIZE / 2;
+            const QRect cropRect(center.x() - half, center.y() - half, OUTPUT_SIZE, OUTPUT_SIZE);
+
+            QImage roiImage(OUTPUT_SIZE, OUTPUT_SIZE, QImage::Format_RGB888);
+            roiImage.fill(Qt::black);
+
+            // 计算源矩形（原图内的有效部分）与目标矩形（roiImage 内的对应位置）
+            const QRect srcRect = cropRect.intersected(image.rect());
+            const QRect dstRect = srcRect.translated(-cropRect.topLeft());
+
+            if (srcRect.isValid()) {
+                QPainter painter(&roiImage);
+                painter.drawImage(dstRect, image, srcRect);
+            }
+
             emit faceRoiExtracted(roiImage);
         }
     }

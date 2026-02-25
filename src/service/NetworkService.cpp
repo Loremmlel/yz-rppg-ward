@@ -1,6 +1,8 @@
 #include "NetworkService.h"
 #include "ConfigService.h"
 #include <QDebug>
+#include <QLabel>
+#include <QPixmap>
 
 NetworkService::NetworkService(QObject *parent) : QObject(parent) {
     // 启动时读取当前配置
@@ -13,6 +15,18 @@ NetworkService::NetworkService(QObject *parent) : QObject(parent) {
 }
 
 void NetworkService::sendFaceRoiStream(const QImage &faceRoi) {
+    // ---- 调试预览窗口（静态，首次调用时创建，后续复用）----
+    static QLabel *previewLabel = [] {
+        auto *label = new QLabel();
+        label->setWindowTitle("DEBUG: Face ROI Stream");
+        label->setFixedSize(256, 256);
+        label->setAlignment(Qt::AlignCenter);
+        label->show();
+        return label;
+    }();
+    previewLabel->setPixmap(QPixmap::fromImage(faceRoi));
+    // -------------------------------------------------------
+
     // TODO: 使用 m_serverHost / m_serverPort 建立连接并发送数据
 }
 
