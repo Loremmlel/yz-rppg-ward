@@ -1,6 +1,5 @@
 #include "MainWindow.h"
 #include <QButtonGroup>
-#include <QLabel>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     this->setWindowTitle(QStringLiteral("病房端监控终端"));

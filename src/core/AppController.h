@@ -23,7 +23,7 @@ public:
     /**
      * @brief 启动整个业务流程，包括后台服务与前台主视图
      */
-    void start();
+    void start() const;
 
     /**
      * @brief 提供对 Vital 服务的访问句柄，以供其他模块进行必要的同步

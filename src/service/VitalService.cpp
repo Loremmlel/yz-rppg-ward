@@ -9,13 +9,13 @@ VitalService::VitalService(QObject *parent)
 
 VitalService::~VitalService() = default;
 
-void VitalService::startCollection() {
+void VitalService::startCollection() const {
     if (!m_timer->isActive()) {
         m_timer->start(1000); // 周期 1s
     }
 }
 
-void VitalService::stopCollection() {
+void VitalService::stopCollection() const {
     m_timer->stop();
 }
 

@@ -22,13 +22,13 @@ public:
      * @brief 更新卡片内显示的数值文本
      * @param value 待显示的测量数值
      */
-    void setValue(const QString &value);
+    void setValue(const QString &value) const;
 
     /**
      * @brief 设置图标内容
      * @param iconStr 图标字符串，可以是 Emoji 也可以是图片路径 (PNG, SVG, etc.)
      */
-    void setIcon(const QString &iconStr);
+    void setIcon(const QString &iconStr) const;
 
 private:
     /**

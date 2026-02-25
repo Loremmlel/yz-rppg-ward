@@ -38,7 +38,7 @@ VitalCard::VitalCard(const QString &title, const QString &icon, QWidget *parent)
     layout->addWidget(m_valueLabel);
 }
 
-void VitalCard::setIcon(const QString &iconStr) {
+void VitalCard::setIcon(const QString &iconStr) const {
     if (iconStr.isEmpty()) return;
 
     // 解析资源路径或本地文件系统路径
@@ -57,6 +57,6 @@ void VitalCard::setIcon(const QString &iconStr) {
     m_iconLabel->setText(iconStr);
 }
 
-void VitalCard::setValue(const QString &value) {
+void VitalCard::setValue(const QString &value) const {
     m_valueLabel->setText(value);
 }

@@ -28,7 +28,7 @@ private slots:
 
 private:
     void initUI();
-    void loadCurrentConfig();
+    void loadCurrentConfig() const;
 
     QLineEdit  *m_hostEdit{};
     QSpinBox   *m_portSpin{};

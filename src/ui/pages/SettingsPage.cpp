@@ -51,7 +51,7 @@ void SettingsPage::initUI() {
     connect(m_saveBtn, &QPushButton::clicked, this, &SettingsPage::onSaveClicked);
 }
 
-void SettingsPage::loadCurrentConfig() {
+void SettingsPage::loadCurrentConfig() const {
     const AppConfig cfg = ConfigService::instance()->config();
     m_hostEdit->setText(cfg.serverHost);
     m_portSpin->setValue(cfg.serverPort);

@@ -3,7 +3,6 @@
 #include <QFile>
 #include <QDebug>
 #include <QPainter>
-#include <QtConcurrent/QtConcurrent>
 #include <algorithm>
 
 #include "../util/ImageHelper.h"
@@ -75,7 +74,7 @@ void VideoService::processFrame(const QImage &image) {
     // 流管线 B：人脸检测低频更新流 (降频执行，防止吃满 CPU)
     // ========================================================
     m_frameSkipCounter++;
-    if (m_frameSkipCounter % 5 == 0 && !m_faceDetector.empty() && !m_isProcessing.load()) {
+    if (m_frameSkipCounter % 10 == 0 && !m_faceDetector.empty() && !m_isProcessing.load()) {
         m_isProcessing.store(true);
 
         auto mat = ImageHelper::QImage2CvMat(image);

@@ -25,12 +25,12 @@ public:
     /**
      * @brief 开始数据抓取与更新
      */
-    void startCollection();
+    void startCollection() const;
 
     /**
      * @brief 暂停数据更新
      */
-    void stopCollection();
+    void stopCollection() const;
 
 signals:
     /**

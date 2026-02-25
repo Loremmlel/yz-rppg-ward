@@ -5,8 +5,8 @@ AppController::AppController(QObject *parent)
       m_vitalService(std::make_unique<VitalService>(this)),
       m_videoService(std::make_unique<VideoService>()),
       m_networkService(std::make_unique<NetworkService>(this)),
-      m_videoThread(std::make_unique<QThread>(this)),
-      m_mainWindow(std::make_unique<MainWindow>()) {
+      m_mainWindow(std::make_unique<MainWindow>()),
+      m_videoThread(std::make_unique<QThread>(this)) {
     m_videoService->moveToThread(m_videoThread.get());
     m_videoThread->start();
 
@@ -34,7 +34,7 @@ AppController::~AppController() {
     }
 }
 
-void AppController::start() {
+void AppController::start() const {
     // 启动体征采集流水线
     m_vitalService->startCollection();
 
