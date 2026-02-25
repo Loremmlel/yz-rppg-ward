@@ -1,6 +1,5 @@
 #pragma once
-#include <QObject>
-#include <QThread>
+
 #include <memory>
 
 #include "../ui/MainWindow.h"

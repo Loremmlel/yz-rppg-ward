@@ -3,6 +3,7 @@
 #include <QFile>
 #include <QDebug>
 #include <QPainter>
+#include <QtConcurrentRun>
 #include <algorithm>
 
 #include "../util/ImageHelper.h"
@@ -122,7 +123,7 @@ void VideoService::detectWorker(const cv::Mat &mat) {
 }
 
 QString VideoService::loadModel(const QString &modelName) {
-    const QString localPath = QDir::currentPath() + QDir::separator() + modelName;
+    QString localPath = QDir::currentPath() + QDir::separator() + modelName;
 
     if (QFile::exists(localPath)) {
         return localPath;

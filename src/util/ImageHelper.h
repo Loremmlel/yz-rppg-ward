@@ -1,6 +1,4 @@
-#ifndef WARD_IMAGEHELPER_H
-#define WARD_IMAGEHELPER_H
-
+#pragma once
 #include <QImage>
 #include <opencv2/opencv.hpp>
 
@@ -16,5 +14,3 @@ public:
      */
     static cv::Mat QImage2CvMat(const QImage &image);
 };
-
-#endif // WARD_IMAGEHELPER_H

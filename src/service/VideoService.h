@@ -1,7 +1,8 @@
 #pragma once
 
-#include <QtConcurrent/QtConcurrent>
 #include <atomic>
+#include <QRect>
+#include <QFuture>
 #include <opencv2/opencv.hpp>
 #include <opencv2/objdetect.hpp>
 

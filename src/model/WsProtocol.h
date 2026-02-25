@@ -1,5 +1,4 @@
 #pragma once
-#include <QString>
 
 /**
  * @brief WebSocket 通信协议字段名常量

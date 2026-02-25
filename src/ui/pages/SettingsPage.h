@@ -1,15 +1,8 @@
 #pragma once
-#include <QWidget>
 #include <QLabel>
 #include <QLineEdit>
 #include <QSpinBox>
 #include <QPushButton>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QFormLayout>
-#include <QGroupBox>
-
-#include "../../service/ConfigService.h"
 
 /**
  * @brief 服务器连接配置页面

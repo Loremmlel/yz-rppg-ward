@@ -17,6 +17,7 @@ find_package(Qt6 COMPONENTS
         Core
         Gui
         Widgets
+        Concurrent
         Multimedia
         MultimediaWidgets
         WebSockets
@@ -37,6 +38,7 @@ target_link_libraries(ward
         Qt6::Core
         Qt6::Gui
         Qt6::Widgets
+        Qt6::Concurrent
         Qt6::Multimedia
         Qt6::MultimediaWidgets
         Qt6::WebSockets

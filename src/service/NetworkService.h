@@ -1,6 +1,4 @@
-#ifndef WARD_NETWORKSERVICE_H
-#define WARD_NETWORKSERVICE_H
-
+#pragma once
 #include <QObject>
 #include <QElapsedTimer>
 #include "../model/AppConfig.h"
@@ -35,5 +33,3 @@ private:
 
     int m_jpegQuality {75}; ///< 质量与带宽的经验折中值
 };
-
-#endif // WARD_NETWORKSERVICE_H

@@ -1,9 +1,10 @@
 #include "VitalService.h"
-#include "../model/WsProtocol.h"
-#include <QJsonDocument>
+
 #include <QJsonObject>
 #include <QRandomGenerator>
 #include <QDebug>
+
+#include "../model/WsProtocol.h"
 
 VitalService::VitalService(QObject *parent)
     : QObject(parent), m_timer(new QTimer(this))

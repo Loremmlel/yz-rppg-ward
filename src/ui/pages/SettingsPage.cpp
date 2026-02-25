@@ -1,5 +1,10 @@
 #include "SettingsPage.h"
 #include <QMessageBox>
+#include <QVBoxLayout>
+#include <QFormLayout>
+#include <QGroupBox>
+
+#include "../../service/ConfigService.h"
 
 SettingsPage::SettingsPage(QWidget *parent) : QWidget(parent) {
     initUI();
