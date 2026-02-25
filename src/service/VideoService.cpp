@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QPainter>
 #include <QtConcurrent/QtConcurrent>
+#include <algorithm>
 
 #include "../util/ImageHelper.h"
 
@@ -39,15 +40,21 @@ void VideoService::processFrame(const QImage &image) {
     if (m_hasFace && m_currentFaceRect.isValid()) {
         if (m_currentFaceRect.intersected(image.rect()).width() > 0) {
             constexpr int OUTPUT_SIZE = 256;
-            // 以人脸矩形中心为基准，裁剪固定 256x256 区域
-            const QPoint center = m_currentFaceRect.center();
-            constexpr int half = OUTPUT_SIZE / 2;
-            const QRect cropRect(center.x() - half, center.y() - half, OUTPUT_SIZE, OUTPUT_SIZE);
 
-            QImage roiImage(OUTPUT_SIZE, OUTPUT_SIZE, QImage::Format_RGB888);
+            // 1. 长边 * 1.2，短边扩展至与长边相同，保证正方形
+            const int faceW = m_currentFaceRect.width();
+            const int faceH = m_currentFaceRect.height();
+            const int squareSide = static_cast<int>(std::max(faceW, faceH) * 1.2);
+
+            // 2. 以人脸矩形中心为基准，构建正方形裁剪区域
+            const QPoint center = m_currentFaceRect.center();
+            const int half = squareSide / 2;
+            const QRect cropRect(center.x() - half, center.y() - half, squareSide, squareSide);
+
+            // 3. 创建黑色底板（可能比原图大），将原图有效区域绘入
+            QImage roiImage(squareSide, squareSide, QImage::Format_RGB888);
             roiImage.fill(Qt::black);
 
-            // 计算源矩形（原图内的有效部分）与目标矩形（roiImage 内的对应位置）
             const QRect srcRect = cropRect.intersected(image.rect());
             const QRect dstRect = srcRect.translated(-cropRect.topLeft());
 
@@ -56,7 +63,11 @@ void VideoService::processFrame(const QImage &image) {
                 painter.drawImage(dstRect, image, srcRect);
             }
 
-            emit faceRoiExtracted(roiImage);
+            // 4. 缩放到 256x256 后发送
+            const QImage scaledRoi = roiImage.scaled(OUTPUT_SIZE, OUTPUT_SIZE,
+                                                      Qt::IgnoreAspectRatio,
+                                                      Qt::SmoothTransformation);
+            emit faceRoiExtracted(scaledRoi);
         }
     }
 

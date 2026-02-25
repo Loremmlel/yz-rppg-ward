@@ -75,7 +75,7 @@ void VideoWidget::processVideoFrame(const QVideoFrame &frame) {
     }
 
     m_displayLabel->setPixmap(QPixmap::fromImage(image)
-        .scaled(m_displayLabel->size(), Qt::KeepAspectRatio, Qt::FastTransformation));
+        .scaled(m_displayLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
 }
 
 void VideoWidget::setupCameraFormat() const {
