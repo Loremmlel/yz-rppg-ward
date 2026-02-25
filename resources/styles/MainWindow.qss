@@ -8,3 +8,32 @@ QSplitter::handle {
     width: 2px;
 }
 
+/* 顶部导航栏 */
+QFrame#TopBar {
+    background-color: #DEE2E6;  /* 更深的灰色背景作为容器 */
+    border-bottom: 1px solid #CED4DA;
+}
+
+/* 导航按钮通用样式 */
+QPushButton#NavButton {
+    background-color: #E9ECEF; /* 未激活状态：浅灰色 */
+    color: #495057;
+    border: none;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    font-size: 14px;
+    font-weight: bold;
+    margin-top: 4px; /* 让按钮下沉一点 */
+    padding: 5px 15px;
+}
+
+QPushButton#NavButton:hover {
+    background-color: #F8F9FA;
+}
+
+/* 激活状态：白色背景 */
+QPushButton#NavButton:checked {
+    background-color: #FFFFFF;
+    color: #212529;
+    /* 底部无边框视觉上与内容连通 */
+}
