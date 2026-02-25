@@ -16,7 +16,8 @@ int main(int argc, char *argv[]) {
         ":/styles/MainWindow.qss",
         ":/styles/VideoWidget.qss",
         ":/styles/VitalsWidget.qss",
-        ":/styles/VitalCard.qss"
+        ":/styles/VitalCard.qss",
+        ":/styles/SettingsPage.qss"
     };
 
     app.setStyleSheet(StyleLoader::loadStyleSheets(styleFiles));

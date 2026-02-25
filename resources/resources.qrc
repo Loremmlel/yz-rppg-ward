@@ -4,6 +4,7 @@
         <file>styles/VideoWidget.qss</file>
         <file>styles/VitalsWidget.qss</file>
         <file>styles/VitalCard.qss</file>
+        <file>styles/SettingsPage.qss</file>
     </qresource>
     <qresource prefix="/">
         <file>icons/Heartbeat.png</file>
