@@ -38,7 +38,7 @@ void VideoService::processFrame(const QImage &image) {
     if (m_hasFace && m_currentFaceRect.isValid()) {
         if (const auto safeRect = m_currentFaceRect.intersected(image.rect());
             safeRect.width() > 0 && safeRect.height() > 0) {
-            const auto roiImage = image.copy(safeRect).scaled(256, 256, Qt::KeepAspectRatioByExpanding,
+            const auto roiImage = image.copy(safeRect).scaled(256, 256, Qt::KeepAspectRatio,
                                                         Qt::FastTransformation);
             emit faceRoiExtracted(roiImage);
         }
