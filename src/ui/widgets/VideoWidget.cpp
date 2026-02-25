@@ -18,6 +18,7 @@ VideoWidget::VideoWidget(QWidget *parent) : QWidget(parent) {
     m_displayLabel->setAlignment(Qt::AlignCenter);
     m_displayLabel->setStyleSheet("background-color: black;");
 
+    // 警告浮层作为 displayLabel 的子控件，叠加在视频画面之上
     m_warningLabel = new QLabel("未检测到患者人脸", this);
     m_warningLabel->setAlignment(Qt::AlignCenter);
     m_warningLabel->setStyleSheet(
@@ -64,6 +65,7 @@ void VideoWidget::processVideoFrame(const QVideoFrame &frame) {
     auto image = frame.toImage();
     if (image.isNull()) return;
 
+    // 先发射原始帧再绘制矩形框，保证 VideoService 拿到的是未标注的原始图像
     emit frameCaptured(image);
 
     if (m_hasFace) {
@@ -80,7 +82,7 @@ void VideoWidget::processVideoFrame(const QVideoFrame &frame) {
 
 void VideoWidget::setupCameraFormat() const {
     QCameraFormat bestFormat;
-    for (const auto &format: m_camera->cameraDevice().videoFormats()) {
+    for (const auto &format : m_camera->cameraDevice().videoFormats()) {
         if (format.resolution() == QSize(TARGET_WIDTH, TARGET_HEIGHT) &&
             format.maxFrameRate() >= 25.0f && format.maxFrameRate() <= 30.0f) {
             bestFormat = format;
@@ -90,9 +92,10 @@ void VideoWidget::setupCameraFormat() const {
 
     if (!bestFormat.isNull()) {
         m_camera->setCameraFormat(bestFormat);
-        qDebug() << "成功设置摄像头硬件格式为:" << bestFormat.resolution() << bestFormat.maxFrameRate() << "FPS";
+        qDebug() << "摄像头格式:" << bestFormat.resolution() << bestFormat.maxFrameRate() << "FPS";
     } else {
         auto defaultFormat = m_camera->cameraDevice().videoFormats().first();
-        qWarning() << "未能找到合适的硬件格式，将使用系统默认。格式为：" << defaultFormat.resolution() << defaultFormat.maxFrameRate() << "FPS";
+        qWarning() << "未找到目标格式，使用系统默认:" << defaultFormat.resolution()
+                   << defaultFormat.maxFrameRate() << "FPS";
     }
 }

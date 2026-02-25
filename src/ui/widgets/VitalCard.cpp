@@ -6,8 +6,9 @@
 #include <QPixmap>
 
 VitalCard::VitalCard(const QString &title, const QString &icon, QWidget *parent)
-    : QFrame(parent) {
-    // 绑定对象名称以精准适配外部 QSS 样式定义
+    : QFrame(parent)
+{
+    // objectName 与 QSS 选择器绑定，修改时需同步更新样式文件
     this->setObjectName("VitalCard");
     this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     this->setFrameShape(QFrame::StyledPanel);
@@ -41,18 +42,17 @@ VitalCard::VitalCard(const QString &title, const QString &icon, QWidget *parent)
 void VitalCard::setIcon(const QString &iconStr) const {
     if (iconStr.isEmpty()) return;
 
-    // 解析资源路径或本地文件系统路径
     if (iconStr.startsWith(":/") || QFile::exists(iconStr)) {
         QPixmap pixmap(iconStr);
         if (!pixmap.isNull()) {
-            // 设置 32px 的标准尺寸，保障不同图标资产的视图连贯性
+            // 统一缩放到 32px，保证不同尺寸图标资产在卡片中视觉一致
             m_iconLabel->setPixmap(pixmap.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation));
             m_iconLabel->setText("");
             return;
         }
     }
 
-    // 若无效路径则将原始字符串作为字符标识渲染
+    // 路径无效或图片加载失败时，将原始字符串作为文本（如 Emoji）渲染
     m_iconLabel->setPixmap(QPixmap());
     m_iconLabel->setText(iconStr);
 }

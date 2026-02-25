@@ -1,7 +1,6 @@
 #include "NetworkService.h"
 #include "WebSocketClient.h"
 #include <QBuffer>
-#include <QByteArray>
 #include <QDebug>
 #include <QImage>
 #include <QLabel>
@@ -14,13 +13,12 @@ NetworkService::NetworkService(WebSocketClient *wsClient, QObject *parent)
 }
 
 void NetworkService::sendFaceRoiStream(const QImage &faceRoi) {
-    // ---- 帧率节流（30 fps）----
     if (m_fpsTimer.elapsed() < FRAME_INTERVAL_MS) {
         return;
     }
     m_fpsTimer.restart();
 
-    // ---- 调试预览窗口（静态，首次调用时创建，后续复用）----
+    // 调试预览：首次调用时创建独立窗口，后续帧复用同一实例
     static QLabel *previewLabel = [] {
         auto *label = new QLabel();
         label->setWindowTitle("DEBUG: Face ROI Stream");
@@ -30,9 +28,7 @@ void NetworkService::sendFaceRoiStream(const QImage &faceRoi) {
         return label;
     }();
     previewLabel->setPixmap(QPixmap::fromImage(faceRoi));
-    // -------------------------------------------------------
 
-    // ---- 编码为 JPEG 并通过 WebSocket 发送 ----
     QByteArray jpegData;
     QBuffer    buffer(&jpegData);
     buffer.open(QIODevice::WriteOnly);
@@ -41,7 +37,7 @@ void NetworkService::sendFaceRoiStream(const QImage &faceRoi) {
         return;
     }
 
-    // sendBinaryMessage 通过 QueuedConnection 安全跨线程调用
+    // WebSocketClient 在独立线程中运行，必须通过 QueuedConnection 跨线程传递
     QMetaObject::invokeMethod(m_wsClient, "sendBinaryMessage",
                               Qt::QueuedConnection,
                               Q_ARG(QByteArray, jpegData));

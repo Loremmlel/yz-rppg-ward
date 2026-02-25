@@ -7,11 +7,9 @@ SettingsPage::SettingsPage(QWidget *parent) : QWidget(parent) {
 }
 
 void SettingsPage::initUI() {
-    // --- 外层：垂直居中 ---
     auto *outerLayout = new QVBoxLayout(this);
     outerLayout->setContentsMargins(40, 40, 40, 40);
 
-    // --- 网络设置分组框 ---
     auto *networkGroup = new QGroupBox(QStringLiteral("网络配置"), this);
     auto *formLayout = new QFormLayout(networkGroup);
     formLayout->setContentsMargins(20, 20, 20, 20);
@@ -34,9 +32,8 @@ void SettingsPage::initUI() {
     formLayout->addRow(QStringLiteral("端口："), m_portSpin);
 
     outerLayout->addWidget(networkGroup);
-    outerLayout->addStretch(); // 把保存按钮顶到右下角
+    outerLayout->addStretch();
 
-    // --- 底部操作栏 ---
     auto *bottomBar = new QHBoxLayout();
     bottomBar->addStretch();
 

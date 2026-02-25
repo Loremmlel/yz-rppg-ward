@@ -21,7 +21,6 @@ WebSocketClient::WebSocketClient(QObject *parent)
     connect(m_reconnectTimer, &QTimer::timeout,
             this, &WebSocketClient::attemptReconnect);
 
-    // 读取初始配置
     const AppConfig cfg = ConfigService::instance()->config();
     onConfigChanged(cfg);
 
@@ -34,8 +33,6 @@ WebSocketClient::~WebSocketClient() {
     m_reconnectTimer->stop();
     m_socket->close();
 }
-
-// ─── 公有接口 ────────────────────────────────────────────────────────────────
 
 bool WebSocketClient::isConnected() const {
     return m_socket->state() == QAbstractSocket::ConnectedState;
@@ -64,7 +61,7 @@ void WebSocketClient::disconnectFromServer() {
 
 void WebSocketClient::sendBinaryMessage(const QByteArray &data) {
     if (!isConnected()) {
-        qWarning() << "[WebSocketClient] 未连接，丢弃二进制帧（大小：" << data.size() << "字节）";
+        qWarning() << "[WebSocketClient] 未连接，丢弃二进制帧，大小：" << data.size() << "字节";
         return;
     }
     m_socket->sendBinaryMessage(data);
@@ -82,15 +79,11 @@ void WebSocketClient::onConfigChanged(const AppConfig &config) {
     const bool changed = (m_host != config.serverHost || m_port != config.serverPort);
     m_host = config.serverHost;
     m_port = config.serverPort;
-    qDebug() << "[WebSocketClient] 配置已更新:" << m_host << ":" << m_port;
 
     if (changed) {
-        // 配置变更，重新连接
         connectToServer();
     }
 }
-
-// ─── 私有槽 ──────────────────────────────────────────────────────────────────
 
 void WebSocketClient::onConnected() {
     qDebug() << "[WebSocketClient] 已连接到" << m_socket->requestUrl().toString();
@@ -103,8 +96,7 @@ void WebSocketClient::onDisconnected() {
     emit disconnected();
 
     if (!m_userDisconnected) {
-        qDebug() << "[WebSocketClient] 将在" << m_reconnectInterval / 1000
-                 << "秒后尝试重连...";
+        // 意外掉线，启动重连计时
         m_reconnectTimer->start();
     }
 }
@@ -125,12 +117,9 @@ void WebSocketClient::onError(QAbstractSocket::SocketError /*error*/) {
 
 void WebSocketClient::attemptReconnect() {
     if (!m_userDisconnected) {
-        qDebug() << "[WebSocketClient] 正在重连...";
         connectToServer();
     }
 }
-
-// ─── 私有辅助 ─────────────────────────────────────────────────────────────────
 
 QUrl WebSocketClient::buildUrl() const {
     QUrl url;

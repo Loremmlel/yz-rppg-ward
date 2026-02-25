@@ -2,16 +2,10 @@
 #include "core/AppController.h"
 #include "util/StyleLoader.h"
 
-/**
- * @brief 应用程序入口点
- * 初始化应用程序环境，加载全局样式，并启动主视图控制器。
- * @param argc 命令行参数计数
- * @param argv 命令行参数数组
- * @return 应用程序退出代码
- */
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
+    // 多文件 QSS 合并后统一设置，后加载的规则优先级更高
     const QStringList styleFiles = {
         ":/styles/MainWindow.qss",
         ":/styles/VideoWidget.qss",
@@ -19,7 +13,6 @@ int main(int argc, char *argv[]) {
         ":/styles/VitalCard.qss",
         ":/styles/SettingsPage.qss"
     };
-
     app.setStyleSheet(StyleLoader::loadStyleSheets(styleFiles));
 
     AppController controller;

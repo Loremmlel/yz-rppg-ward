@@ -7,8 +7,10 @@
 #include "../../model/VitalData.h"
 
 /**
- * @brief 指标监控看板
- * 维护并管理一组健康指标卡片，并通过同步 Service 获取实时数据。
+ * @brief 生命体征看板
+ *
+ * 管理一组 VitalCard，通过 updateData 槽接收 VitalService 分发的数据快照。
+ * 卡片数量可扩展，布局通过 QScrollArea 容纳。
  */
 class VitalsWidget : public QWidget {
     Q_OBJECT
@@ -17,18 +19,14 @@ public:
     explicit VitalsWidget(QWidget *parent = nullptr);
 
 public slots:
-    /**
-     * @brief 更新体征指标视图
-     * @param data 最新的体征指标快照
-     */
     void updateData(const VitalData &data);
 
 private:
     void addVitalCard(const QString &key, const QString &title, const QString &iconPath);
 
-    QVBoxLayout *m_listLayout;
-    QScrollArea *m_scrollArea;
-    QWidget *m_container;
+    QVBoxLayout *m_listLayout  {nullptr};
+    QScrollArea *m_scrollArea  {nullptr};
+    QWidget     *m_container   {nullptr};
 
-    QMap<QString, VitalCard *> m_cards;
+    QMap<QString, VitalCard *> m_cards; ///< key 与 VitalData 字段名对应，便于 updateData 按 key 分发
 };

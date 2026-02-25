@@ -18,7 +18,7 @@ cv::Mat ImageHelper::QImage2CvMat(const QImage &image) {
             break;
         }
         default: {
-            // 兜底处理：如果不是常见格式，才走慢速转换
+            // 非常见格式走慢速转换路径，转成 RGB888 后再处理
             QImage convImg = image.convertToFormat(QImage::Format_RGB888);
             const cv::Mat mat3(convImg.height(), convImg.width(), CV_8UC3,
                                convImg.bits(), convImg.bytesPerLine());

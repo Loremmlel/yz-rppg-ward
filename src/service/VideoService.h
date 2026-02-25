@@ -6,48 +6,45 @@
 #include <opencv2/objdetect.hpp>
 
 /**
- * @brief 视频数据处理与传输服务
- * 负责视频流中的人脸检测算法执行，以及处理后的核心数据(如人脸裁剪图)的外部传输。
+ * @brief 视频帧处理服务
+ *
+ * 内部维护两条并行管线：
+ *  - 高频管线（每帧）：基于上一次检测结果裁剪人脸 ROI，发射 faceRoiExtracted。
+ *  - 低频管线（每 10 帧）：异步运行 YuNet 人脸检测，更新矩形框位置。
+ *
+ * 两条管线解耦，保证 rPPG 数据流不受检测延迟影响。
  */
 class VideoService : public QObject {
     Q_OBJECT
 
 public:
     explicit VideoService(QObject *parent = nullptr);
-
     ~VideoService() override;
 
 public slots:
     void processFrame(const QImage &image);
 
 signals:
-    /**
-     * @brief 当检测结果发生显著更新时发射
-     */
     void facePositionUpdated(const QRect &rect, bool hasFace);
 
-    /**
-     * 提取出人脸特征图，发送给NetworkService
-     * @param roiImage
-     */
+    /** 裁剪并缩放到 256×256 的人脸 ROI，供 NetworkService 编码发送。 */
     void faceRoiExtracted(const QImage &roiImage);
 
 private:
-    /**
-     * @brief 内部执行人脸检测核心逻辑，由单独的工作线程调用
-     */
     void detectWorker(const cv::Mat &mat);
 
     /**
-     * @brief 模型资源加载辅助
+     * @brief 将模型从 Qt 资源包解压到可执行文件同级目录
+     *
+     * OpenCV 的 FaceDetectorYN::create 只接受本地文件路径，无法直接读取 qrc 虚拟路径。
      */
     static QString loadModel(const QString &modelName);
 
     cv::Ptr<cv::FaceDetectorYN> m_faceDetector;
-    std::atomic<bool> m_isProcessing{false};
-    QFuture<void> m_processingFuture;
+    std::atomic<bool>           m_isProcessing{false};
+    QFuture<void>               m_processingFuture;
 
     QRect m_currentFaceRect;
-    bool m_hasFace = false;
-    int m_frameSkipCounter = 0;
+    bool  m_hasFace           {false};
+    int   m_frameSkipCounter  {0};
 };

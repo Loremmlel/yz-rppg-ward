@@ -7,21 +7,13 @@
 #include "../model/AppConfig.h"
 
 /**
- * @brief 底层 WebSocket 客户端封装
+ * @brief 底层 WebSocket 客户端
  *
- * 职责：
- *  - 管理 QWebSocket 生命周期（连接、断开、重连）
- *  - 提供线程安全的二进制/文本发送接口（通过信号槽 QueuedConnection）
- *  - 将服务器推送的文本消息向上广播
- *  - 监听 ConfigService::configChanged，动态切换服务器地址
+ * 封装连接生命周期管理与断线自动重连，对上层屏蔽网络细节。
+ * NetworkService 通过它推送图像帧，VitalService 通过它接收体征 JSON。
  *
- * 使用方：
- *  - NetworkService：调用 sendBinaryMessage() 推送图像帧
- *  - VitalService：监听 textMessageReceived() 接收体征 JSON
- *
- * 线程模型：
- *  本对象应 moveToThread 到专属 QThread，所有槽函数在该线程执行。
- *  外部调用 sendBinaryMessage/sendTextMessage 通过 QueuedConnection 排队，无需加锁。
+ * 线程模型：应 moveToThread 到专属线程。外部通过 QueuedConnection
+ * 调用 sendBinaryMessage/sendTextMessage，无需额外加锁。
  */
 class WebSocketClient : public QObject {
     Q_OBJECT
@@ -30,39 +22,29 @@ public:
     explicit WebSocketClient(QObject *parent = nullptr);
     ~WebSocketClient() override;
 
-    /** 当前是否已成功连接到服务器 */
-    bool isConnected() const;
+    [[nodiscard]] bool isConnected() const;
 
 public slots:
-    /** 根据当前配置建立 WebSocket 连接（幂等：已连接则先断开再重连） */
+    /** 建立连接；若已连接则先断开再重连（幂等）。 */
     void connectToServer();
 
-    /** 主动断开连接，不触发重连 */
+    /** 主动断开，不触发重连。 */
     void disconnectFromServer();
 
-    /** 发送二进制帧（线程安全，可从任意线程通过 QueuedConnection 调用） */
     void sendBinaryMessage(const QByteArray &data);
-
-    /** 发送文本帧（线程安全，可从任意线程通过 QueuedConnection 调用） */
     void sendTextMessage(const QString &message);
 
-    /** 响应配置变更：更新服务器地址并重连 */
+    /** 配置变更时更新目标地址并重连。 */
     void onConfigChanged(const AppConfig &config);
 
 signals:
-    /** WebSocket 已成功连接 */
     void connected();
-
-    /** WebSocket 连接已断开 */
     void disconnected();
 
-    /** 收到服务器推送的文本消息（通常是 JSON） */
+    /** 服务器推送的文本帧，通常是 JSON。 */
     void textMessageReceived(const QString &message);
 
-    /** 收到服务器推送的二进制消息 */
     void binaryMessageReceived(const QByteArray &data);
-
-    /** 连接发生错误 */
     void errorOccurred(const QString &errorString);
 
 private slots:
@@ -74,15 +56,13 @@ private slots:
     void attemptReconnect();
 
 private:
-    QUrl buildUrl() const;
+    [[nodiscard]] QUrl buildUrl() const;
 
-    QWebSocket  *m_socket   {nullptr};
-    QTimer      *m_reconnectTimer {nullptr};
+    QWebSocket *m_socket          {nullptr};
+    QTimer     *m_reconnectTimer  {nullptr};
 
     QString  m_host;
-    quint16  m_port         {0};
-
-    bool     m_userDisconnected {false}; ///< 用于区分主动断开与意外断开
-    int      m_reconnectInterval {5000}; ///< 重连间隔（毫秒）
+    quint16  m_port               {0};
+    bool     m_userDisconnected   {false}; ///< 区分主动断开与意外掉线，避免主动断开后触发重连
+    int      m_reconnectInterval  {5000};  ///< 毫秒
 };
-

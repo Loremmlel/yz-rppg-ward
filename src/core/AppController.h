@@ -9,62 +9,36 @@
 #include "../service/VideoService.h"
 #include "../service/WebSocketClient.h"
 
-
 /**
- * @brief 应用程序核心控制器
+ * @brief 应用程序顶层控制器（Mediator）
  *
- * 职责：
- *  - 组装所有 Service 的生命周期
- *  - 完成各 Service 与 UI 之间的信号槽连接（Mediator 模式）
- *  - 管理后台线程
+ * 负责组装所有 Service 的生命周期，并完成它们之间及与 UI 层的信号槽连接。
+ * 各 Service 彼此不直接依赖，Controller 是唯一知道全局拓扑的地方。
  *
  * 数据流：
- *  Camera → VideoWidget --frameCaptured--> VideoService --faceRoiExtracted-->
- *  NetworkService --sendBinaryMessage--> WebSocketClient --ws--> Server
- *
- *  Server --ws text--> WebSocketClient --textMessageReceived--> VitalService
- *  --dataUpdated--> VitalsWidget
+ *  上行：Camera → VideoWidget → VideoService → NetworkService → WebSocketClient → Server
+ *  下行：Server → WebSocketClient → VitalService → VitalsWidget
  */
 class AppController : public QObject {
     Q_OBJECT
 
 public:
     explicit AppController(QObject *parent = nullptr);
-
     ~AppController() override;
 
-    /**
-     * @brief 启动整个业务流程，包括后台服务与前台主视图
-     */
     void start() const;
 
-    /**
-     * @brief 提供对 Vital 服务的访问句柄，以供其他模块进行必要的同步
-     * @return 这里的 VitalService 实例处于活跃采集状态
-     */
-    VitalService *getVitalService() const { return m_vitalService.get(); }
-
-    /**
-     * @brief 提供对 Video 服务的访问句柄
-     */
-    VideoService *getVideoService() const { return m_videoService.get(); }
-
-    /**
-     * @brief 提供对 WebSocketClient 服务的访问句柄
-     */
-    WebSocketClient *getWsClient() const { return m_wsClient.get(); }
+    [[nodiscard]] VitalService    *getVitalService() const { return m_vitalService.get(); }
+    [[nodiscard]] VideoService    *getVideoService() const { return m_videoService.get(); }
+    [[nodiscard]] WebSocketClient *getWsClient()     const { return m_wsClient.get(); }
 
 private:
-    /**
-     * @brief 生命周期受控的业务服务组件
-     * 由 Controller 维护所有 Service 的生命周期，确保数据在视图层生命周期前初始化。
-     */
     std::unique_ptr<WebSocketClient> m_wsClient;
-    std::unique_ptr<VitalService> m_vitalService;
-    std::unique_ptr<VideoService> m_videoService;
-    std::unique_ptr<NetworkService> m_networkService;
-    std::unique_ptr<MainWindow> m_mainWindow;
+    std::unique_ptr<VitalService>    m_vitalService;
+    std::unique_ptr<VideoService>    m_videoService;
+    std::unique_ptr<NetworkService>  m_networkService;
+    std::unique_ptr<MainWindow>      m_mainWindow;
 
     std::unique_ptr<QThread> m_videoThread;
-    std::unique_ptr<QThread> m_wsThread;   ///< WebSocketClient 专属线程
+    std::unique_ptr<QThread> m_wsThread; ///< WebSocketClient 独占，确保 QWebSocket 的所有调用在同一线程
 };

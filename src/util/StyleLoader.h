@@ -3,15 +3,16 @@
 #include <QString>
 
 /**
- * @brief 样式加载工具类
- * 负责从 Qt 资源系统或本地路径读取 QSS 文件，并将其合并为统一的全局样式表。
+ * @brief QSS 样式表加载工具
+ *
+ * 支持 qrc 虚拟路径与本地路径，将多个样式文件合并为一个字符串，
+ * 便于统一通过 QApplication::setStyleSheet 应用。
  */
 class StyleLoader {
 public:
     /**
-     * @brief 批量加载样式文件
-     * @param styleFiles 样式文件的路径列表（支持 qrc 虚拟路径）
-     * @return 合并后的完整样式表内容字符串
+     * @brief 顺序加载并合并样式文件
+     * @param styleFiles qrc 或本地路径列表，后加载的规则优先级更高
      */
     static QString loadStyleSheets(const QStringList &styleFiles);
 };

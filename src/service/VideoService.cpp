@@ -15,9 +15,9 @@ VideoService::VideoService(QObject *parent) : QObject(parent) {
     try {
         m_faceDetector = cv::FaceDetectorYN::create(
             path.toStdString(), "", cv::Size(640, 480),
-            0.6f,
-            0.3f,
-            5000
+            0.6f,  // 置信度阈值
+            0.3f,  // NMS 阈值
+            5000   // 最大检测数量上限
         );
     } catch (const cv::Exception &e) {
         qWarning() << "人脸检测模型初始化失败：" << e.what();
@@ -33,24 +33,21 @@ VideoService::~VideoService() {
 void VideoService::processFrame(const QImage &image) {
     if (image.isNull()) return;
 
-    // ========================================================
-    // 流管线 A：rPPG 高频传输流 (严格按摄像头帧率运行)
-    // ========================================================
+    // ── 高频管线：每帧都执行，依赖上一次检测缓存的矩形 ──────────────────────
     if (m_hasFace && m_currentFaceRect.isValid()) {
         if (m_currentFaceRect.intersected(image.rect()).width() > 0) {
             constexpr int OUTPUT_SIZE = 256;
 
-            // 1. 长边 * 1.2，短边扩展至与长边相同，保证正方形
+            // 长边扩展 1.2 倍后取正方形，确保人脸在 rPPG 算法输入时不被裁切
             const int faceW = m_currentFaceRect.width();
             const int faceH = m_currentFaceRect.height();
             const int squareSide = static_cast<int>(std::max(faceW, faceH) * 1.2);
 
-            // 2. 以人脸矩形中心为基准，构建正方形裁剪区域
             const QPoint center = m_currentFaceRect.center();
             const int half = squareSide / 2;
             const QRect cropRect(center.x() - half, center.y() - half, squareSide, squareSide);
 
-            // 3. 创建黑色底板（可能比原图大），将原图有效区域绘入
+            // 先在黑底画布上绘制，处理超出原图边界的情况
             QImage roiImage(squareSide, squareSide, QImage::Format_RGB888);
             roiImage.fill(Qt::black);
 
@@ -62,7 +59,6 @@ void VideoService::processFrame(const QImage &image) {
                 painter.drawImage(dstRect, image, srcRect);
             }
 
-            // 4. 缩放到 256x256 后发送
             const QImage scaledRoi = roiImage.scaled(OUTPUT_SIZE, OUTPUT_SIZE,
                                                       Qt::IgnoreAspectRatio,
                                                       Qt::SmoothTransformation);
@@ -70,18 +66,12 @@ void VideoService::processFrame(const QImage &image) {
         }
     }
 
-    // ========================================================
-    // 流管线 B：人脸检测低频更新流 (降频执行，防止吃满 CPU)
-    // ========================================================
+    // ── 低频管线：每 10 帧触发一次异步检测，防止吃满 CPU ──────────────────────
     m_frameSkipCounter++;
     if (m_frameSkipCounter % 10 == 0 && !m_faceDetector.empty() && !m_isProcessing.load()) {
         m_isProcessing.store(true);
-
-        auto mat = ImageHelper::QImage2CvMat(image);
-
-        m_processingFuture = QtConcurrent::run([this, mat] {
-            detectWorker(mat);
-        });
+        const auto mat = ImageHelper::QImage2CvMat(image);
+        m_processingFuture = QtConcurrent::run([this, mat] { detectWorker(mat); });
     }
 }
 
@@ -89,10 +79,11 @@ void VideoService::detectWorker(const cv::Mat &mat) {
     double scale;
     cv::Mat detectionMat;
 
-    // 为了加速检测，内部进行必要的缩放
+    // 缩放到 640px 宽度加速推理；检测结果坐标后续需等比放回原图尺度
     if (constexpr int targetDetWidth = 640; mat.cols > targetDetWidth) {
         scale = static_cast<double>(mat.cols) / targetDetWidth;
-        cv::resize(mat, detectionMat, cv::Size(targetDetWidth, static_cast<int>(mat.rows / scale)));
+        cv::resize(mat, detectionMat,
+                   cv::Size(targetDetWidth, static_cast<int>(mat.rows / scale)));
     } else {
         detectionMat = mat;
         scale = 1.0;
@@ -105,48 +96,42 @@ void VideoService::detectWorker(const cv::Mat &mat) {
     QRect newRect;
     bool hasFace = false;
     if (faces.rows > 0) {
-        // 策略：取最大的人脸
+        // 多张人脸时取面积最大的，假设目标患者是画面主体
         hasFace = true;
-        int maxArea = 0;
-        int maxIndex = 0;
+        int maxArea = 0, maxIndex = 0;
         for (int i = 0; i < faces.rows; i++) {
             const int w = static_cast<int>(faces.at<float>(i, 2) * scale);
             const int h = static_cast<int>(faces.at<float>(i, 3) * scale);
-            if (w * h > maxArea) {
-                maxArea = w * h;
-                maxIndex = i;
-            }
+            if (w * h > maxArea) { maxArea = w * h; maxIndex = i; }
         }
 
-        // 坐标转换回原图尺度
         const int x = static_cast<int>(faces.at<float>(maxIndex, 0) * scale);
         const int y = static_cast<int>(faces.at<float>(maxIndex, 1) * scale);
         const int w = static_cast<int>(faces.at<float>(maxIndex, 2) * scale);
         const int h = static_cast<int>(faces.at<float>(maxIndex, 3) * scale);
-
         newRect = QRect(x, y, w, h);
     }
-    QMetaObject::invokeMethod(this, [this, newRect, hasFace] {
-        this->m_currentFaceRect = newRect;
-        this->m_hasFace = hasFace;
 
+    // 检测在工作线程完成，回到主线程写状态并发信号，避免竞态
+    QMetaObject::invokeMethod(this, [this, newRect, hasFace] {
+        m_currentFaceRect = newRect;
+        m_hasFace = hasFace;
         emit facePositionUpdated(newRect, hasFace);
-        this->m_isProcessing.store(false);
+        m_isProcessing.store(false);
     }, Qt::QueuedConnection);
 }
 
 QString VideoService::loadModel(const QString &modelName) {
-    const QString qrcPath = ":/models/" + modelName;
-    QFile modelFile(qrcPath);
-    QString localPath = QDir::currentPath() + QDir::separator() + modelName;
+    const QString localPath = QDir::currentPath() + QDir::separator() + modelName;
 
     if (QFile::exists(localPath)) {
         return localPath;
     }
 
-    if (modelFile.copy(localPath)) {
+    // 首次运行时从资源包解压到本地，后续直接复用
+    if (QFile(":/models/" + modelName).copy(localPath)) {
         return localPath;
     }
 
-    return "";
+    return {};
 }
