@@ -19,6 +19,7 @@ void NetworkService::sendFaceRoiStream(const QImage &faceRoi) {
     m_fpsTimer.restart();
 
     // 调试预览：首次调用时创建独立窗口，后续帧复用同一实例
+#ifdef QT_DEBUG
     static QLabel *previewLabel = [] {
         auto *label = new QLabel();
         label->setWindowTitle("DEBUG: Face ROI Stream");
@@ -28,6 +29,7 @@ void NetworkService::sendFaceRoiStream(const QImage &faceRoi) {
         return label;
     }();
     previewLabel->setPixmap(QPixmap::fromImage(faceRoi));
+#endif
 
     QByteArray jpegData;
     QBuffer    buffer(&jpegData);
