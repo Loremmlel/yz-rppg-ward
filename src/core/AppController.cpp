@@ -41,20 +41,25 @@ AppController::AppController(QObject *parent)
 }
 
 AppController::~AppController() {
-    // ① 先通知各线程退出事件循环，并等待它们真正结束。
-    //    必须在成员对象析构前完成：unique_ptr 成员会在析构函数体执行完毕后
-    //    按声明逆序自动销毁，届时对应线程已停止，析构器就能安全地在主线程运行。
-    auto stopThread = [](QThread *t) {
-        if (t && t->isRunning()) { t->quit(); t->wait(); }
+    auto safeDeleteOnThread = [](std::unique_ptr<QObject> &obj, const std::unique_ptr<QThread> &thread) {
+      if (!obj || !thread) return;
+        auto *rawObj = obj.release();
+        if (thread->isRunning()) {
+            // deleteLater 会向 thread 的事件循环发送一个销毁事件
+            // 这样析构函数就会在 thread 线程中执行，而不是主线程
+            rawObj->deleteLater();
+            thread->quit();
+            thread->wait();
+        } else {
+            // 兜底
+            delete rawObj;
+        }
     };
-    stopThread(m_videoThread.get());
-    stopThread(m_wsThread.get());
 
-    // ② 手动按"依赖倒序"reset：先销毁持有 socket/timer 的对象，
-    //    再销毁线程句柄，避免 Qt 在错误线程里停止 timer / 关闭 socket。
-    m_videoService.reset();
-    m_wsClient.reset();
-    // 其余成员（vitalService、networkService、mainWindow）在析构函数体后自动销毁，顺序无关紧要
+    auto wsPtr = std::unique_ptr<QObject>(m_wsClient.release());
+    auto videoPtr = std::unique_ptr<QObject>(m_videoService.release());
+    safeDeleteOnThread(videoPtr, m_videoThread);
+    safeDeleteOnThread(wsPtr, m_wsThread);
 }
 
 void AppController::start() const {
