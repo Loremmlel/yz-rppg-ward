@@ -41,11 +41,20 @@ AppController::AppController(QObject *parent)
 }
 
 AppController::~AppController() {
+    // ① 先通知各线程退出事件循环，并等待它们真正结束。
+    //    必须在成员对象析构前完成：unique_ptr 成员会在析构函数体执行完毕后
+    //    按声明逆序自动销毁，届时对应线程已停止，析构器就能安全地在主线程运行。
     auto stopThread = [](QThread *t) {
-        if (t->isRunning()) { t->quit(); t->wait(); }
+        if (t && t->isRunning()) { t->quit(); t->wait(); }
     };
     stopThread(m_videoThread.get());
     stopThread(m_wsThread.get());
+
+    // ② 手动按"依赖倒序"reset：先销毁持有 socket/timer 的对象，
+    //    再销毁线程句柄，避免 Qt 在错误线程里停止 timer / 关闭 socket。
+    m_videoService.reset();
+    m_wsClient.reset();
+    // 其余成员（vitalService、networkService、mainWindow）在析构函数体后自动销毁，顺序无关紧要
 }
 
 void AppController::start() const {
