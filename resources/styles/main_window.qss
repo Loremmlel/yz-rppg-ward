@@ -1,0 +1,51 @@
+/* ============================================================
+ * 主窗口 — 顶部导航栏
+ * ============================================================ */
+
+/* ---------- 顶部导航容器 ---------- */
+QFrame#topBar {
+    background-color: #DEE2E6;
+    border-bottom: 1px solid #CED4DA;
+}
+
+/* ---------- 导航按钮通用样式 ---------- */
+QPushButton[navButton="true"] {
+    background-color: #E9ECEF;
+    color: #495057;
+    border: none;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    font-size: 14px;
+    font-weight: bold;
+    margin-top: 4px;
+    padding: 5px 15px;
+}
+
+QPushButton[navButton="true"]:hover {
+    background-color: #F8F9FA;
+    color: #212529;
+}
+
+QPushButton[navButton="true"]:pressed {
+    background-color: #FFFFFF;
+    color: #212529;
+}
+
+/* 激活（选中）状态 — 白色背景与内容区连通 */
+QPushButton[navButton="true"]:checked {
+    background-color: #FFFFFF;
+    color: #212529;
+    border-top: 2px solid #4A90D9;
+}
+
+QPushButton[navButton="true"]:checked:hover {
+    background-color: #FFFFFF;
+}
+
+QPushButton[navButton="true"]:disabled {
+    background-color: #E9ECEF;
+    color: #ADB5BD;
+}
+

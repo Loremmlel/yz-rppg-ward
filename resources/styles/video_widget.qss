@@ -1,0 +1,40 @@
+/* ============================================================
+ * 视频预览组件 — 摄像头画面与覆盖层
+ * ============================================================ */
+
+/* ---------- 容器 ---------- */
+#videoWidget {
+    border-radius: 8px;
+    border: 1px solid #DEE2E6;
+    background-color: #000000;
+}
+
+#videoWidget:hover {
+    border-color: #4A90D9;
+}
+
+/* ---------- 视频显示区 ---------- */
+#videoDisplayLabel {
+    background-color: #000000;
+    color: #6C757D;
+    font-size: 15px;
+}
+
+/* 无摄像头错误状态 */
+#videoDisplayLabel[noCamera="true"] {
+    color: #FF4D4F;
+    font-size: 18px;
+    font-weight: bold;
+    background-color: #1A1A1A;
+}
+
+/* ---------- 人脸未检测到警告浮层 ---------- */
+#videoWarningLabel {
+    background-color: rgba(255, 60, 60, 160);
+    color: #FFFFFF;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 10px 20px;
+    border-radius: 4px;
+}
+

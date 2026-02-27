@@ -1,0 +1,43 @@
+/* ============================================================
+ * 生命体征面板 — VitalsWidget 容器
+ * ============================================================ */
+
+/* ---------- 面板容器 ---------- */
+#vitalsWidget {
+    background-color: #F0F2F5;
+    border-left: 1px solid #DEE2E6;
+}
+
+/* ---------- 滚动区域 ---------- */
+#vitalsWidget QScrollArea {
+    border: none;
+    background-color: transparent;
+}
+
+#vitalsContainer {
+    background-color: transparent;
+}
+
+/* ---------- 标题 ---------- */
+#vitalsTitle {
+    color: #212529;
+    font-size: 20px;
+    font-weight: bold;
+    margin: 10px 0;
+    padding: 8px 15px;
+}
+
+/* ---------- 面板内滚动条 ---------- */
+#vitalsWidget QScrollBar:vertical {
+    width: 6px;
+}
+
+#vitalsWidget QScrollBar::handle:vertical {
+    background: #CED4DA;
+    border-radius: 3px;
+}
+
+#vitalsWidget QScrollBar::handle:vertical:hover {
+    background: #ADB5BD;
+}
+

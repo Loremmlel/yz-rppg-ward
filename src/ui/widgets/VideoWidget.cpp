@@ -9,20 +9,19 @@
 #include "../../util/ImageHelper.h"
 
 VideoWidget::VideoWidget(QWidget *parent) : QWidget(parent) {
-    this->setObjectName("VideoWidget");
+    this->setObjectName("videoWidget");
 
     auto *layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
 
     m_displayLabel = new QLabel(this);
+    m_displayLabel->setObjectName("videoDisplayLabel");
     m_displayLabel->setAlignment(Qt::AlignCenter);
-    m_displayLabel->setStyleSheet("background-color: black;");
 
     // 警告浮层作为 displayLabel 的子控件，叠加在视频画面之上
     m_warningLabel = new QLabel("未检测到患者人脸", this);
+    m_warningLabel->setObjectName("videoWarningLabel");
     m_warningLabel->setAlignment(Qt::AlignCenter);
-    m_warningLabel->setStyleSheet(
-        "background-color: rgba(255, 0, 0, 150); color: white; font-size: 16px; font-weight: bold; padding: 10px;");
     m_warningLabel->setVisible(false);
     m_warningLabel->setParent(m_displayLabel);
 
@@ -31,7 +30,7 @@ VideoWidget::VideoWidget(QWidget *parent) : QWidget(parent) {
     const auto cameras = QMediaDevices::videoInputs();
     if (cameras.isEmpty()) {
         m_displayLabel->setText("未检测到有效摄像头设备");
-        m_displayLabel->setStyleSheet("color: #ff4d4f; font-size: 18px;");
+        m_displayLabel->setProperty("noCamera", true);
         return;
     }
 

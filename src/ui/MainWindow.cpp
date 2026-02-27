@@ -17,7 +17,7 @@ void MainWindow::initUI() {
     mainLayout->setSpacing(0);
 
     m_topBar = new QFrame(m_centralWidget);
-    m_topBar->setObjectName("TopBar");
+    m_topBar->setObjectName("topBar");
     m_topBar->setFixedHeight(50);
 
     auto *topBarLayout = new QHBoxLayout(m_topBar);
@@ -26,14 +26,16 @@ void MainWindow::initUI() {
     topBarLayout->setAlignment(Qt::AlignBottom);
 
     m_homeBtn = new QPushButton(QStringLiteral("主页"), m_topBar);
-    m_homeBtn->setObjectName("NavButton");
+    m_homeBtn->setObjectName("homeNavButton");
+    m_homeBtn->setProperty("navButton", true);
     m_homeBtn->setCheckable(true);
     m_homeBtn->setChecked(true);
     m_homeBtn->setCursor(Qt::PointingHandCursor);
     m_homeBtn->setFixedSize(120, 50);
 
     m_settingsBtn = new QPushButton(QStringLiteral("设置"), m_topBar);
-    m_settingsBtn->setObjectName("NavButton");
+    m_settingsBtn->setObjectName("settingsNavButton");
+    m_settingsBtn->setProperty("navButton", true);
     m_settingsBtn->setCheckable(true);
     m_settingsBtn->setCursor(Qt::PointingHandCursor);
     m_settingsBtn->setFixedSize(120, 50);

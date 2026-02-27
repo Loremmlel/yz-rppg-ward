@@ -1,0 +1,75 @@
+/* ============================================================
+ * 生命体征卡片 — VitalCard
+ * ============================================================ */
+
+/* ---------- 卡片容器 ---------- */
+VitalCard {
+    background-color: #FFFFFF;
+    border: 1px solid #E0E4E8;
+    border-radius: 12px;
+    border-left: 4px solid #E0E4E8;
+}
+
+VitalCard:hover {
+    background-color: #FAFBFC;
+    border-color: #CED4DA;
+    border-left-width: 4px;
+}
+
+/* ---------- 各指标卡片左侧色带 ---------- */
+#CardHR {
+    border-left-color: #FF5252;
+}
+
+#CardHR:hover {
+    border-left-color: #FF1744;
+}
+
+#CardSpO2 {
+    border-left-color: #4CAF50;
+}
+
+#CardSpO2:hover {
+    border-left-color: #388E3C;
+}
+
+#CardRR {
+    border-left-color: #2196F3;
+}
+
+#CardRR:hover {
+    border-left-color: #1565C0;
+}
+
+/* ---------- 图标 ---------- */
+#vitalIconLabel {
+    font-size: 32px;
+}
+
+/* ---------- 指标标题 ---------- */
+#vitalTitleLabel {
+    color: #6C757D;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* ---------- 数值 ---------- */
+#vitalValueLabel {
+    font-size: 32px;
+    font-weight: bold;
+    font-family: "Segoe UI", "PingFang SC", sans-serif;
+}
+
+/* 各指标数值颜色 */
+#CardHR #vitalValueLabel {
+    color: #FF5252;
+}
+
+#CardSpO2 #vitalValueLabel {
+    color: #4CAF50;
+}
+
+#CardRR #vitalValueLabel {
+    color: #2196F3;
+}
+

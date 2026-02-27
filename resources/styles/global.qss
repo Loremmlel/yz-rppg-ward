@@ -1,0 +1,152 @@
+/* ============================================================
+ * 全局样式 — 设计令牌与公共组件
+ * ============================================================
+ * 主色调
+ *   Primary Blue:   #4A90D9
+ *   Primary Hover:  #357ABD
+ *   Primary Active: #2C6EA6
+ *
+ * 灰阶
+ *   Background:     #F8F9FA
+ *   Surface:        #FFFFFF
+ *   Border:         #DEE2E6
+ *   Border Hover:   #CED4DA
+ *   Text Primary:   #212529
+ *   Text Secondary: #495057
+ *   Text Muted:     #6C757D
+ *   Divider:        #E9ECEF
+ *
+ * 状态色
+ *   Heart Rate:     #FF5252
+ *   SpO2:           #4CAF50
+ *   Resp. Rate:     #2196F3
+ *   Warning:        #FF9800
+ *   Error:          #FF4D4F
+ * ============================================================ */
+
+/* ---------- 基础排版 ---------- */
+* {
+    font-family: "Microsoft YaHei UI", "Segoe UI", "PingFang SC", sans-serif;
+}
+
+/* ---------- 主窗口 / 中心区域 ---------- */
+QMainWindow,
+QWidget#centralWidget {
+    background-color: #F8F9FA;
+}
+
+/* ---------- QSplitter ---------- */
+QSplitter::handle {
+    background-color: #E0E4E8;
+    width: 2px;
+}
+
+QSplitter::handle:hover {
+    background-color: #4A90D9;
+}
+
+QSplitter::handle:pressed {
+    background-color: #2C6EA6;
+}
+
+/* ---------- QScrollBar 垂直 ---------- */
+QScrollBar:vertical {
+    background: transparent;
+    width: 8px;
+    margin: 0;
+}
+
+QScrollBar::handle:vertical {
+    background: #CED4DA;
+    min-height: 30px;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #ADB5BD;
+}
+
+QScrollBar::handle:vertical:pressed {
+    background: #6C757D;
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical,
+QScrollBar::add-page:vertical,
+QScrollBar::sub-page:vertical {
+    height: 0;
+    background: transparent;
+}
+
+/* ---------- QScrollBar 水平 ---------- */
+QScrollBar:horizontal {
+    background: transparent;
+    height: 8px;
+    margin: 0;
+}
+
+QScrollBar::handle:horizontal {
+    background: #CED4DA;
+    min-width: 30px;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:horizontal:hover {
+    background: #ADB5BD;
+}
+
+QScrollBar::handle:horizontal:pressed {
+    background: #6C757D;
+}
+
+QScrollBar::add-line:horizontal,
+QScrollBar::sub-line:horizontal,
+QScrollBar::add-page:horizontal,
+QScrollBar::sub-page:horizontal {
+    width: 0;
+    background: transparent;
+}
+
+/* ---------- QToolTip ---------- */
+QToolTip {
+    background-color: #212529;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 12px;
+}
+
+/* ---------- 禁用态通用 ---------- */
+*:disabled {
+    color: #ADB5BD;
+}
+
+/* ---------- QMessageBox ---------- */
+QMessageBox {
+    background-color: #FFFFFF;
+}
+
+QMessageBox QLabel {
+    color: #212529;
+    font-size: 13px;
+}
+
+QMessageBox QPushButton {
+    background-color: #4A90D9;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 20px;
+    font-size: 13px;
+    min-width: 70px;
+}
+
+QMessageBox QPushButton:hover {
+    background-color: #357ABD;
+}
+
+QMessageBox QPushButton:pressed {
+    background-color: #2C6EA6;
+}
+

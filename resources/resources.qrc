@@ -1,10 +1,12 @@
 <RCC>
     <qresource prefix="/">
-        <file>styles/MainWindow.qss</file>
-        <file>styles/VideoWidget.qss</file>
-        <file>styles/VitalsWidget.qss</file>
-        <file>styles/VitalCard.qss</file>
-        <file>styles/SettingsPage.qss</file>
+        <file>styles/global.qss</file>
+        <file>styles/main_window.qss</file>
+        <file>styles/home_page.qss</file>
+        <file>styles/video_widget.qss</file>
+        <file>styles/vitals_widget.qss</file>
+        <file>styles/vital_card.qss</file>
+        <file>styles/settings_page.qss</file>
     </qresource>
     <qresource prefix="/">
         <file>icons/Heartbeat.png</file>

@@ -24,12 +24,14 @@ void SettingsPage::initUI() {
     formLayout->setVerticalSpacing(16);
 
     m_hostEdit = new QLineEdit(networkGroup);
-    m_hostEdit->setObjectName("SettingsInput");
+    m_hostEdit->setObjectName("hostInput");
+    m_hostEdit->setProperty("settingsField", true);
     m_hostEdit->setPlaceholderText(QStringLiteral("例如：192.168.1.100"));
     m_hostEdit->setMinimumWidth(280);
 
     m_portSpin = new QSpinBox(networkGroup);
-    m_portSpin->setObjectName("SettingsInput");
+    m_portSpin->setObjectName("portInput");
+    m_portSpin->setProperty("settingsField", true);
     m_portSpin->setRange(1, 65535);
     m_portSpin->setMinimumWidth(120);
 
@@ -43,7 +45,7 @@ void SettingsPage::initUI() {
     bottomBar->addStretch();
 
     m_saveBtn = new QPushButton(QStringLiteral("保存"), this);
-    m_saveBtn->setObjectName("PrimaryButton");
+    m_saveBtn->setObjectName("saveButton");
     m_saveBtn->setFixedSize(100, 36);
     m_saveBtn->setCursor(Qt::PointingHandCursor);
     bottomBar->addWidget(m_saveBtn);

@@ -21,17 +21,17 @@ VitalCard::VitalCard(const QString &title, const QString &icon, QWidget *parent)
     leftContainer->setSpacing(5);
 
     m_iconLabel = new QLabel(this);
-    m_iconLabel->setObjectName("VitalIcon");
+    m_iconLabel->setObjectName("vitalIconLabel");
     setIcon(icon);
 
     m_titleLabel = new QLabel(title, this);
-    m_titleLabel->setObjectName("VitalTitle");
+    m_titleLabel->setObjectName("vitalTitleLabel");
 
     leftContainer->addWidget(m_iconLabel, 0, Qt::AlignLeft);
     leftContainer->addWidget(m_titleLabel, 0, Qt::AlignLeft);
 
     m_valueLabel = new QLabel("--", this);
-    m_valueLabel->setObjectName("VitalValue");
+    m_valueLabel->setObjectName("vitalValueLabel");
     m_valueLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
 
     layout->addLayout(leftContainer);

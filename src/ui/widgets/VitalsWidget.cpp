@@ -4,14 +4,14 @@
 #include <QScrollArea>
 
 VitalsWidget::VitalsWidget(QWidget *parent) : QWidget(parent) {
-    this->setObjectName("VitalsWidget");
+    this->setObjectName("vitalsWidget");
 
     auto *mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
 
     auto *titleLabel = new QLabel(QStringLiteral("实时健康指标监控"), this);
-    titleLabel->setObjectName("VitalsTitle");
+    titleLabel->setObjectName("vitalsTitle");
     titleLabel->setAlignment(Qt::AlignCenter);
     mainLayout->addWidget(titleLabel);
 
@@ -23,7 +23,7 @@ VitalsWidget::VitalsWidget(QWidget *parent) : QWidget(parent) {
     m_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
     m_container = new QWidget(m_scrollArea);
-    m_container->setObjectName("VitalsContainer");
+    m_container->setObjectName("vitalsContainer");
 
     m_listLayout = new QVBoxLayout(m_container);
     m_listLayout->setContentsMargins(15, 10, 15, 10);
@@ -46,7 +46,7 @@ void VitalsWidget::updateData(const VitalData &data) {
 
 void VitalsWidget::addVitalCard(const QString &key, const QString &title, const QString &iconPath) {
     auto card = new VitalCard(title, iconPath, m_container);
-    card->setObjectName("Card_" + key);
+    card->setObjectName("Card" + key);
     card->setFixedHeight(110);
     m_listLayout->addWidget(card);
     m_cards.insert(key, card);
