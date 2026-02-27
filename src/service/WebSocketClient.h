@@ -30,8 +30,8 @@ public slots:
     /** 主动断开，不触发重连。 */
     void disconnectFromServer();
 
-    void sendBinaryMessage(const QByteArray &data);
-    void sendTextMessage(const QString &message);
+    void sendBinaryMessage(const QByteArray &data) const;
+    void sendTextMessage(const QString &message) const;
 
     /** 配置变更时更新目标地址并重连。 */
     void onConfigChanged(const AppConfig &config);

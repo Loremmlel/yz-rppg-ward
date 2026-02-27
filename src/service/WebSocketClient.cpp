@@ -59,7 +59,7 @@ void WebSocketClient::disconnectFromServer() {
     m_socket->close();
 }
 
-void WebSocketClient::sendBinaryMessage(const QByteArray &data) {
+void WebSocketClient::sendBinaryMessage(const QByteArray &data) const {
     if (!isConnected()) {
         qWarning() << "[WebSocketClient] 未连接，丢弃二进制帧，大小：" << data.size() << "字节";
         return;
@@ -67,7 +67,7 @@ void WebSocketClient::sendBinaryMessage(const QByteArray &data) {
     m_socket->sendBinaryMessage(data);
 }
 
-void WebSocketClient::sendTextMessage(const QString &message) {
+void WebSocketClient::sendTextMessage(const QString &message) const {
     if (!isConnected()) {
         qWarning() << "[WebSocketClient] 未连接，丢弃文本消息";
         return;
@@ -126,7 +126,7 @@ QUrl WebSocketClient::buildUrl() const {
     url.setScheme(QStringLiteral("ws"));
     url.setHost(m_host);
     url.setPort(m_port);
-    url.setPath(QStringLiteral("/"));
+    url.setPath(QStringLiteral("/ws"));
     return url;
 }
 
