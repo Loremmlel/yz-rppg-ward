@@ -25,15 +25,19 @@
     font-weight: bold;
     margin: 10px 0;
     padding: 8px 15px;
+    border-bottom: 1px solid #E9ECEF;
 }
 
 /* ---------- 面板内滚动条 ---------- */
 #vitalsWidget QScrollBar:vertical {
+    background: transparent;
     width: 6px;
+    margin: 0;
 }
 
 #vitalsWidget QScrollBar::handle:vertical {
     background: #CED4DA;
+    min-height: 20px;
     border-radius: 3px;
 }
 
@@ -41,3 +45,14 @@
     background: #ADB5BD;
 }
 
+#vitalsWidget QScrollBar::handle:vertical:pressed {
+    background: #6C757D;
+}
+
+#vitalsWidget QScrollBar::add-line:vertical,
+#vitalsWidget QScrollBar::sub-line:vertical,
+#vitalsWidget QScrollBar::add-page:vertical,
+#vitalsWidget QScrollBar::sub-page:vertical {
+    height: 0;
+    background: transparent;
+}

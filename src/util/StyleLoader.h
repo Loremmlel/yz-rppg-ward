@@ -1,18 +1,42 @@
 #pragma once
-
 #include <QString>
 
+class QWidget;
+
 /**
- * @brief QSS 样式表加载工具
+ * @brief 样式表加载工具类
  *
- * 支持 qrc 虚拟路径与本地路径，将多个样式文件合并为一个字符串，
- * 便于统一通过 QApplication::setStyleSheet 应用。
+ * 从 Qt 资源系统 (.qrc) 中读取 QSS 文件，并应用到指定 Widget。
  */
 class StyleLoader {
 public:
+    StyleLoader() = delete;
+
     /**
-     * @brief 顺序加载并合并样式文件
-     * @param styleFiles qrc 或本地路径列表，后加载的规则优先级更高
+     * @brief 读取资源路径中的 QSS 文件内容
+     * @param qrcPath 资源路径，如 ":/styles/global.qss"
+     * @return QSS 字符串；若读取失败则返回空字符串
      */
-    static QString loadStyleSheets(const QStringList &styleFiles);
+    static QString load(const QString &qrcPath);
+
+    /**
+     * @brief 读取并拼接多个 QSS 文件
+     * @param qrcPaths 资源路径列表
+     * @return 合并后的 QSS 字符串
+     */
+    static QString loadMultiple(const QStringList &qrcPaths);
+
+    /**
+     * @brief 将指定 QSS 文件应用到 Widget
+     * @param widget 目标控件
+     * @param qrcPath 资源路径
+     */
+    static void apply(QWidget *widget, const QString &qrcPath);
+
+    /**
+     * @brief 将多个 QSS 文件合并后应用到 Widget
+     * @param widget 目标控件
+     * @param qrcPaths 资源路径列表
+     */
+    static void applyMultiple(QWidget *widget, const QStringList &qrcPaths);
 };

@@ -3,8 +3,11 @@
 #include <QLabel>
 #include <QScrollArea>
 
+#include "../../util/StyleLoader.h"
+
 VitalsWidget::VitalsWidget(QWidget *parent) : QWidget(parent) {
     this->setObjectName("vitalsWidget");
+    StyleLoader::apply(this, QStringLiteral(":/styles/vitals_widget.qss"));
 
     auto *mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);

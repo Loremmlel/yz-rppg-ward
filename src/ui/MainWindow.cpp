@@ -1,70 +1,81 @@
 #include "MainWindow.h"
-#include <QButtonGroup>
+#include "../util/StyleLoader.h"
+
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QFrame>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
-    this->setWindowTitle(QStringLiteral("病房端监控终端"));
-    this->resize(1280, 720);
-
+    setWindowTitle(QStringLiteral("病房端监控终端"));
+    resize(1280, 720);
     initUI();
-    initConnections();
+
+    // 全局样式 + 导航栏样式
+    setStyleSheet(StyleLoader::loadMultiple({
+        QStringLiteral(":/styles/global.qss"),
+        QStringLiteral(":/styles/main_window.qss")
+    }));
 }
 
 void MainWindow::initUI() {
-    m_centralWidget = new QWidget(this);
-    setCentralWidget(m_centralWidget);
-    auto *mainLayout = new QVBoxLayout(m_centralWidget);
-    mainLayout->setContentsMargins(0, 0, 0, 0);
-    mainLayout->setSpacing(0);
+    auto *centralWidget = new QWidget(this);
+    centralWidget->setObjectName("centralWidget");
+    setCentralWidget(centralWidget);
 
-    m_topBar = new QFrame(m_centralWidget);
-    m_topBar->setObjectName("topBar");
-    m_topBar->setFixedHeight(50);
+    auto *rootLayout = new QVBoxLayout(centralWidget);
+    rootLayout->setContentsMargins(0, 0, 0, 0);
+    rootLayout->setSpacing(0);
 
-    auto *topBarLayout = new QHBoxLayout(m_topBar);
-    topBarLayout->setContentsMargins(10, 0, 10, 0);
-    topBarLayout->setSpacing(0);
-    topBarLayout->setAlignment(Qt::AlignBottom);
+    // ——— 页面堆叠区域（先创建，供导航栏连接） ———
+    m_stackedWidget = new QStackedWidget(centralWidget);
 
-    m_homeBtn = new QPushButton(QStringLiteral("主页"), m_topBar);
-    m_homeBtn->setObjectName("homeNavButton");
-    m_homeBtn->setProperty("navButton", true);
-    m_homeBtn->setCheckable(true);
-    m_homeBtn->setChecked(true);
-    m_homeBtn->setCursor(Qt::PointingHandCursor);
-    m_homeBtn->setFixedSize(120, 50);
+    m_homePage     = new HomePage(m_stackedWidget);
+    m_settingsPage = new SettingsPage(m_stackedWidget);
 
-    m_settingsBtn = new QPushButton(QStringLiteral("设置"), m_topBar);
-    m_settingsBtn->setObjectName("settingsNavButton");
-    m_settingsBtn->setProperty("navButton", true);
-    m_settingsBtn->setCheckable(true);
-    m_settingsBtn->setCursor(Qt::PointingHandCursor);
-    m_settingsBtn->setFixedSize(120, 50);
+    m_stackedWidget->addWidget(m_homePage);     // index 0
+    m_stackedWidget->addWidget(m_settingsPage); // index 1
 
-    // QButtonGroup 保证导航按钮互斥，idClicked 传递的索引与 QStackedWidget 页面索引一一对应
-    auto *navGroup = new QButtonGroup(this);
-    navGroup->addButton(m_homeBtn, 0);
-    navGroup->addButton(m_settingsBtn, 1);
-    connect(navGroup, &QButtonGroup::idClicked, this, &MainWindow::onTabChanged);
-
-    topBarLayout->addWidget(m_homeBtn);
-    topBarLayout->addStretch();
-    topBarLayout->addWidget(m_settingsBtn);
-
-    mainLayout->addWidget(m_topBar);
-
-    m_stackedWidget = new QStackedWidget(m_centralWidget);
-    mainLayout->addWidget(m_stackedWidget);
-
-    m_homePage = new HomePage();
-    m_stackedWidget->addWidget(m_homePage);
-
-    m_settingsPage = new SettingsPage();
-    m_stackedWidget->addWidget(m_settingsPage);
+    // ——— 顶部导航栏 ———
+    setupNavBar();
+    rootLayout->addWidget(findChild<QFrame *>("topBar"));
+    rootLayout->addWidget(m_stackedWidget, 1);
 }
 
-void MainWindow::initConnections() {
+void MainWindow::setupNavBar() {
+    auto *topBar = new QFrame(this);
+    topBar->setObjectName("topBar");
+    topBar->setFixedHeight(40);
+
+    auto *navLayout = new QHBoxLayout(topBar);
+    navLayout->setContentsMargins(8, 0, 8, 0);
+    navLayout->setSpacing(4);
+
+    m_navGroup = new QButtonGroup(this);
+    m_navGroup->setExclusive(true);
+
+    auto *homeBtn     = createNavButton(QStringLiteral("主页"));
+    auto *settingsBtn = createNavButton(QStringLiteral("设置"));
+
+    m_navGroup->addButton(homeBtn, 0);
+    m_navGroup->addButton(settingsBtn, 1);
+
+    navLayout->addWidget(homeBtn);
+    navLayout->addWidget(settingsBtn);
+    navLayout->addStretch();
+
+    // 默认选中主页
+    homeBtn->setChecked(true);
+
+    // 导航按钮切换页面
+    connect(m_navGroup, &QButtonGroup::idClicked,
+            m_stackedWidget, &QStackedWidget::setCurrentIndex);
 }
 
-void MainWindow::onTabChanged(const int index) const {
-    m_stackedWidget->setCurrentIndex(index);
+QPushButton *MainWindow::createNavButton(const QString &text) {
+    auto *btn = new QPushButton(text, this);
+    btn->setProperty("navButton", true);
+    btn->setCheckable(true);
+    btn->setCursor(Qt::PointingHandCursor);
+    btn->setFixedHeight(36);
+    return btn;
 }

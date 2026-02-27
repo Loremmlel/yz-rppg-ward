@@ -1,0 +1,121 @@
+﻿/* ============================================================
+ * 设置页样式
+ * ============================================================ */
+/* ---------- 分组框 ---------- */
+QGroupBox {
+    background-color: #FFFFFF;
+    border: 1px solid #DEE2E6;
+    border-radius: 10px;
+    padding: 24px 20px 20px 20px;
+    margin-top: 12px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #212529;
+}
+QGroupBox:hover {
+    border-color: #CED4DA;
+}
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    left: 16px;
+    padding: 0 8px;
+    background-color: #FFFFFF;
+    color: #212529;
+}
+/* ---------- 表单标签 ---------- */
+QLabel {
+    font-size: 13px;
+    color: #495057;
+}
+/* ---------- 输入框 ---------- */
+QLineEdit#SettingsInput,
+QSpinBox#SettingsInput {
+    background-color: #FFFFFF;
+    border: 1px solid #DEE2E6;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: #212529;
+}
+QLineEdit#SettingsInput:focus,
+QSpinBox#SettingsInput:focus {
+    border-color: #4A90D9;
+    outline: none;
+}
+QLineEdit#SettingsInput:hover,
+QSpinBox#SettingsInput:hover {
+    border-color: #CED4DA;
+}
+QLineEdit#SettingsInput:disabled,
+QSpinBox#SettingsInput:disabled {
+    background-color: #E9ECEF;
+    color: #ADB5BD;
+    border-color: #DEE2E6;
+}
+/* ---------- QSpinBox 上下按钮 ---------- */
+QSpinBox#SettingsInput::up-button {
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 22px;
+    border-left: 1px solid #DEE2E6;
+    border-bottom: 1px solid #DEE2E6;
+    border-top-right-radius: 6px;
+    background-color: #F8F9FA;
+}
+QSpinBox#SettingsInput::up-button:hover {
+    background-color: #E9ECEF;
+}
+QSpinBox#SettingsInput::up-button:pressed {
+    background-color: #DEE2E6;
+}
+QSpinBox#SettingsInput::down-button {
+    subcontrol-origin: border;
+    subcontrol-position: bottom right;
+    width: 22px;
+    border-left: 1px solid #DEE2E6;
+    border-top: 1px solid #DEE2E6;
+    border-bottom-right-radius: 6px;
+    background-color: #F8F9FA;
+}
+QSpinBox#SettingsInput::down-button:hover {
+    background-color: #E9ECEF;
+}
+QSpinBox#SettingsInput::down-button:pressed {
+    background-color: #DEE2E6;
+}
+QSpinBox#SettingsInput::up-arrow {
+    image: none;
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-bottom: 5px solid #495057;
+}
+QSpinBox#SettingsInput::down-arrow {
+    image: none;
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid #495057;
+}
+/* ---------- 主操作按钮 ---------- */
+QPushButton#PrimaryButton {
+    background-color: #4A90D9;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 8px 24px;
+}
+QPushButton#PrimaryButton:hover {
+    background-color: #357ABD;
+}
+QPushButton#PrimaryButton:pressed {
+    background-color: #2C6EA6;
+}
+QPushButton#PrimaryButton:disabled {
+    background-color: #ADB5BD;
+}

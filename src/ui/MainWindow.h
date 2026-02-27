@@ -1,17 +1,19 @@
 #pragma once
 #include <QMainWindow>
 #include <QStackedWidget>
-#include <QFrame>
+#include <QPushButton>
+#include <QButtonGroup>
 
 #include "pages/HomePage.h"
 #include "pages/SettingsPage.h"
 
 /**
- * @brief 应用程序主窗口
+ * @brief 应用主窗口
  *
- * 管理顶部导航栏与 QStackedWidget 页面切换。
- * 对外暴露子组件的访问器，供 AppController 完成数据绑定，
- * 窗口本身不持有任何业务逻辑。
+ * 职责：
+ *  - 顶部导航栏（选项卡按钮）
+ *  - QStackedWidget 管理页面切换
+ *  - 仅管理页面，不直接操作子 Widget
  */
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -22,20 +24,28 @@ public:
     [[nodiscard]] VitalsWidget *getVitalsWidget() const { return m_homePage->getVitalsWidget(); }
     [[nodiscard]] VideoWidget  *getVideoWidget()  const { return m_homePage->getVideoWidget(); }
 
-private slots:
-    void onTabChanged(int index) const;
+    /**
+     * @brief 获取主页指针（供 Controller 连接信号）
+     */
+    [[nodiscard]] HomePage     *homePage()     const { return m_homePage; }
+
+    /**
+     * @brief 获取设置页指针
+     */
+    [[nodiscard]] SettingsPage *settingsPage() const { return m_settingsPage; }
 
 private:
     void initUI();
-    void initConnections();
+    void setupNavBar();
 
-    QWidget        *m_centralWidget  {};
-    QStackedWidget *m_stackedWidget  {};
+    /**
+     * @brief 创建一个导航按钮
+     */
+    QPushButton *createNavButton(const QString &text);
 
-    QFrame         *m_topBar         {};
-    QPushButton    *m_homeBtn        {};
-    QPushButton    *m_settingsBtn    {};
+    QStackedWidget *m_stackedWidget = nullptr;
+    QButtonGroup   *m_navGroup      = nullptr;
 
-    HomePage       *m_homePage       {};
-    SettingsPage   *m_settingsPage   {};
+    HomePage       *m_homePage      = nullptr;
+    SettingsPage   *m_settingsPage  = nullptr;
 };

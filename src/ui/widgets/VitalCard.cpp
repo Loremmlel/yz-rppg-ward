@@ -5,6 +5,8 @@
 #include <QFile>
 #include <QPixmap>
 
+#include "../../util/StyleLoader.h"
+
 VitalCard::VitalCard(const QString &title, const QString &icon, QWidget *parent)
     : QFrame(parent)
 {
@@ -12,6 +14,7 @@ VitalCard::VitalCard(const QString &title, const QString &icon, QWidget *parent)
     this->setObjectName("VitalCard");
     this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     this->setFrameShape(QFrame::StyledPanel);
+    StyleLoader::apply(this, QStringLiteral(":/styles/vital_card.qss"));
 
     auto *layout = new QHBoxLayout(this);
     layout->setContentsMargins(20, 15, 20, 15);

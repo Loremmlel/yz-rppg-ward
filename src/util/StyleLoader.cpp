@@ -1,16 +1,31 @@
 #include "StyleLoader.h"
-#include <QFile>
-#include <QTextStream>
 
-QString StyleLoader::loadStyleSheets(const QStringList &styleFiles) {
-    QString combinedStyle;
-    for (const QString &fileName : styleFiles) {
-        QFile file(fileName);
-        if (file.open(QFile::ReadOnly | QFile::Text)) {
-            QTextStream stream(&file);
-            combinedStyle += stream.readAll();
-            combinedStyle += "\n"; // 防止相邻文件的末尾规则与开头规则合并
-        }
+#include <QFile>
+#include <QWidget>
+#include <QDebug>
+
+QString StyleLoader::load(const QString &qrcPath) {
+    QFile file(qrcPath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "StyleLoader: failed to open" << qrcPath;
+        return {};
     }
-    return combinedStyle;
+    return QString::fromUtf8(file.readAll());
+}
+
+QString StyleLoader::loadMultiple(const QStringList &qrcPaths) {
+    QString combined;
+    for (const auto &path : qrcPaths) {
+        combined += load(path);
+        combined += QChar('\n');
+    }
+    return combined;
+}
+
+void StyleLoader::apply(QWidget *widget, const QString &qrcPath) {
+    widget->setStyleSheet(load(qrcPath));
+}
+
+void StyleLoader::applyMultiple(QWidget *widget, const QStringList &qrcPaths) {
+    widget->setStyleSheet(loadMultiple(qrcPaths));
 }

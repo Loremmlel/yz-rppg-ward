@@ -1,0 +1,23 @@
+/* ============================================================
+ * 主页样式
+ * ============================================================ */
+
+/* ---------- 页面背景 ---------- */
+HomePage {
+    background-color: #F8F9FA;
+}
+
+/* ---------- QSplitter 交互 ---------- */
+HomePage QSplitter::handle {
+    background-color: #E0E4E8;
+    width: 3px;
+    border-radius: 1px;
+}
+
+HomePage QSplitter::handle:hover {
+    background-color: #4A90D9;
+}
+
+HomePage QSplitter::handle:pressed {
+    background-color: #2C6EA6;
+}

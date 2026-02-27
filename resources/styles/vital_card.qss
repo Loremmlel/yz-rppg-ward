@@ -23,6 +23,7 @@ VitalCard:hover {
 
 #CardHR:hover {
     border-left-color: #FF1744;
+    background-color: #FFF5F5;
 }
 
 #CardSpO2 {
@@ -31,6 +32,7 @@ VitalCard:hover {
 
 #CardSpO2:hover {
     border-left-color: #388E3C;
+    background-color: #F5FFF5;
 }
 
 #CardRR {
@@ -39,6 +41,7 @@ VitalCard:hover {
 
 #CardRR:hover {
     border-left-color: #1565C0;
+    background-color: #F5F9FF;
 }
 
 /* ---------- 图标 ---------- */
@@ -72,4 +75,3 @@ VitalCard:hover {
 #CardRR #vitalValueLabel {
     color: #2196F3;
 }
-
