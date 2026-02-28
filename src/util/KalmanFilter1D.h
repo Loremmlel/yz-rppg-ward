@@ -3,7 +3,6 @@
 /**
  * @brief 一维卡尔曼滤波器（仅跟踪标量位置）
  *
- * 参考 open-rppg 的 KalmanFilter1D 实现：
  *  - 状态：标量位置（无速度分量）
  *  - 过程噪声随时间间隔平方缩放：Q = processNoise × (dt / refInterval)²
  *  - 跳帧时用上一次原始观测值做 update（hold + smooth），避免漂移
