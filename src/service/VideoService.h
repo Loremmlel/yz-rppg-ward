@@ -47,6 +47,7 @@ private:
 
     cv::Ptr<cv::FaceDetectorYN> m_faceDetector;
     std::atomic<bool>           m_isProcessing{false};
+    std::atomic<bool>           m_isEncoding{false};
     QFuture<void>               m_processingFuture;
 
     QRect m_currentFaceRect;

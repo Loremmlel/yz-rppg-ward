@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QDateTime>
 #include <QDataStream>
+#include <QThreadPool>
 #include <QtConcurrentRun>
 #include <opencv2/imgcodecs.hpp>
 
@@ -38,11 +39,16 @@ void VideoService::processFrame(const QImage &image) {
     // ── 高频管线：每帧都执行，依赖上一次检测缓存的矩形 ──────────────────────
     if (m_hasFace && m_currentFaceRect.isValid()) {
         const QRect clipped = m_currentFaceRect.intersected(image.rect());
-        if (clipped.isValid()) {
-            const QByteArray frame = encodeRoi(image.copy(clipped));
-            if (!frame.isEmpty()) {
-                emit faceRoiEncoded(frame);
-            }
+        if (clipped.isValid() && !m_isEncoding.load()) {
+            m_isEncoding.store(true);
+            const QImage roi = image.copy(clipped);
+            QThreadPool::globalInstance()->start([this, roi] {
+                const QByteArray frame = encodeRoi(roi);
+                if (!frame.isEmpty()) {
+                    emit faceRoiEncoded(frame);
+                }
+                m_isEncoding.store(false);
+            });
         }
     }
 

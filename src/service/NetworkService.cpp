@@ -2,6 +2,12 @@
 #include "WebSocketClient.h"
 #include <QDebug>
 
+#ifdef QT_DEBUG
+#include <QLabel>
+#include <QPixmap>
+#include <opencv2/imgcodecs.hpp>
+#endif
+
 NetworkService::NetworkService(WebSocketClient *wsClient, QObject *parent)
     : QObject(parent), m_wsClient(wsClient) {
     m_fpsTimer.start();
@@ -12,6 +18,27 @@ void NetworkService::sendEncodedFrame(const QByteArray &frame) {
         return;
     }
     m_fpsTimer.restart();
+
+    // 调试预览：将已编码的 WebP 解码后显示在独立窗口
+#ifdef QT_DEBUG
+    static QLabel *previewLabel = [] {
+        auto *label = new QLabel();
+        label->setWindowTitle("DEBUG: Face ROI Stream");
+        label->setAlignment(Qt::AlignCenter);
+        label->show();
+        return label;
+    }();
+    // 跳过前 8 字节时间戳，剩余为 WebP 数据
+    const QByteArray webpData = frame.mid(static_cast<qsizetype>(sizeof(qint64)));
+    const std::vector<uchar> buf(webpData.cbegin(), webpData.cend());
+    const cv::Mat decoded = cv::imdecode(buf, cv::IMREAD_COLOR);
+    if (!decoded.empty()) {
+        QImage img(decoded.data, decoded.cols, decoded.rows,
+                   static_cast<qsizetype>(decoded.step), QImage::Format_BGR888);
+        previewLabel->setFixedSize(img.size());
+        previewLabel->setPixmap(QPixmap::fromImage(img));
+    }
+#endif
 
     // WebSocketClient 在独立线程中运行，必须通过 QueuedConnection 跨线程传递
     QMetaObject::invokeMethod(m_wsClient, "sendBinaryMessage",
