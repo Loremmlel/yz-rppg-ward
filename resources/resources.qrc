@@ -11,6 +11,7 @@
     </qresource>
     <qresource prefix="/">
         <file>icons/Heartbeat.png</file>
+        <file>icons/Sqi.png</file>
     </qresource>
     <qresource prefix="/">
         <file>models/face_detection_yunet_2023mar.onnx</file>

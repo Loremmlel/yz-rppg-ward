@@ -26,7 +26,7 @@ MetricsPanel::MetricsPanel(QWidget *parent) : QWidget(parent) {
     m_listLayout->setSpacing(15);
 
     addMetricCard("HR",  QStringLiteral("心率"),       ":/icons/Heartbeat.png");
-    addMetricCard("SQI", QStringLiteral("信号质量"),    QStringLiteral("📶"));
+    addMetricCard("SQI", QStringLiteral("信号质量"),   ":/icons/Sqi.png");
 
     mainLayout->addWidget(cardContainer, 1); // stretch=1 让卡片区域填满
 }

@@ -11,7 +11,7 @@ struct MetricsData {
     int heartRate;  ///< 心率，单位 bpm
     int sqi;        ///< 信号质量指数，0-100
 
-    MetrMetricsData()
+    MetricsData()
         : heartRate(0), sqi(0)
     {}
 
