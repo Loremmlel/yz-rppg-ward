@@ -8,11 +8,10 @@
  *
  * 下行 JSON 示例（服务器 → 客户端）：
  * @code
- * { "heart_rate": 72, "spo2": 98, "respiration_rate": 16 }
+ * { "heart_rate": 72, "sqi": 85 }
  * @endcode
  */
 namespace WsProtocol {
     constexpr auto KEY_HEART_RATE = "heart_rate";
-    constexpr auto KEY_SPO2 = "spo2";
-    constexpr auto KEY_RESPIRATION_RATE = "respiration_rate";
+    constexpr auto KEY_SQI = "sqi";
 } // namespace WsProtocol

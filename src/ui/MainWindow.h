@@ -23,7 +23,7 @@ class MainWindow : public QMainWindow {
 public:
     explicit MainWindow(QWidget *parent = nullptr);
 
-    [[nodiscard]] VitalsWidget *getVitalsWidget() const { return m_homePage->getVitalsWidget(); }
+    [[nodiscard]] MetricsPanel *getMetricsPanel() const { return m_homePage->getMetricsPanel(); }
     [[nodiscard]] VideoWidget *getVideoWidget() const { return m_homePage->getVideoWidget(); }
     [[nodiscard]] StatusBar *notificationBar() const { return m_statusBar; }
 

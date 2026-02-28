@@ -13,16 +13,16 @@ void HomePage::initUI() {
     m_mainSplitter = new QSplitter(Qt::Horizontal, this);
 
     m_videoWidget = new VideoWidget(m_mainSplitter);
-    m_vitalsWidget = new VitalsWidget(m_mainSplitter);
+    m_metricsPanel = new MetricsPanel(m_mainSplitter);
 
     m_mainSplitter->addWidget(m_videoWidget);
-    m_mainSplitter->addWidget(m_vitalsWidget);
+    m_mainSplitter->addWidget(m_metricsPanel);
 
     // 初始等分；用户可拖动分隔线，setMinimumWidth 防止任一侧被压到无法交互
     m_mainSplitter->setStretchFactor(0, 1);
     m_mainSplitter->setStretchFactor(1, 1);
     m_videoWidget->setMinimumWidth(400);
-    m_vitalsWidget->setMinimumWidth(300);
+    m_metricsPanel->setMinimumWidth(300);
 
     mainLayout->addWidget(m_mainSplitter);
 }

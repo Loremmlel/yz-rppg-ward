@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "../ui/MainWindow.h"
-#include "../service/VitalService.h"
+#include "../service/MetricsService.h"
 #include "../service/FrameUploadService.h"
 #include "../service/VideoService.h"
 #include "../service/WebSocketClient.h"
@@ -16,7 +16,7 @@
  *
  * 数据流：
  *  上行：Camera → VideoWidget → VideoService → FrameUploadService → WebSocketClient → Server
- *  下行：Server → WebSocketClient → VitalService → VitalsWidget
+ *  下行：Server → WebSocketClient → MetricsService → MetricsPanel
  */
 class AppController : public QObject {
     Q_OBJECT
@@ -28,13 +28,13 @@ public:
 
     void start() const;
 
-    [[nodiscard]] VitalService *getVitalService() const { return m_vitalService.get(); }
+    [[nodiscard]] MetricsService *getMetricsService() const { return m_metricsService.get(); }
     [[nodiscard]] VideoService *getVideoService() const { return m_videoService.get(); }
     [[nodiscard]] WebSocketClient *getWsClient() const { return m_wsClient.get(); }
 
 private:
     std::unique_ptr<WebSocketClient> m_wsClient;
-    std::unique_ptr<VitalService> m_vitalService;
+    std::unique_ptr<MetricsService> m_metricsService;
     std::unique_ptr<VideoService> m_videoService;
     std::unique_ptr<FrameUploadService> m_frameUploadService;
     std::unique_ptr<MainWindow> m_mainWindow;

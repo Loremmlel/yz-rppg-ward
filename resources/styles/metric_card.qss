@@ -1,0 +1,72 @@
+/* ============================================================
+ * 监测指标卡片 — MetricCard
+ * ============================================================ */
+
+/* ---------- 卡片容器 ---------- */
+MetricCard {
+    background-color: #FFFFFF;
+    border: 1px solid #E0E4E8;
+    border-radius: 12px;
+    border-left: 4px solid #E0E4E8;
+}
+
+MetricCard:hover {
+    background-color: #FAFBFC;
+    border-color: #CED4DA;
+    border-left-width: 4px;
+}
+
+/* ---------- 各指标卡片左侧色带 ---------- */
+#CardHR {
+    border-left-color: #FF5252;
+}
+
+#CardHR:hover {
+    border-left-color: #FF1744;
+    background-color: #FFF5F5;
+}
+
+#CardSQI {
+    border-left-color: #7E57C2;
+}
+
+#CardSQI:hover {
+    border-left-color: #5E35B1;
+    background-color: #F5F0FF;
+}
+
+/* ---------- 图标 ---------- */
+#metricIconLabel {
+    font-size: 32px;
+}
+
+/* ---------- 指标标题 ---------- */
+#metricTitleLabel {
+    color: #6C757D;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* ---------- 数值 ---------- */
+#metricValueLabel {
+    font-size: 32px;
+    font-weight: bold;
+    font-family: "Segoe UI", "PingFang SC", sans-serif;
+}
+
+/* 各指标数值颜色 */
+#CardHR #metricValueLabel {
+    color: #FF5252;
+}
+
+#CardSQI #metricValueLabel {
+    color: #7E57C2;
+}
+
+/* ---------- 趋势图预留区域 ---------- */
+#trendChartPlaceholder {
+    background-color: #F8F9FA;
+    border: 1px dashed #DEE2E6;
+    border-radius: 8px;
+}
+

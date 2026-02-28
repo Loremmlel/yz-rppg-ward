@@ -1,0 +1,25 @@
+/* ============================================================
+ * 监测指标面板 — MetricsPanel 容器
+ * ============================================================ */
+
+/* ---------- 面板容器 ---------- */
+#metricsPanel {
+    background-color: #F0F2F5;
+    border-left: 1px solid #DEE2E6;
+}
+
+/* ---------- 标题 ---------- */
+#metricsTitle {
+    color: #212529;
+    font-size: 20px;
+    font-weight: bold;
+    margin: 10px 0;
+    padding: 8px 15px;
+    border-bottom: 1px solid #E9ECEF;
+}
+
+/* ---------- 卡片容器 ---------- */
+#metricsContainer {
+    background-color: transparent;
+}
+

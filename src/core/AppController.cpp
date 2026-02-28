@@ -4,7 +4,7 @@
 AppController::AppController(QObject *parent)
     : QObject(parent),
       m_wsClient(std::make_unique<WebSocketClient>()),
-      m_vitalService(std::make_unique<VitalService>(this)),
+      m_metricsService(std::make_unique<MetricsService>(this)),
       m_videoService(std::make_unique<VideoService>()),
       m_frameUploadService(std::make_unique<FrameUploadService>(m_wsClient.get(), this)),
       m_mainWindow(std::make_unique<MainWindow>()),
@@ -26,16 +26,16 @@ AppController::AppController(QObject *parent)
     connect(m_videoService.get(), &VideoService::faceRoiEncoded,
             m_frameUploadService.get(), &FrameUploadService::sendEncodedFrame);
 
-    // ── 下行：WebSocket → VitalService → UI ───────────────────────────────────
+    // ── 下行：WebSocket → MetricsService → UI ───────────────────────────────────
     connect(m_wsClient.get(), &WebSocketClient::connected,
-            m_vitalService.get(), &VitalService::onWsConnected);
+            m_metricsService.get(), &MetricsService::onWsConnected);
     connect(m_wsClient.get(), &WebSocketClient::disconnected,
-            m_vitalService.get(), &VitalService::onWsDisconnected);
+            m_metricsService.get(), &MetricsService::onWsDisconnected);
     connect(m_wsClient.get(), &WebSocketClient::textMessageReceived,
-            m_vitalService.get(), &VitalService::onServerMessage);
+            m_metricsService.get(), &MetricsService::onServerMessage);
 
-    connect(m_vitalService.get(), &VitalService::dataUpdated,
-            m_mainWindow->getVitalsWidget(), &VitalsWidget::updateData);
+    connect(m_metricsService.get(), &MetricsService::dataUpdated,
+            m_mainWindow->getMetricsPanel(), &MetricsPanel::updateData);
 
     // ── 状态栏通知 ──────────────────────────────────────────────────────────
     auto *statusBar = m_mainWindow->notificationBar();
@@ -93,7 +93,7 @@ AppController::~AppController() {
 }
 
 void AppController::start() const {
-    // 以降级模式启动；WebSocket 连接成功后 VitalService 会自动切换到在线数据
-    m_vitalService->startCollection();
+    // 以降级模式启动；WebSocket 连接成功后 MetricsService 会自动切换到在线数据
+    m_metricsService->startCollection();
     m_mainWindow->show();
 }

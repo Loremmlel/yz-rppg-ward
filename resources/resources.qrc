@@ -4,15 +4,13 @@
         <file>styles/main_window.qss</file>
         <file>styles/home.qss</file>
         <file>styles/video_widget.qss</file>
-        <file>styles/vitals_widget.qss</file>
-        <file>styles/vital_card.qss</file>
+        <file>styles/metrics_panel.qss</file>
+        <file>styles/metric_card.qss</file>
         <file>styles/settings.qss</file>
         <file>styles/status_bar.qss</file>
     </qresource>
     <qresource prefix="/">
         <file>icons/Heartbeat.png</file>
-        <file>icons/SpO2.png</file>
-        <file>icons/RespiratoryRate.png</file>
     </qresource>
     <qresource prefix="/">
         <file>models/face_detection_yunet_2023mar.onnx</file>

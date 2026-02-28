@@ -1,7 +1,7 @@
 #pragma once
 #include <QSplitter>
 
-#include "../widgets/home/VitalsWidget.h"
+#include "../widgets/home/MetricsPanel.h"
 #include "../widgets/home/VideoWidget.h"
 
 /**
@@ -15,7 +15,7 @@ class HomePage : public QWidget {
 public:
     explicit HomePage(QWidget *parent = nullptr);
 
-    [[nodiscard]] VitalsWidget *getVitalsWidget() const { return m_vitalsWidget; }
+    [[nodiscard]] MetricsPanel *getMetricsPanel() const { return m_metricsPanel; }
     [[nodiscard]] VideoWidget *getVideoWidget() const { return m_videoWidget; }
 
 private:
@@ -23,5 +23,5 @@ private:
 
     QSplitter *m_mainSplitter{nullptr};
     VideoWidget *m_videoWidget{nullptr};
-    VitalsWidget *m_vitalsWidget{nullptr};
+    MetricsPanel *m_metricsPanel{nullptr};
 };
