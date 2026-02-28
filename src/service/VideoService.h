@@ -6,15 +6,18 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/objdetect.hpp>
 
+#include "../util/KalmanFilter1D.h"
+
 /**
  * @brief 视频帧处理服务
  *
  * 内部维护两条并行管线：
- *  - 高频管线（每帧）：基于上一次检测结果直接裁剪人脸检测框区域，
+ *  - 高频管线（每帧）：基于卡尔曼滤波平滑/预测的人脸框裁剪 ROI，
  *    在工作线程内完成无损 WebP 编码后发射 faceRoiEncoded。
- *  - 低频管线（每 5 帧）：异步运行 YuNet 人脸检测，更新矩形框位置。
+ *  - 低频管线（每 5 帧）：异步运行 YuNet 人脸检测，用检测结果更新卡尔曼滤波器。
  *
  * 两条管线解耦，保证 rPPG 数据流不受检测延迟影响。
+ * 卡尔曼滤波消除帧间抖动，并在跳帧时提供位置预测。
  */
 class VideoService : public QObject {
     Q_OBJECT
@@ -51,6 +54,15 @@ private:
     QFuture<void>               m_processingFuture;
 
     QRect m_currentFaceRect;
+    QRect m_rawFaceRect;            ///< 最近一次检测器输出的原始框（未滤波）
     bool  m_hasFace           {false};
+    bool  m_hasKalman         {false}; ///< 卡尔曼滤波器是否已初始化
     int   m_frameSkipCounter  {0};
+
+    // 卡尔曼滤波器：分别跟踪人脸框的 x, y, w, h
+    // 参数参考 open-rppg: processNoise=0.01, measureNoise=0.5, initialError=1
+    KalmanFilter1D m_kfX {0.01, 0.5, 0.0, 1.0};
+    KalmanFilter1D m_kfY {0.01, 0.5, 0.0, 1.0};
+    KalmanFilter1D m_kfW {0.01, 0.5, 0.0, 1.0};
+    KalmanFilter1D m_kfH {0.01, 0.5, 0.0, 1.0};
 };
