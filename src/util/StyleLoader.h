@@ -34,7 +34,7 @@ public:
      */
     static QString loadMultiple(const QStringList &qrcPaths) {
         QString combined;
-        for (const auto &path : qrcPaths) {
+        for (const auto &path: qrcPaths) {
             combined += load(path);
             combined += QChar('\n');
         }

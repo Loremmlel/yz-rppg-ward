@@ -6,12 +6,11 @@
 WebSocketClient::WebSocketClient(QObject *parent)
     : QObject(parent),
       m_socket(new QWebSocket(QString(), QWebSocketProtocol::VersionLatest, this)),
-      m_reconnectTimer(new QTimer(this))
-{
+      m_reconnectTimer(new QTimer(this)) {
     m_reconnectTimer->setSingleShot(true);
     m_reconnectTimer->setInterval(m_reconnectInterval);
 
-    connect(m_socket, &QWebSocket::connected,    this, &WebSocketClient::onConnected);
+    connect(m_socket, &QWebSocket::connected, this, &WebSocketClient::onConnected);
     connect(m_socket, &QWebSocket::disconnected, this, &WebSocketClient::onDisconnected);
     connect(m_socket, &QWebSocket::textMessageReceived,
             this, &WebSocketClient::onTextMessageReceived);
@@ -80,8 +79,8 @@ void WebSocketClient::onConfigChanged(const AppConfig &config) {
     const bool changed = (m_host != config.serverHost
                           || m_port != config.serverPort
                           || m_bedId != config.bedId);
-    m_host  = config.serverHost;
-    m_port  = config.serverPort;
+    m_host = config.serverHost;
+    m_port = config.serverPort;
     m_bedId = config.bedId;
 
     if (changed) {
@@ -139,4 +138,3 @@ QUrl WebSocketClient::buildUrl() const {
     }
     return url;
 }
-

@@ -72,7 +72,7 @@ AppController::AppController(QObject *parent)
 
 AppController::~AppController() {
     auto safeDeleteOnThread = [](std::unique_ptr<QObject> &obj, const std::unique_ptr<QThread> &thread) {
-      if (!obj || !thread) return;
+        if (!obj || !thread) return;
         auto *rawObj = obj.release();
         if (thread->isRunning()) {
             // deleteLater 会向 thread 的事件循环发送一个销毁事件

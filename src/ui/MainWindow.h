@@ -24,21 +24,23 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
 
     [[nodiscard]] VitalsWidget *getVitalsWidget() const { return m_homePage->getVitalsWidget(); }
-    [[nodiscard]] VideoWidget  *getVideoWidget()  const { return m_homePage->getVideoWidget(); }
-    [[nodiscard]] StatusBar    *notificationBar() const { return m_statusBar; }
+    [[nodiscard]] VideoWidget *getVideoWidget() const { return m_homePage->getVideoWidget(); }
+    [[nodiscard]] StatusBar *notificationBar() const { return m_statusBar; }
 
-    [[nodiscard]] HomePage     *homePage()     const { return m_homePage; }
+    [[nodiscard]] HomePage *homePage() const { return m_homePage; }
     [[nodiscard]] SettingsPage *settingsPage() const { return m_settingsPage; }
 
 private:
     void initUI();
+
     void setupNavBar();
+
     QPushButton *createNavButton(const QString &text);
 
     QStackedWidget *m_stackedWidget = nullptr;
-    QButtonGroup   *m_navGroup      = nullptr;
+    QButtonGroup *m_navGroup = nullptr;
 
-    StatusBar      *m_statusBar     = nullptr;
-    HomePage       *m_homePage      = nullptr;
-    SettingsPage   *m_settingsPage  = nullptr;
+    StatusBar *m_statusBar = nullptr;
+    HomePage *m_homePage = nullptr;
+    SettingsPage *m_settingsPage = nullptr;
 };

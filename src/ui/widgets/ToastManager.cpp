@@ -4,7 +4,8 @@
 #include <QGraphicsOpacityEffect>
 #include <QPropertyAnimation>
 
-ToastManager::ToastManager(QObject *parent) : QObject(parent) {}
+ToastManager::ToastManager(QObject *parent) : QObject(parent) {
+}
 
 ToastManager *ToastManager::instance() {
     static ToastManager s_instance;
@@ -69,11 +70,10 @@ void ToastManager::repositionToasts() {
     constexpr int spacing = 8;
     int y = margin;
 
-    for (auto *toast : m_activeToasts) {
+    for (auto *toast: m_activeToasts) {
         toast->adjustSize();
         const int x = m_parentWidget->width() - toast->width() - margin;
         toast->move(x, y);
         y += toast->height() + spacing;
     }
 }
-

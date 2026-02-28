@@ -20,6 +20,7 @@ class VideoWidget : public QWidget {
 
 public:
     explicit VideoWidget(QWidget *parent = nullptr);
+
     ~VideoWidget() override;
 
 signals:
@@ -40,14 +41,14 @@ private:
      */
     void setupCameraFormat() const;
 
-    QCamera              *m_camera          {nullptr};
-    QMediaCaptureSession *m_captureSession  {nullptr};
-    QVideoSink           *m_videoSink       {nullptr};
-    QLabel               *m_displayLabel    {nullptr};
+    QCamera *m_camera{nullptr};
+    QMediaCaptureSession *m_captureSession{nullptr};
+    QVideoSink *m_videoSink{nullptr};
+    QLabel *m_displayLabel{nullptr};
 
     QRect m_currentFaceRect;
-    bool  m_hasFace       {false};
+    bool m_hasFace{false};
 
-    const int TARGET_WIDTH  {1920};
-    const int TARGET_HEIGHT {1080};
+    const int TARGET_WIDTH{1920};
+    const int TARGET_HEIGHT{1080};
 };

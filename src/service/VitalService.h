@@ -17,12 +17,14 @@ class VitalService : public QObject {
 
 public:
     explicit VitalService(QObject *parent = nullptr);
+
     ~VitalService() override;
 
     [[nodiscard]] VitalData currentData() const { return m_lastData; }
 
     /** 启动降级模拟定时器（WebSocket 上线后会自动停止）。 */
     void startCollection() const;
+
     void stopCollection() const;
 
 signals:
@@ -48,6 +50,6 @@ private slots:
 
 private:
     VitalData m_lastData;
-    QTimer   *m_timer;
-    bool      m_onlineMode {false};
+    QTimer *m_timer;
+    bool m_onlineMode{false};
 };

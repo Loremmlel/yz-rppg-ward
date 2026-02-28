@@ -22,6 +22,7 @@ class StatusBar : public QWidget {
 
 public:
     enum Severity { Info, Warning, Error };
+
     Q_ENUM(Severity)
 
     explicit StatusBar(QWidget *parent = nullptr);
@@ -42,9 +43,9 @@ public:
 
 private:
     QLabel *getOrCreateLabel(const QString &id);
+
     static QString severityClass(Severity severity);
 
     QVBoxLayout *m_layout{};
     QMap<QString, QLabel *> m_banners; ///< id → label
 };
-

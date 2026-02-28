@@ -19,7 +19,7 @@ void SettingsPage::initUI() {
     outerLayout->setContentsMargins(40, 40, 40, 40);
 
     m_networkGroup = new NetworkSettingsGroup(this);
-    m_bedGroup     = new BedSettingsGroup(this);
+    m_bedGroup = new BedSettingsGroup(this);
 
     outerLayout->addWidget(m_networkGroup);
     outerLayout->addWidget(m_bedGroup);

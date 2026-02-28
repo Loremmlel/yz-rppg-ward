@@ -23,34 +23,40 @@ public:
     void loadConfig(const AppConfig &cfg);
 
     [[nodiscard]] QString wardCode() const;
-    [[nodiscard]] QString roomNo()   const;
-    [[nodiscard]] qint64  bedId()    const;
+
+    [[nodiscard]] QString roomNo() const;
+
+    [[nodiscard]] qint64 bedId() const;
 
 private slots:
     void onWardChanged(const QString &wardCode);
+
     void onRoomChanged(const QString &roomNo);
 
     void onWardsFetched(const QStringList &wardCodes);
+
     void onRoomsFetched(const QJsonArray &rooms);
+
     void onBedsFetched(const QJsonArray &beds);
+
     void onBedServiceError(const QString &error);
 
     void onRefreshClicked();
 
 private:
     void initUI();
+
     void startLoading();
 
-    QComboBox   *m_wardCombo{};
-    QComboBox   *m_roomCombo{};
-    QComboBox   *m_bedCombo{};
+    QComboBox *m_wardCombo{};
+    QComboBox *m_roomCombo{};
+    QComboBox *m_bedCombo{};
     QPushButton *m_refreshBtn{};
-    QLabel      *m_statusLabel{};
+    QLabel *m_statusLabel{};
 
     // 暂存已保存选择，用于级联加载完成后恢复选中项
     QString m_savedWardCode;
     QString m_savedRoomNo;
-    qint64  m_savedBedId{-1};
-    bool    m_isRestoringSelection{false};
+    qint64 m_savedBedId{-1};
+    bool m_isRestoringSelection{false};
 };
-

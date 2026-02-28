@@ -7,8 +7,7 @@
 
 ApiClient::ApiClient(QObject *parent)
     : QObject(parent),
-      m_nam(new QNetworkAccessManager(this))
-{
+      m_nam(new QNetworkAccessManager(this)) {
 }
 
 ApiClient *ApiClient::instance() {
@@ -46,4 +45,3 @@ void ApiClient::getJson(const QString &path,
         if (onSuccess) onSuccess(doc);
     });
 }
-

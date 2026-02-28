@@ -40,4 +40,3 @@ signals:
 private:
     explicit BedService(QObject *parent = nullptr);
 };
-

@@ -27,7 +27,8 @@ public:
           m_r(measureNoise),
           m_estimate(initialState),
           m_estimateError(initialError),
-          m_refInterval(referenceInterval) {}
+          m_refInterval(referenceInterval) {
+    }
 
     /**
      * @brief 用观测值更新滤波器
@@ -64,11 +65,9 @@ public:
     [[nodiscard]] double estimate() const { return m_estimate; }
 
 private:
-    double m_q;             ///< 过程噪声基准方差
-    double m_r;             ///< 观测噪声方差
-    double m_estimate;      ///< 当前估计值
+    double m_q; ///< 过程噪声基准方差
+    double m_r; ///< 观测噪声方差
+    double m_estimate; ///< 当前估计值
     double m_estimateError; ///< 当前估计误差（协方差）
-    double m_refInterval;   ///< 基准时间间隔
+    double m_refInterval; ///< 基准时间间隔
 };
-
-

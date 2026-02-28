@@ -21,9 +21,10 @@ private slots:
 
 private:
     void initUI();
+
     void loadCurrentConfig();
 
     NetworkSettingsGroup *m_networkGroup{};
-    BedSettingsGroup     *m_bedGroup{};
-    QPushButton          *m_saveBtn{};
+    BedSettingsGroup *m_bedGroup{};
+    QPushButton *m_saveBtn{};
 };

@@ -46,4 +46,3 @@ private:
     QWidget *m_parentWidget{nullptr};
     QList<QLabel *> m_activeToasts;
 };
-

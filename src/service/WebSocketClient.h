@@ -19,6 +19,7 @@ class WebSocketClient : public QObject {
 
 public:
     explicit WebSocketClient(QObject *parent = nullptr);
+
     ~WebSocketClient() override;
 
     [[nodiscard]] bool isConnected() const;
@@ -31,6 +32,7 @@ public slots:
     void disconnectFromServer();
 
     void sendBinaryMessage(const QByteArray &data) const;
+
     void sendTextMessage(const QString &message) const;
 
     /** 配置变更时更新目标地址并重连。 */
@@ -38,31 +40,38 @@ public slots:
 
 signals:
     void connected();
+
     void disconnected();
 
     /** 服务器推送的文本帧，通常是 JSON。 */
     void textMessageReceived(const QString &message);
 
     void binaryMessageReceived(const QByteArray &data);
+
     void errorOccurred(const QString &errorString);
 
 private slots:
     void onConnected();
+
     void onDisconnected();
+
     void onTextMessageReceived(const QString &message);
+
     void onBinaryMessageReceived(const QByteArray &data);
+
     void onError(QAbstractSocket::SocketError error);
+
     void attemptReconnect();
 
 private:
     [[nodiscard]] QUrl buildUrl() const;
 
-    QWebSocket *m_socket          {nullptr};
-    QTimer     *m_reconnectTimer  {nullptr};
+    QWebSocket *m_socket{nullptr};
+    QTimer *m_reconnectTimer{nullptr};
 
-    QString  m_host;
-    quint16  m_port               {0};
-    qint64   m_bedId              {-1};  ///< 绑定的床位 ID，附加到 WS URL query
-    bool     m_userDisconnected   {false}; ///< 区分主动断开与意外掉线，避免主动断开后触发重连
-    int      m_reconnectInterval  {5000};  ///< 毫秒
+    QString m_host;
+    quint16 m_port{0};
+    qint64 m_bedId{-1}; ///< 绑定的床位 ID，附加到 WS URL query
+    bool m_userDisconnected{false}; ///< 区分主动断开与意外掉线，避免主动断开后触发重连
+    int m_reconnectInterval{5000}; ///< 毫秒
 };

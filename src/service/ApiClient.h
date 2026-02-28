@@ -21,7 +21,7 @@ public:
     static ApiClient *instance();
 
     using SuccessCallback = std::function<void(const QJsonDocument &)>;
-    using ErrorCallback   = std::function<void(const QString &)>;
+    using ErrorCallback = std::function<void(const QString &)>;
 
     /**
      * @brief 发起 GET 请求并以 JSON 形式回调
@@ -40,4 +40,3 @@ private:
 
     QNetworkAccessManager *m_nam{nullptr};
 };
-

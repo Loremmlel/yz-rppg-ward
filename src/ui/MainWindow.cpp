@@ -33,10 +33,10 @@ void MainWindow::initUI() {
     // ——— 页面堆叠区域（先创建，供导航栏连接） ———
     m_stackedWidget = new QStackedWidget(centralWidget);
 
-    m_homePage     = new HomePage(m_stackedWidget);
+    m_homePage = new HomePage(m_stackedWidget);
     m_settingsPage = new SettingsPage(m_stackedWidget);
 
-    m_stackedWidget->addWidget(m_homePage);     // index 0
+    m_stackedWidget->addWidget(m_homePage); // index 0
     m_stackedWidget->addWidget(m_settingsPage); // index 1
 
     // ——— 顶部导航栏 ———
@@ -62,7 +62,7 @@ void MainWindow::setupNavBar() {
     m_navGroup = new QButtonGroup(this);
     m_navGroup->setExclusive(true);
 
-    auto *homeBtn     = createNavButton(QStringLiteral("主页"));
+    auto *homeBtn = createNavButton(QStringLiteral("主页"));
     auto *settingsBtn = createNavButton(QStringLiteral("设置"));
 
     m_navGroup->addButton(homeBtn, 0);

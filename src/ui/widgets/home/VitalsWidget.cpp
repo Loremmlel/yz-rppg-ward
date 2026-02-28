@@ -33,18 +33,18 @@ VitalsWidget::VitalsWidget(QWidget *parent) : QWidget(parent) {
     m_listLayout->setSpacing(15);
     m_listLayout->setAlignment(Qt::AlignTop); // 卡片从顶部紧凑排列，避免拉伸
 
-    addVitalCard("HR",   QStringLiteral("心率"),  ":/icons/Heartbeat.png");
-    addVitalCard("SpO2", QStringLiteral("血氧"),  ":/icons/SpO2.png");
-    addVitalCard("RR",   QStringLiteral("呼吸率"), ":/icons/RespiratoryRate.png");
+    addVitalCard("HR", QStringLiteral("心率"), ":/icons/Heartbeat.png");
+    addVitalCard("SpO2", QStringLiteral("血氧"), ":/icons/SpO2.png");
+    addVitalCard("RR", QStringLiteral("呼吸率"), ":/icons/RespiratoryRate.png");
 
     m_scrollArea->setWidget(m_container);
     mainLayout->addWidget(m_scrollArea);
 }
 
 void VitalsWidget::updateData(const VitalData &data) {
-    if (m_cards.contains("HR"))   m_cards["HR"]->setValue(QString("%1 bpm").arg(data.heartRate));
+    if (m_cards.contains("HR")) m_cards["HR"]->setValue(QString("%1 bpm").arg(data.heartRate));
     if (m_cards.contains("SpO2")) m_cards["SpO2"]->setValue(QString("%1 %").arg(data.SpO2));
-    if (m_cards.contains("RR"))   m_cards["RR"]->setValue(QString("%1 rpm").arg(data.respirationRate));
+    if (m_cards.contains("RR")) m_cards["RR"]->setValue(QString("%1 rpm").arg(data.respirationRate));
 }
 
 void VitalsWidget::addVitalCard(const QString &key, const QString &title, const QString &iconPath) {

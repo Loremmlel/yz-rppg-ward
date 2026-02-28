@@ -23,20 +23,21 @@ class AppController : public QObject {
 
 public:
     explicit AppController(QObject *parent = nullptr);
+
     ~AppController() override;
 
     void start() const;
 
-    [[nodiscard]] VitalService       *getVitalService() const { return m_vitalService.get(); }
-    [[nodiscard]] VideoService       *getVideoService() const { return m_videoService.get(); }
-    [[nodiscard]] WebSocketClient    *getWsClient()     const { return m_wsClient.get(); }
+    [[nodiscard]] VitalService *getVitalService() const { return m_vitalService.get(); }
+    [[nodiscard]] VideoService *getVideoService() const { return m_videoService.get(); }
+    [[nodiscard]] WebSocketClient *getWsClient() const { return m_wsClient.get(); }
 
 private:
-    std::unique_ptr<WebSocketClient>    m_wsClient;
-    std::unique_ptr<VitalService>       m_vitalService;
-    std::unique_ptr<VideoService>       m_videoService;
+    std::unique_ptr<WebSocketClient> m_wsClient;
+    std::unique_ptr<VitalService> m_vitalService;
+    std::unique_ptr<VideoService> m_videoService;
     std::unique_ptr<FrameUploadService> m_frameUploadService;
-    std::unique_ptr<MainWindow>         m_mainWindow;
+    std::unique_ptr<MainWindow> m_mainWindow;
 
     std::unique_ptr<QThread> m_videoThread;
     std::unique_ptr<QThread> m_wsThread; ///< WebSocketClient 独占，确保 QWebSocket 的所有调用在同一线程

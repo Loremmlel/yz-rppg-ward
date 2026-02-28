@@ -24,9 +24,9 @@ public slots:
 private:
     void addVitalCard(const QString &key, const QString &title, const QString &iconPath);
 
-    QVBoxLayout *m_listLayout  {nullptr};
-    QScrollArea *m_scrollArea  {nullptr};
-    QWidget     *m_container   {nullptr};
+    QVBoxLayout *m_listLayout{nullptr};
+    QScrollArea *m_scrollArea{nullptr};
+    QWidget *m_container{nullptr};
 
     QMap<QString, VitalCard *> m_cards; ///< key 与 VitalData 字段名对应，便于 updateData 按 key 分发
 };

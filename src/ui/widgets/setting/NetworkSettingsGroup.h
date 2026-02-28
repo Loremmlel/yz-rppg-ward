@@ -20,12 +20,12 @@ public:
     void loadConfig(const AppConfig &cfg);
 
     [[nodiscard]] QString host() const;
+
     [[nodiscard]] quint16 port() const;
 
 private:
     void initUI();
 
     QLineEdit *m_hostEdit{};
-    QSpinBox  *m_portSpin{};
+    QSpinBox *m_portSpin{};
 };
-

@@ -10,9 +10,9 @@ BedSettingsGroup::BedSettingsGroup(QWidget *parent)
     initUI();
 
     auto *svc = BedService::instance();
-    connect(svc, &BedService::wardsFetched,  this, &BedSettingsGroup::onWardsFetched);
-    connect(svc, &BedService::roomsFetched,  this, &BedSettingsGroup::onRoomsFetched);
-    connect(svc, &BedService::bedsFetched,   this, &BedSettingsGroup::onBedsFetched);
+    connect(svc, &BedService::wardsFetched, this, &BedSettingsGroup::onWardsFetched);
+    connect(svc, &BedService::roomsFetched, this, &BedSettingsGroup::onRoomsFetched);
+    connect(svc, &BedService::bedsFetched, this, &BedSettingsGroup::onBedsFetched);
     connect(svc, &BedService::errorOccurred, this, &BedSettingsGroup::onBedServiceError);
 }
 
@@ -60,17 +60,17 @@ void BedSettingsGroup::initUI() {
     actionLayout->addStretch();
     form->addRow(QString(), actionLayout);
 
-    connect(m_refreshBtn, &QPushButton::clicked,           this, &BedSettingsGroup::onRefreshClicked);
-    connect(m_wardCombo,  &QComboBox::currentTextChanged,  this, &BedSettingsGroup::onWardChanged);
-    connect(m_roomCombo,  &QComboBox::currentTextChanged,  this, &BedSettingsGroup::onRoomChanged);
+    connect(m_refreshBtn, &QPushButton::clicked, this, &BedSettingsGroup::onRefreshClicked);
+    connect(m_wardCombo, &QComboBox::currentTextChanged, this, &BedSettingsGroup::onWardChanged);
+    connect(m_roomCombo, &QComboBox::currentTextChanged, this, &BedSettingsGroup::onRoomChanged);
 }
 
 // ── 公共接口 ──
 
 void BedSettingsGroup::loadConfig(const AppConfig &cfg) {
     m_savedWardCode = cfg.wardCode;
-    m_savedRoomNo   = cfg.roomNo;
-    m_savedBedId    = cfg.bedId;
+    m_savedRoomNo = cfg.roomNo;
+    m_savedBedId = cfg.bedId;
     startLoading();
 }
 
@@ -123,7 +123,7 @@ void BedSettingsGroup::onRoomChanged(const QString &roomNo) {
 void BedSettingsGroup::onWardsFetched(const QStringList &wardCodes) {
     m_wardCombo->blockSignals(true);
     m_wardCombo->clear();
-    for (const auto &code : wardCodes) {
+    for (const auto &code: wardCodes) {
         m_wardCombo->addItem(code);
     }
     if (m_isRestoringSelection && !m_savedWardCode.isEmpty()) {
@@ -143,7 +143,7 @@ void BedSettingsGroup::onWardsFetched(const QStringList &wardCodes) {
 void BedSettingsGroup::onRoomsFetched(const QJsonArray &rooms) {
     m_roomCombo->blockSignals(true);
     m_roomCombo->clear();
-    for (const auto &val : rooms) {
+    for (const auto &val: rooms) {
         m_roomCombo->addItem(
             val.toObject().value(QStringLiteral("roomNo")).toString());
     }
@@ -167,17 +167,17 @@ void BedSettingsGroup::onRoomsFetched(const QJsonArray &rooms) {
 void BedSettingsGroup::onBedsFetched(const QJsonArray &beds) {
     m_bedCombo->blockSignals(true);
     m_bedCombo->clear();
-    for (const auto &val : beds) {
-        const auto obj    = val.toObject();
-        const QString bedNo  = obj.value(QStringLiteral("bedNo")).toString();
-        const qint64  id     = static_cast<qint64>(obj.value(QStringLiteral("id")).toDouble());
+    for (const auto &val: beds) {
+        const auto obj = val.toObject();
+        const QString bedNo = obj.value(QStringLiteral("bedNo")).toString();
+        const qint64 id = static_cast<qint64>(obj.value(QStringLiteral("id")).toDouble());
         const QString status = obj.value(QStringLiteral("status")).toString();
 
         QString text = bedNo;
         if (status == QStringLiteral("OCCUPIED")) {
             const auto patient = obj.value(QStringLiteral("currentPatient")).toObject();
             text += QStringLiteral("（在住：%1）")
-                        .arg(patient.value(QStringLiteral("name")).toString());
+                    .arg(patient.value(QStringLiteral("name")).toString());
         } else if (status == QStringLiteral("MAINTAINING")) {
             text += QStringLiteral("（维护中）");
         } else if (status == QStringLiteral("RESERVED")) {
@@ -226,4 +226,3 @@ void BedSettingsGroup::onRefreshClicked() {
     m_statusLabel->setText(QStringLiteral("正在加载病区列表…"));
     BedService::instance()->fetchWards();
 }
-

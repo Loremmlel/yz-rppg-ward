@@ -31,11 +31,10 @@ public slots:
     void onConfigChanged(const AppConfig &config);
 
 private:
-    WebSocketClient *m_wsClient     {nullptr}; ///< 不持有所有权
-    bool m_bedBound                 {false};   ///< 是否已绑定有效床位
+    WebSocketClient *m_wsClient{nullptr}; ///< 不持有所有权
+    bool m_bedBound{false}; ///< 是否已绑定有效床位
 
     QElapsedTimer m_fpsTimer;
-    static constexpr int TARGET_FPS        = 30;
+    static constexpr int TARGET_FPS = 30;
     static constexpr int FRAME_INTERVAL_MS = 1000 / TARGET_FPS;
 };
-

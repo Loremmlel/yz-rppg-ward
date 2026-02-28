@@ -24,6 +24,7 @@ class VideoService : public QObject {
 
 public:
     explicit VideoService(QObject *parent = nullptr);
+
     ~VideoService() override;
 
 public slots:
@@ -49,20 +50,20 @@ private:
     static QString loadModel(const QString &modelName);
 
     cv::Ptr<cv::FaceDetectorYN> m_faceDetector;
-    std::atomic<bool>           m_isProcessing{false};
-    std::atomic<bool>           m_isEncoding{false};
-    QFuture<void>               m_processingFuture;
+    std::atomic<bool> m_isProcessing{false};
+    std::atomic<bool> m_isEncoding{false};
+    QFuture<void> m_processingFuture;
 
     QRect m_currentFaceRect;
-    QRect m_rawFaceRect;            ///< 最近一次检测器输出的原始框（未滤波）
-    bool  m_hasFace           {false};
-    bool  m_hasKalman         {false}; ///< 卡尔曼滤波器是否已初始化
-    int   m_frameSkipCounter  {0};
+    QRect m_rawFaceRect; ///< 最近一次检测器输出的原始框（未滤波）
+    bool m_hasFace{false};
+    bool m_hasKalman{false}; ///< 卡尔曼滤波器是否已初始化
+    int m_frameSkipCounter{0};
 
     // 卡尔曼滤波器：分别跟踪人脸框的 x, y, w, h
     // 参数参考 open-rppg: processNoise=0.01, measureNoise=0.5, initialError=1
-    KalmanFilter1D m_kfX {0.01, 0.5, 0.0, 1.0};
-    KalmanFilter1D m_kfY {0.01, 0.5, 0.0, 1.0};
-    KalmanFilter1D m_kfW {0.01, 0.5, 0.0, 1.0};
-    KalmanFilter1D m_kfH {0.01, 0.5, 0.0, 1.0};
+    KalmanFilter1D m_kfX{0.01, 0.5, 0.0, 1.0};
+    KalmanFilter1D m_kfY{0.01, 0.5, 0.0, 1.0};
+    KalmanFilter1D m_kfW{0.01, 0.5, 0.0, 1.0};
+    KalmanFilter1D m_kfH{0.01, 0.5, 0.0, 1.0};
 };

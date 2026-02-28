@@ -34,7 +34,7 @@ void StatusBar::hideBanner(const QString &id) {
 }
 
 bool StatusBar::hasBanners() const {
-    for (const auto *label : m_banners) {
+    for (const auto *label: m_banners) {
         if (label->isVisible()) return true;
     }
     return false;
@@ -56,9 +56,7 @@ QLabel *StatusBar::getOrCreateLabel(const QString &id) {
 QString StatusBar::severityClass(Severity severity) {
     switch (severity) {
         case Warning: return QStringLiteral("warning");
-        case Error:   return QStringLiteral("error");
-        default:      return QStringLiteral("info");
+        case Error: return QStringLiteral("error");
+        default: return QStringLiteral("info");
     }
 }
-
-

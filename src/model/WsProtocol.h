@@ -12,10 +12,7 @@
  * @endcode
  */
 namespace WsProtocol {
-
-constexpr auto KEY_HEART_RATE       = "heart_rate";
-constexpr auto KEY_SPO2             = "spo2";
-constexpr auto KEY_RESPIRATION_RATE = "respiration_rate";
-
+    constexpr auto KEY_HEART_RATE = "heart_rate";
+    constexpr auto KEY_SPO2 = "spo2";
+    constexpr auto KEY_RESPIRATION_RATE = "respiration_rate";
 } // namespace WsProtocol
-

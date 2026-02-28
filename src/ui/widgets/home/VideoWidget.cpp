@@ -75,7 +75,7 @@ void VideoWidget::processVideoFrame(const QVideoFrame &frame) {
 
 void VideoWidget::setupCameraFormat() const {
     QCameraFormat bestFormat;
-    for (const auto &format : m_camera->cameraDevice().videoFormats()) {
+    for (const auto &format: m_camera->cameraDevice().videoFormats()) {
         if (format.resolution() == QSize(TARGET_WIDTH, TARGET_HEIGHT) &&
             format.maxFrameRate() >= 25.0f && format.maxFrameRate() <= 30.0f) {
             bestFormat = format;
@@ -89,6 +89,6 @@ void VideoWidget::setupCameraFormat() const {
     } else {
         auto defaultFormat = m_camera->cameraDevice().videoFormats().first();
         qWarning() << "未找到目标格式，使用系统默认:" << defaultFormat.resolution()
-                   << defaultFormat.maxFrameRate() << "FPS";
+                << defaultFormat.maxFrameRate() << "FPS";
     }
 }

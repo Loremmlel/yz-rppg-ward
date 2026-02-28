@@ -52,4 +52,3 @@ private:
     AppConfig m_config;
     std::unique_ptr<QSettings> m_settings;
 };
-

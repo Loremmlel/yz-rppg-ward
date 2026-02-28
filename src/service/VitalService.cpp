@@ -7,8 +7,7 @@
 #include "../model/WsProtocol.h"
 
 VitalService::VitalService(QObject *parent)
-    : QObject(parent), m_timer(new QTimer(this))
-{
+    : QObject(parent), m_timer(new QTimer(this)) {
     m_timer->setInterval(1000);
     connect(m_timer, &QTimer::timeout, this, &VitalService::fetchLatestData);
 }

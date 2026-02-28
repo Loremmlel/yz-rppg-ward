@@ -16,12 +16,12 @@ public:
     explicit HomePage(QWidget *parent = nullptr);
 
     [[nodiscard]] VitalsWidget *getVitalsWidget() const { return m_vitalsWidget; }
-    [[nodiscard]] VideoWidget  *getVideoWidget()  const { return m_videoWidget; }
+    [[nodiscard]] VideoWidget *getVideoWidget() const { return m_videoWidget; }
 
 private:
     void initUI();
 
-    QSplitter    *m_mainSplitter  {nullptr};
-    VideoWidget  *m_videoWidget   {nullptr};
-    VitalsWidget *m_vitalsWidget  {nullptr};
+    QSplitter *m_mainSplitter{nullptr};
+    VideoWidget *m_videoWidget{nullptr};
+    VitalsWidget *m_vitalsWidget{nullptr};
 };

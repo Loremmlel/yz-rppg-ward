@@ -8,8 +8,7 @@
 #include "../../../util/StyleLoader.h"
 
 VitalCard::VitalCard(const QString &title, const QString &icon, QWidget *parent)
-    : QFrame(parent)
-{
+    : QFrame(parent) {
     // objectName 与 QSS 选择器绑定，修改时需同步更新样式文件
     this->setObjectName("VitalCard");
     this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);

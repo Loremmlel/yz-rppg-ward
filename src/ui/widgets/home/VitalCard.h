@@ -15,10 +15,11 @@ public:
     explicit VitalCard(const QString &title, const QString &icon, QWidget *parent = nullptr);
 
     void setValue(const QString &value) const;
+
     void setIcon(const QString &iconStr) const;
 
 private:
-    QLabel *m_iconLabel  {nullptr};
-    QLabel *m_titleLabel {nullptr};
-    QLabel *m_valueLabel {nullptr};
+    QLabel *m_iconLabel{nullptr};
+    QLabel *m_titleLabel{nullptr};
+    QLabel *m_valueLabel{nullptr};
 };

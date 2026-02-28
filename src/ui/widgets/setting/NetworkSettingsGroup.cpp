@@ -40,4 +40,3 @@ QString NetworkSettingsGroup::host() const {
 quint16 NetworkSettingsGroup::port() const {
     return static_cast<quint16>(m_portSpin->value());
 }
-
