@@ -2,7 +2,10 @@
 #include <QDir>
 #include <QFile>
 #include <QDebug>
+#include <QDateTime>
+#include <QDataStream>
 #include <QtConcurrentRun>
+#include <opencv2/imgcodecs.hpp>
 
 #include "../util/ImageHelper.h"
 
@@ -36,7 +39,10 @@ void VideoService::processFrame(const QImage &image) {
     if (m_hasFace && m_currentFaceRect.isValid()) {
         const QRect clipped = m_currentFaceRect.intersected(image.rect());
         if (clipped.isValid()) {
-            emit faceRoiExtracted(image.copy(clipped));
+            const QByteArray frame = encodeRoi(image.copy(clipped));
+            if (!frame.isEmpty()) {
+                emit faceRoiEncoded(frame);
+            }
         }
     }
 
@@ -93,6 +99,26 @@ void VideoService::detectWorker(const cv::Mat &mat) {
         emit facePositionUpdated(newRect, hasFace);
         m_isProcessing.store(false);
     }, Qt::QueuedConnection);
+}
+
+QByteArray VideoService::encodeRoi(const QImage &roi) {
+    const cv::Mat mat = ImageHelper::QImage2CvMat(roi);
+    std::vector<uchar> webpBuf;
+    const std::vector<int> params = {cv::IMWRITE_WEBP_QUALITY, 101}; // 101 = 无损
+    if (!cv::imencode(".webp", mat, webpBuf, params)) {
+        qWarning() << "[VideoService] 图像 WebP 编码失败";
+        return {};
+    }
+
+    const qint64 timestampMs = QDateTime::currentMSecsSinceEpoch();
+    QByteArray frame;
+    frame.reserve(static_cast<qsizetype>(sizeof(qint64) + webpBuf.size()));
+    QDataStream ds(&frame, QIODevice::WriteOnly);
+    ds.setByteOrder(QDataStream::BigEndian);
+    ds << timestampMs;
+    frame.append(reinterpret_cast<const char *>(webpBuf.data()),
+                 static_cast<qsizetype>(webpBuf.size()));
+    return frame;
 }
 
 QString VideoService::loadModel(const QString &modelName) {

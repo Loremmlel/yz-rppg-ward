@@ -1,14 +1,13 @@
 #pragma once
 #include <QObject>
 #include <QElapsedTimer>
-#include "../model/AppConfig.h"
 
 class WebSocketClient;
 
 /**
  * @brief 视频帧网络发送服务
  *
- * 将 VideoService 裁剪好的人脸 ROI 编码为无损 WebP，通过 WebSocketClient 推送给服务器。
+ * 接收 VideoService 已编码的帧数据，通过 WebSocketClient 推送给服务器。
  * 内置帧率节流（30 fps），防止发送队列在 VideoService 高频产出时堆积。
  */
 class NetworkService : public QObject {
@@ -22,7 +21,8 @@ public:
     explicit NetworkService(WebSocketClient *wsClient, QObject *parent = nullptr);
 
 public slots:
-    void sendFaceRoiStream(const QImage &faceRoi);
+    /** 接收已编码的帧（8B 时间戳 + WebP），节流后转发至 WebSocket。 */
+    void sendEncodedFrame(const QByteArray &frame);
 
 private:
     WebSocketClient *m_wsClient     {nullptr}; ///< 不持有所有权

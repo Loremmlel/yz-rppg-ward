@@ -15,15 +15,15 @@ AppController::AppController(QObject *parent)
     m_videoThread->start();
     m_wsThread->start();
 
-    // ── 上行：视频帧 → 人脸检测 → JPEG 编码 → WebSocket ───────────────────────
+    // ── 上行：视频帧 → 人脸检测 → WebP 编码（工作线程） → WebSocket ──────────
     connect(m_mainWindow->getVideoWidget(), &VideoWidget::frameCaptured,
             m_videoService.get(), &VideoService::processFrame, Qt::QueuedConnection);
 
     connect(m_videoService.get(), &VideoService::facePositionUpdated,
             m_mainWindow->getVideoWidget(), &VideoWidget::updateFaceDetection);
 
-    connect(m_videoService.get(), &VideoService::faceRoiExtracted,
-            m_networkService.get(), &NetworkService::sendFaceRoiStream);
+    connect(m_videoService.get(), &VideoService::faceRoiEncoded,
+            m_networkService.get(), &NetworkService::sendEncodedFrame);
 
     // ── 下行：WebSocket → VitalService → UI ───────────────────────────────────
     connect(m_wsClient.get(), &WebSocketClient::connected,
