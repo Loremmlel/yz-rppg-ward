@@ -28,6 +28,9 @@ signals:
 public slots:
     void updateFaceDetection(const QRect &rect, bool hasFace);
 
+    /** 床位绑定状态变化时调用，控制"未绑定床位"提示的显隐。 */
+    void setBedBound(bool bound);
+
 private slots:
     void processVideoFrame(const QVideoFrame &frame);
 
@@ -44,6 +47,7 @@ private:
     QVideoSink           *m_videoSink       {nullptr};
     QLabel               *m_displayLabel    {nullptr};
     QLabel               *m_warningLabel    {nullptr}; ///< 未检测到人脸时的覆盖提示
+    QLabel               *m_noBedLabel      {nullptr}; ///< 未绑定床位时的覆盖提示
 
     QRect m_currentFaceRect;
     bool  m_hasFace       {false};

@@ -1,5 +1,6 @@
 #include "NetworkService.h"
 #include "WebSocketClient.h"
+#include "ConfigService.h"
 #include <QDebug>
 
 #ifdef QT_DEBUG
@@ -9,11 +10,23 @@
 #endif
 
 NetworkService::NetworkService(WebSocketClient *wsClient, QObject *parent)
-    : QObject(parent), m_wsClient(wsClient) {
+    : QObject(parent), m_wsClient(wsClient),
+      m_bedBound(ConfigService::instance()->config().hasBed()) {
     m_fpsTimer.start();
+
+    connect(ConfigService::instance(), &ConfigService::configChanged,
+            this, &NetworkService::onConfigChanged);
+}
+
+void NetworkService::onConfigChanged(const AppConfig &config) {
+    m_bedBound = config.hasBed();
 }
 
 void NetworkService::sendEncodedFrame(const QByteArray &frame) {
+    if (!m_bedBound) {
+        return; // 未绑定床位，丢弃帧
+    }
+
     if (m_fpsTimer.elapsed() < FRAME_INTERVAL_MS) {
         return;
     }

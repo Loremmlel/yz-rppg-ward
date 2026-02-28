@@ -1,4 +1,5 @@
 #include "AppController.h"
+#include "../service/ConfigService.h"
 
 AppController::AppController(QObject *parent)
     : QObject(parent),
@@ -35,6 +36,12 @@ AppController::AppController(QObject *parent)
 
     connect(m_vitalService.get(), &VitalService::dataUpdated,
             m_mainWindow->getVitalsWidget(), &VitalsWidget::updateData);
+
+    // ── 床位绑定状态变化 → VideoWidget 提示 ──────────────────────────────────
+    connect(ConfigService::instance(), &ConfigService::configChanged,
+            m_mainWindow->getVideoWidget(), [this](const AppConfig &cfg) {
+                m_mainWindow->getVideoWidget()->setBedBound(cfg.hasBed());
+            });
 
     // wsThread 启动后才调用 open()，避免在线程就绪前触发网络操作
     QMetaObject::invokeMethod(m_wsClient.get(), "connectToServer", Qt::QueuedConnection);
