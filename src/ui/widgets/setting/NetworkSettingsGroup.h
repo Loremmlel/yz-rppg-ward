@@ -3,7 +3,7 @@
 #include <QLineEdit>
 #include <QSpinBox>
 
-#include "../../model/AppConfig.h"
+#include "../../../model/AppConfig.h"
 
 /**
  * @brief 网络配置分组控件

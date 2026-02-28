@@ -1,5 +1,5 @@
 #include "BedSettingsGroup.h"
-#include "../../service/BedService.h"
+#include "../../../service/BedService.h"
 
 #include <QFormLayout>
 #include <QHBoxLayout>

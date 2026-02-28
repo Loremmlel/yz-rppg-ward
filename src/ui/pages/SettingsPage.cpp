@@ -5,8 +5,8 @@
 
 #include "../../service/ConfigService.h"
 #include "../../util/StyleLoader.h"
-#include "../widgets/NetworkSettingsGroup.h"
-#include "../widgets/BedSettingsGroup.h"
+#include "../widgets/setting/NetworkSettingsGroup.h"
+#include "../widgets/setting/BedSettingsGroup.h"
 
 SettingsPage::SettingsPage(QWidget *parent) : QWidget(parent) {
     initUI();

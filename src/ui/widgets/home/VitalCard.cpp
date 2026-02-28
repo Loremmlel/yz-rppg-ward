@@ -5,7 +5,7 @@
 #include <QFile>
 #include <QPixmap>
 
-#include "../../util/StyleLoader.h"
+#include "../../../util/StyleLoader.h"
 
 VitalCard::VitalCard(const QString &title, const QString &icon, QWidget *parent)
     : QFrame(parent)

@@ -4,7 +4,7 @@
 #include <QCamera>
 #include <QVideoWidget>
 
-#include "../../service/VideoService.h"
+#include "../../../service/VideoService.h"
 
 
 /**

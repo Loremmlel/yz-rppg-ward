@@ -6,8 +6,8 @@
 #include <QVideoSink>
 #include <QMediaCaptureSession>
 
-#include "../../util/ImageHelper.h"
-#include "../../util/StyleLoader.h"
+#include "../../../util/ImageHelper.h"
+#include "../../../util/StyleLoader.h"
 
 VideoWidget::VideoWidget(QWidget *parent) : QWidget(parent) {
     this->setObjectName("videoWidget");

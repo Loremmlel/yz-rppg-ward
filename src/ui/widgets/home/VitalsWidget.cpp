@@ -3,7 +3,7 @@
 #include <QLabel>
 #include <QScrollArea>
 
-#include "../../util/StyleLoader.h"
+#include "../../../util/StyleLoader.h"
 
 VitalsWidget::VitalsWidget(QWidget *parent) : QWidget(parent) {
     this->setObjectName("vitalsWidget");

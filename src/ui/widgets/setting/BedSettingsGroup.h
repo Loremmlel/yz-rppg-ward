@@ -5,7 +5,7 @@
 #include <QLabel>
 #include <QJsonArray>
 
-#include "../../model/AppConfig.h"
+#include "../../../model/AppConfig.h"
 
 /**
  * @brief 床位配置分组控件

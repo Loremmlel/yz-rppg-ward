@@ -4,7 +4,7 @@
 #include <QVBoxLayout>
 
 #include "VitalCard.h"
-#include "../../model/VitalData.h"
+#include "../../../model/VitalData.h"
 
 /**
  * @brief 生命体征看板

@@ -1,8 +1,8 @@
 #pragma once
 #include <QSplitter>
 
-#include "../widgets/VitalsWidget.h"
-#include "../widgets/VideoWidget.h"
+#include "../widgets/home/VitalsWidget.h"
+#include "../widgets/home/VideoWidget.h"
 
 /**
  * @brief 主页视图
