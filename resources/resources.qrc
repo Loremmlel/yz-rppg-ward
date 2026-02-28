@@ -7,6 +7,7 @@
         <file>styles/vitals_widget.qss</file>
         <file>styles/vital_card.qss</file>
         <file>styles/settings.qss</file>
+        <file>styles/status_bar.qss</file>
     </qresource>
     <qresource prefix="/">
         <file>icons/Heartbeat.png</file>

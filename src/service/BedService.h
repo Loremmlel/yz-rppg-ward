@@ -2,15 +2,12 @@
 
 #include <QObject>
 #include <QJsonArray>
-#include <QNetworkAccessManager>
-
-#include "../model/AppConfig.h"
 
 /**
  * @brief 床位数据查询服务（单例）
  *
  * 通过 REST API 获取病区 → 病房 → 床位的层级数据，
- * 供 SettingsPage 的级联下拉框使用。
+ * 供设置页面的级联下拉框使用。底层 HTTP 调用委托给 ApiClient。
  */
 class BedService : public QObject {
     Q_OBJECT
@@ -42,9 +39,5 @@ signals:
 
 private:
     explicit BedService(QObject *parent = nullptr);
-
-    [[nodiscard]] QUrl baseUrl() const;
-
-    QNetworkAccessManager *m_nam{nullptr};
 };
 

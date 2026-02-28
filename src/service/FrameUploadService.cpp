@@ -1,4 +1,4 @@
-#include "NetworkService.h"
+#include "FrameUploadService.h"
 #include "WebSocketClient.h"
 #include "ConfigService.h"
 #include <QDebug>
@@ -9,20 +9,20 @@
 #include <opencv2/imgcodecs.hpp>
 #endif
 
-NetworkService::NetworkService(WebSocketClient *wsClient, QObject *parent)
+FrameUploadService::FrameUploadService(WebSocketClient *wsClient, QObject *parent)
     : QObject(parent), m_wsClient(wsClient),
       m_bedBound(ConfigService::instance()->config().hasBed()) {
     m_fpsTimer.start();
 
     connect(ConfigService::instance(), &ConfigService::configChanged,
-            this, &NetworkService::onConfigChanged);
+            this, &FrameUploadService::onConfigChanged);
 }
 
-void NetworkService::onConfigChanged(const AppConfig &config) {
+void FrameUploadService::onConfigChanged(const AppConfig &config) {
     m_bedBound = config.hasBed();
 }
 
-void NetworkService::sendEncodedFrame(const QByteArray &frame) {
+void FrameUploadService::sendEncodedFrame(const QByteArray &frame) {
     if (!m_bedBound) {
         return; // 未绑定床位，丢弃帧
     }
@@ -57,5 +57,6 @@ void NetworkService::sendEncodedFrame(const QByteArray &frame) {
                               Qt::QueuedConnection,
                               Q_ARG(QByteArray, frame));
 
-    qDebug() << "[NetworkService] 已发送帧，帧大小:" << frame.size() << "字节";
+    qDebug() << "[FrameUploadService] 已发送帧，帧大小:" << frame.size() << "字节";
 }
+

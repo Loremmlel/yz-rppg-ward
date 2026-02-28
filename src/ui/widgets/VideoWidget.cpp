@@ -8,7 +8,6 @@
 
 #include "../../util/ImageHelper.h"
 #include "../../util/StyleLoader.h"
-#include "../../service/ConfigService.h"
 
 VideoWidget::VideoWidget(QWidget *parent) : QWidget(parent) {
     this->setObjectName("videoWidget");
@@ -20,20 +19,6 @@ VideoWidget::VideoWidget(QWidget *parent) : QWidget(parent) {
     m_displayLabel = new QLabel(this);
     m_displayLabel->setObjectName("videoDisplayLabel");
     m_displayLabel->setAlignment(Qt::AlignCenter);
-
-    // 警告浮层作为 displayLabel 的子控件，叠加在视频画面之上
-    m_warningLabel = new QLabel("未检测到患者人脸", this);
-    m_warningLabel->setObjectName("videoWarningLabel");
-    m_warningLabel->setAlignment(Qt::AlignCenter);
-    m_warningLabel->setVisible(false);
-    m_warningLabel->setParent(m_displayLabel);
-
-    // 未绑定床位提示浮层
-    m_noBedLabel = new QLabel(QStringLiteral("未绑定床位，图像流已暂停上传\n请在设置页面选择床位"), this);
-    m_noBedLabel->setObjectName("videoNoBedLabel");
-    m_noBedLabel->setAlignment(Qt::AlignCenter);
-    m_noBedLabel->setParent(m_displayLabel);
-    m_noBedLabel->setVisible(!ConfigService::instance()->config().hasBed());
 
     layout->addWidget(m_displayLabel);
 
@@ -67,11 +52,6 @@ VideoWidget::~VideoWidget() {
 void VideoWidget::updateFaceDetection(const QRect &rect, bool hasFace) {
     m_currentFaceRect = rect;
     m_hasFace = hasFace;
-    m_warningLabel->setVisible(!hasFace);
-}
-
-void VideoWidget::setBedBound(bool bound) {
-    m_noBedLabel->setVisible(!bound);
 }
 
 void VideoWidget::processVideoFrame(const QVideoFrame &frame) {

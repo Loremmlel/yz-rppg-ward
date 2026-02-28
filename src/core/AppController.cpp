@@ -6,7 +6,7 @@ AppController::AppController(QObject *parent)
       m_wsClient(std::make_unique<WebSocketClient>()),
       m_vitalService(std::make_unique<VitalService>(this)),
       m_videoService(std::make_unique<VideoService>()),
-      m_networkService(std::make_unique<NetworkService>(m_wsClient.get(), this)),
+      m_frameUploadService(std::make_unique<FrameUploadService>(m_wsClient.get(), this)),
       m_mainWindow(std::make_unique<MainWindow>()),
       m_videoThread(std::make_unique<QThread>(this)),
       m_wsThread(std::make_unique<QThread>(this)) {
@@ -24,7 +24,7 @@ AppController::AppController(QObject *parent)
             m_mainWindow->getVideoWidget(), &VideoWidget::updateFaceDetection);
 
     connect(m_videoService.get(), &VideoService::faceRoiEncoded,
-            m_networkService.get(), &NetworkService::sendEncodedFrame);
+            m_frameUploadService.get(), &FrameUploadService::sendEncodedFrame);
 
     // ── 下行：WebSocket → VitalService → UI ───────────────────────────────────
     connect(m_wsClient.get(), &WebSocketClient::connected,
@@ -37,10 +37,33 @@ AppController::AppController(QObject *parent)
     connect(m_vitalService.get(), &VitalService::dataUpdated,
             m_mainWindow->getVitalsWidget(), &VitalsWidget::updateData);
 
-    // ── 床位绑定状态变化 → VideoWidget 提示 ──────────────────────────────────
+    // ── 状态栏通知 ──────────────────────────────────────────────────────────
+    auto *statusBar = m_mainWindow->notificationBar();
+
+    // 床位绑定状态
+    auto updateBedBanner = [statusBar](const AppConfig &cfg) {
+        if (cfg.hasBed()) {
+            statusBar->hideBanner(QStringLiteral("no-bed"));
+        } else {
+            statusBar->showBanner(QStringLiteral("no-bed"),
+                                  QStringLiteral("未绑定床位，图像流已暂停上传。请在设置页面选择床位"),
+                                  StatusBar::Warning);
+        }
+    };
+    updateBedBanner(ConfigService::instance()->config());
     connect(ConfigService::instance(), &ConfigService::configChanged,
-            m_mainWindow->getVideoWidget(), [this](const AppConfig &cfg) {
-                m_mainWindow->getVideoWidget()->setBedBound(cfg.hasBed());
+            this, updateBedBanner);
+
+    // 人脸检测状态
+    connect(m_videoService.get(), &VideoService::facePositionUpdated,
+            this, [statusBar](const QRect &, bool hasFace) {
+                if (hasFace) {
+                    statusBar->hideBanner(QStringLiteral("no-face"));
+                } else {
+                    statusBar->showBanner(QStringLiteral("no-face"),
+                                          QStringLiteral("未检测到患者人脸"),
+                                          StatusBar::Error);
+                }
             });
 
     // wsThread 启动后才调用 open()，避免在线程就绪前触发网络操作

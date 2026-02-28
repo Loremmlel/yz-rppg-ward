@@ -1,5 +1,6 @@
 #include "MainWindow.h"
 #include "../util/StyleLoader.h"
+#include "widgets/ToastManager.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -9,6 +10,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     setWindowTitle(QStringLiteral("病房端监控终端"));
     resize(1280, 720);
     initUI();
+
+    // Toast 管理器绑定到主窗口
+    ToastManager::instance()->setParentWidget(this);
 
     // 全局样式 + 导航栏样式
     setStyleSheet(StyleLoader::loadMultiple({
@@ -38,6 +42,11 @@ void MainWindow::initUI() {
     // ——— 顶部导航栏 ———
     setupNavBar();
     rootLayout->addWidget(findChild<QFrame *>("topBar"));
+
+    // ——— 状态栏（导航栏下方，所有页面可见） ———
+    m_statusBar = new StatusBar(centralWidget);
+    rootLayout->addWidget(m_statusBar);
+
     rootLayout->addWidget(m_stackedWidget, 1);
 }
 

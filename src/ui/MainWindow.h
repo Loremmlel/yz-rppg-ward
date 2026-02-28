@@ -6,12 +6,14 @@
 
 #include "pages/HomePage.h"
 #include "pages/SettingsPage.h"
+#include "widgets/StatusBar.h"
 
 /**
  * @brief 应用主窗口
  *
  * 职责：
  *  - 顶部导航栏（选项卡按钮）
+ *  - StatusBar 显示常驻通知（所有页面可见）
  *  - QStackedWidget 管理页面切换
  *  - 仅管理页面，不直接操作子 Widget
  */
@@ -23,29 +25,20 @@ public:
 
     [[nodiscard]] VitalsWidget *getVitalsWidget() const { return m_homePage->getVitalsWidget(); }
     [[nodiscard]] VideoWidget  *getVideoWidget()  const { return m_homePage->getVideoWidget(); }
+    [[nodiscard]] StatusBar    *notificationBar() const { return m_statusBar; }
 
-    /**
-     * @brief 获取主页指针（供 Controller 连接信号）
-     */
     [[nodiscard]] HomePage     *homePage()     const { return m_homePage; }
-
-    /**
-     * @brief 获取设置页指针
-     */
     [[nodiscard]] SettingsPage *settingsPage() const { return m_settingsPage; }
 
 private:
     void initUI();
     void setupNavBar();
-
-    /**
-     * @brief 创建一个导航按钮
-     */
     QPushButton *createNavButton(const QString &text);
 
     QStackedWidget *m_stackedWidget = nullptr;
     QButtonGroup   *m_navGroup      = nullptr;
 
+    StatusBar      *m_statusBar     = nullptr;
     HomePage       *m_homePage      = nullptr;
     SettingsPage   *m_settingsPage  = nullptr;
 };

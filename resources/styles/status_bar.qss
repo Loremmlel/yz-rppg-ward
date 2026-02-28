@@ -1,0 +1,32 @@
+/* ============================================================
+ * 状态栏 — 常驻横幅通知
+ * ============================================================ */
+
+QLabel#StatusBanner {
+    font-size: 13px;
+    font-weight: bold;
+    padding: 8px 16px;
+    border-radius: 6px;
+}
+
+/* ── Info 级别（蓝色） ── */
+QLabel#StatusBanner[severity="info"] {
+    background-color: rgba(74, 144, 217, 200);
+    color: #FFFFFF;
+    border: 1px solid rgba(255, 255, 255, 40);
+}
+
+/* ── Warning 级别（橙色） ── */
+QLabel#StatusBanner[severity="warning"] {
+    background-color: rgba(255, 152, 0, 200);
+    color: #FFFFFF;
+    border: 1px solid rgba(255, 255, 255, 40);
+}
+
+/* ── Error 级别（红色） ── */
+QLabel#StatusBanner[severity="error"] {
+    background-color: rgba(255, 60, 60, 180);
+    color: #FFFFFF;
+    border: 1px solid rgba(255, 255, 255, 40);
+}
+

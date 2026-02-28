@@ -9,7 +9,7 @@
  * @brief 底层 WebSocket 客户端
  *
  * 封装连接生命周期管理与断线自动重连，对上层屏蔽网络细节。
- * NetworkService 通过它推送图像帧，VitalService 通过它接收体征 JSON。
+ * FrameUploadService 通过它推送图像帧，VitalService 通过它接收体征 JSON。
  *
  * 线程模型：应 moveToThread 到专属线程。外部通过 QueuedConnection
  * 调用 sendBinaryMessage/sendTextMessage，无需额外加锁。

@@ -13,6 +13,7 @@
  * 负责摄像头初始化、帧采集与画面渲染。
  * 每帧通过 frameCaptured 向外发射原始图像，由 VideoService 做进一步处理。
  * 人脸检测结果由外部回调 updateFaceDetection 注入，组件不持有检测逻辑。
+ * 状态提示（人脸未检测到、床位未绑定等）由外部 StatusBar 管理。
  */
 class VideoWidget : public QWidget {
     Q_OBJECT
@@ -27,9 +28,6 @@ signals:
 
 public slots:
     void updateFaceDetection(const QRect &rect, bool hasFace);
-
-    /** 床位绑定状态变化时调用，控制"未绑定床位"提示的显隐。 */
-    void setBedBound(bool bound);
 
 private slots:
     void processVideoFrame(const QVideoFrame &frame);
@@ -46,8 +44,6 @@ private:
     QMediaCaptureSession *m_captureSession  {nullptr};
     QVideoSink           *m_videoSink       {nullptr};
     QLabel               *m_displayLabel    {nullptr};
-    QLabel               *m_warningLabel    {nullptr}; ///< 未检测到人脸时的覆盖提示
-    QLabel               *m_noBedLabel      {nullptr}; ///< 未绑定床位时的覆盖提示
 
     QRect m_currentFaceRect;
     bool  m_hasFace       {false};
