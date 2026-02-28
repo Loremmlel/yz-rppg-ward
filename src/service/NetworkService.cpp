@@ -31,10 +31,9 @@ void NetworkService::sendEncodedFrame(const QByteArray &frame) {
     // 跳过前 8 字节时间戳，剩余为 WebP 数据
     const QByteArray webpData = frame.mid(static_cast<qsizetype>(sizeof(qint64)));
     const std::vector<uchar> buf(webpData.cbegin(), webpData.cend());
-    const cv::Mat decoded = cv::imdecode(buf, cv::IMREAD_COLOR);
-    if (!decoded.empty()) {
-        QImage img(decoded.data, decoded.cols, decoded.rows,
-                   static_cast<qsizetype>(decoded.step), QImage::Format_BGR888);
+    if (const auto decoded = cv::imdecode(buf, cv::IMREAD_COLOR);
+        !decoded.empty()) {
+        const QImage img(decoded.data, decoded.cols, decoded.rows, decoded.step, QImage::Format_BGR888);
         previewLabel->setFixedSize(img.size());
         previewLabel->setPixmap(QPixmap::fromImage(img));
     }

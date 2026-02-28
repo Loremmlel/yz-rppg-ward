@@ -18,9 +18,9 @@ VideoService::VideoService(QObject *parent) : QObject(parent) {
     try {
         m_faceDetector = cv::FaceDetectorYN::create(
             path.toStdString(), "", cv::Size(640, 480),
-            0.6f,  // 置信度阈值
-            0.3f,  // NMS 阈值
-            5000   // 最大检测数量上限
+            0.6f, // 置信度阈值
+            0.3f, // NMS 阈值
+            5000 // 最大检测数量上限
         );
     } catch (const cv::Exception &e) {
         qWarning() << "人脸检测模型初始化失败：" << e.what();
@@ -38,7 +38,7 @@ void VideoService::processFrame(const QImage &image) {
 
     // ── 高频管线：每帧都执行，用卡尔曼滤波平滑人脸位置 ──────────────────────
     if (m_hasFace && m_hasKalman) {
-        // 跳帧时用上一次原始观测值做 update（hold + smooth），与 open-rppg 一致
+        // 跳帧时用上一次原始观测值做 update（hold + smooth）
         const QRect kfRect(
             static_cast<int>(std::round(m_kfX.update(m_rawFaceRect.x()))),
             static_cast<int>(std::round(m_kfY.update(m_rawFaceRect.y()))),
@@ -50,7 +50,7 @@ void VideoService::processFrame(const QImage &image) {
         const auto oldCenter = m_currentFaceRect.center();
         const auto newCenter = kfRect.center();
         const double threshold = 0.02 * std::max(m_currentFaceRect.width(),
-                                                   m_currentFaceRect.height());
+                                                 m_currentFaceRect.height());
         if (!m_currentFaceRect.isValid() ||
             std::abs(newCenter.x() - oldCenter.x()) > threshold ||
             std::abs(newCenter.y() - oldCenter.y()) > threshold) {
@@ -64,8 +64,8 @@ void VideoService::processFrame(const QImage &image) {
             m_isEncoding.store(true);
             const QImage roi = image.copy(clipped);
             QThreadPool::globalInstance()->start([this, roi] {
-                const QByteArray frame = encodeRoi(roi);
-                if (!frame.isEmpty()) {
+                if (const auto frame = encodeRoi(roi);
+                    !frame.isEmpty()) {
                     emit faceRoiEncoded(frame);
                 }
                 m_isEncoding.store(false);
@@ -109,7 +109,10 @@ void VideoService::detectWorker(const cv::Mat &mat) {
         for (int i = 0; i < faces.rows; i++) {
             const int w = static_cast<int>(faces.at<float>(i, 2) * scale);
             const int h = static_cast<int>(faces.at<float>(i, 3) * scale);
-            if (w * h > maxArea) { maxArea = w * h; maxIndex = i; }
+            if (w * h > maxArea) {
+                maxArea = w * h;
+                maxIndex = i;
+            }
         }
 
         const int x = static_cast<int>(faces.at<float>(maxIndex, 0) * scale);
@@ -154,8 +157,8 @@ void VideoService::detectWorker(const cv::Mat &mat) {
 QByteArray VideoService::encodeRoi(const QImage &roi) {
     const cv::Mat mat = ImageHelper::QImage2CvMat(roi);
     std::vector<uchar> webpBuf;
-    const std::vector<int> params = {cv::IMWRITE_WEBP_QUALITY, 101}; // 101 = 无损
-    if (!cv::imencode(".webp", mat, webpBuf, params)) {
+    if (const std::vector params = {cv::IMWRITE_WEBP_QUALITY, 101};
+        !cv::imencode(".webp", mat, webpBuf, params)) {
         qWarning() << "[VideoService] 图像 WebP 编码失败";
         return {};
     }

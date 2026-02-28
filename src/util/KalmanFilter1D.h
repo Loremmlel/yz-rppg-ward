@@ -18,11 +18,11 @@ public:
      * @param initialError     初始估计误差
      * @param referenceInterval 基准时间间隔（秒），默认 1/30
      */
-    explicit KalmanFilter1D(double processNoise = 0.01,
-                            double measureNoise = 0.5,
-                            double initialState = 0.0,
-                            double initialError = 1.0,
-                            double referenceInterval = 1.0 / 30.0)
+    explicit KalmanFilter1D(const double processNoise = 0.01,
+                            const double measureNoise = 0.5,
+                            const double initialState = 0.0,
+                            const double initialError = 1.0,
+                            const double referenceInterval = 1.0 / 30.0)
         : m_q(processNoise),
           m_r(measureNoise),
           m_estimate(initialState),
@@ -35,7 +35,7 @@ public:
      * @param dt 距上次更新的时间间隔（秒），默认使用基准间隔
      * @return 滤波后的估计值
      */
-    double update(double measurement, double dt = -1.0) {
+    double update(const double measurement, double dt = -1.0) {
         if (dt < 0.0) dt = m_refInterval;
 
         // 过程噪声随时间间隔平方缩放
@@ -56,7 +56,7 @@ public:
     }
 
     /** 重置滤波器状态 */
-    void reset(double state, double error = 1.0) {
+    void reset(const double state, const double error = 1.0) {
         m_estimate = state;
         m_estimateError = error;
     }
