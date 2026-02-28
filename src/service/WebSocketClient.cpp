@@ -1,6 +1,7 @@
 #include "WebSocketClient.h"
 #include "ConfigService.h"
 #include <QDebug>
+#include <QUrlQuery>
 
 WebSocketClient::WebSocketClient(QObject *parent)
     : QObject(parent),
@@ -76,9 +77,12 @@ void WebSocketClient::sendTextMessage(const QString &message) const {
 }
 
 void WebSocketClient::onConfigChanged(const AppConfig &config) {
-    const bool changed = (m_host != config.serverHost || m_port != config.serverPort);
-    m_host = config.serverHost;
-    m_port = config.serverPort;
+    const bool changed = (m_host != config.serverHost
+                          || m_port != config.serverPort
+                          || m_bedId != config.bedId);
+    m_host  = config.serverHost;
+    m_port  = config.serverPort;
+    m_bedId = config.bedId;
 
     if (changed) {
         connectToServer();
@@ -127,6 +131,12 @@ QUrl WebSocketClient::buildUrl() const {
     url.setHost(m_host);
     url.setPort(m_port);
     url.setPath(QStringLiteral("/ws"));
+
+    if (m_bedId > 0) {
+        QUrlQuery query;
+        query.addQueryItem(QStringLiteral("bedId"), QString::number(m_bedId));
+        url.setQuery(query);
+    }
     return url;
 }
 

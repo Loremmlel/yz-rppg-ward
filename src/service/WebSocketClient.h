@@ -62,6 +62,7 @@ private:
 
     QString  m_host;
     quint16  m_port               {0};
+    qint64   m_bedId              {-1};  ///< 绑定的床位 ID，附加到 WS URL query
     bool     m_userDisconnected   {false}; ///< 区分主动断开与意外掉线，避免主动断开后触发重连
     int      m_reconnectInterval  {5000};  ///< 毫秒
 };

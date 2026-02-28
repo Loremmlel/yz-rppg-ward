@@ -1,4 +1,4 @@
-﻿/* ============================================================
+﻿﻿/* ============================================================
  * 设置页样式
  * ============================================================ */
 /* ---------- 分组框 ---------- */
@@ -30,7 +30,8 @@ QLabel {
 }
 /* ---------- 输入框 ---------- */
 QLineEdit#SettingsInput,
-QSpinBox#SettingsInput {
+QSpinBox#SettingsInput,
+QComboBox#SettingsInput {
     background-color: #FFFFFF;
     border: 1px solid #DEE2E6;
     border-radius: 6px;
@@ -39,19 +40,68 @@ QSpinBox#SettingsInput {
     color: #212529;
 }
 QLineEdit#SettingsInput:focus,
-QSpinBox#SettingsInput:focus {
+QSpinBox#SettingsInput:focus,
+QComboBox#SettingsInput:focus {
     border-color: #4A90D9;
     outline: none;
 }
 QLineEdit#SettingsInput:hover,
-QSpinBox#SettingsInput:hover {
+QSpinBox#SettingsInput:hover,
+QComboBox#SettingsInput:hover {
     border-color: #CED4DA;
 }
 QLineEdit#SettingsInput:disabled,
-QSpinBox#SettingsInput:disabled {
+QSpinBox#SettingsInput:disabled,
+QComboBox#SettingsInput:disabled {
     background-color: #E9ECEF;
     color: #ADB5BD;
     border-color: #DEE2E6;
+}
+/* ---------- QComboBox 下拉箭头 ---------- */
+QComboBox#SettingsInput::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: center right;
+    width: 24px;
+    border-left: 1px solid #DEE2E6;
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+    background-color: #F8F9FA;
+}
+QComboBox#SettingsInput::drop-down:hover {
+    background-color: #E9ECEF;
+}
+QComboBox#SettingsInput::down-arrow {
+    image: none;
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid #495057;
+}
+/* ---------- QComboBox 下拉列表 ---------- */
+QComboBox#SettingsInput QAbstractItemView {
+    background-color: #FFFFFF;
+    border: 1px solid #DEE2E6;
+    border-radius: 4px;
+    selection-background-color: #4A90D9;
+    selection-color: #FFFFFF;
+    outline: none;
+    padding: 4px;
+    font-size: 13px;
+    color: #212529;
+}
+QComboBox#SettingsInput QAbstractItemView::item {
+    padding: 6px 12px;
+    border-radius: 3px;
+}
+QComboBox#SettingsInput QAbstractItemView::item:hover {
+    background-color: #E9ECEF;
+}
+/* ---------- 床位状态提示标签 ---------- */
+QLabel#BedStatusLabel {
+    font-size: 12px;
+    color: #6C757D;
+    padding-left: 8px;
 }
 /* ---------- QSpinBox 上下按钮 ---------- */
 QSpinBox#SettingsInput::up-button {

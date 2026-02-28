@@ -20,6 +20,7 @@ find_package(Qt6 COMPONENTS
         Concurrent
         Multimedia
         MultimediaWidgets
+        Network
         WebSockets
         REQUIRED)
 
@@ -41,6 +42,7 @@ target_link_libraries(ward
         Qt6::Concurrent
         Qt6::Multimedia
         Qt6::MultimediaWidgets
+        Qt6::Network
         Qt6::WebSockets
         ${OpenCV_LIBS}
 )

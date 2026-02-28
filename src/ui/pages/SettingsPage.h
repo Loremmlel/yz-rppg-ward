@@ -2,7 +2,9 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QSpinBox>
+#include <QComboBox>
 #include <QPushButton>
+#include <QJsonArray>
 
 /**
  * @brief 服务器连接配置页面
@@ -20,11 +22,37 @@ public:
 private slots:
     void onSaveClicked();
 
+    // ── 床位级联选择 ──
+    void onWardChanged(const QString &wardCode);
+    void onRoomChanged(const QString &roomNo);
+    void onBedChanged(int index);
+
+    void onWardsFetched(const QStringList &wardCodes);
+    void onRoomsFetched(const QJsonArray &rooms);
+    void onBedsFetched(const QJsonArray &beds);
+    void onBedServiceError(const QString &error);
+
+    void onRefreshClicked();
+
 private:
     void initUI();
-    void loadCurrentConfig() const;
+    void loadCurrentConfig();
+    void loadBedSelection();
 
     QLineEdit   *m_hostEdit  {};
     QSpinBox    *m_portSpin  {};
+
+    QComboBox   *m_wardCombo {};
+    QComboBox   *m_roomCombo {};
+    QComboBox   *m_bedCombo  {};
+    QPushButton *m_refreshBtn {};
+    QLabel      *m_bedStatusLabel {};
+
     QPushButton *m_saveBtn   {};
+
+    // 暂存已保存的床位选择，用于级联加载完成后恢复选中项
+    QString m_savedWardCode;
+    QString m_savedRoomNo;
+    qint64  m_savedBedId{-1};
+    bool    m_isRestoringSelection{false}; ///< 正在恢复已保存选择，抑制级联清空
 };

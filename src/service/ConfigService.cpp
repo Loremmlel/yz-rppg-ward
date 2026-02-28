@@ -26,6 +26,12 @@ void ConfigService::load() {
             QStringLiteral("serverPort"),
             AppConfig::kDefaultPort).toUInt());
     m_settings->endGroup();
+
+    m_settings->beginGroup(QStringLiteral("Bed"));
+    m_config.wardCode = m_settings->value(QStringLiteral("wardCode")).toString();
+    m_config.roomNo   = m_settings->value(QStringLiteral("roomNo")).toString();
+    m_config.bedId    = m_settings->value(QStringLiteral("bedId"), -1).toLongLong();
+    m_settings->endGroup();
 }
 
 void ConfigService::saveConfig(const AppConfig &newConfig) {
@@ -35,6 +41,13 @@ void ConfigService::saveConfig(const AppConfig &newConfig) {
     m_settings->setValue(QStringLiteral("serverHost"), m_config.serverHost);
     m_settings->setValue(QStringLiteral("serverPort"), m_config.serverPort);
     m_settings->endGroup();
+
+    m_settings->beginGroup(QStringLiteral("Bed"));
+    m_settings->setValue(QStringLiteral("wardCode"), m_config.wardCode);
+    m_settings->setValue(QStringLiteral("roomNo"),   m_config.roomNo);
+    m_settings->setValue(QStringLiteral("bedId"),     m_config.bedId);
+    m_settings->endGroup();
+
     m_settings->sync();
 
     emit configChanged(m_config);
