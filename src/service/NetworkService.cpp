@@ -31,23 +31,23 @@ void NetworkService::sendFaceRoiStream(const QImage &faceRoi) {
     previewLabel->setPixmap(QPixmap::fromImage(faceRoi));
 #endif
 
-    QByteArray jpegData;
-    QBuffer buffer(&jpegData);
+    QByteArray webpData;
+    QBuffer buffer(&webpData);
     buffer.open(QIODevice::WriteOnly);
-    if (!faceRoi.save(&buffer, "JPEG", m_jpegQuality)) {
-        qWarning() << "[NetworkService] 图像 JPEG 编码失败";
+    if (!faceRoi.save(&buffer, "WEBP", 100)) {
+        qWarning() << "[NetworkService] 图像 WebP 编码失败";
         return;
     }
 
-    // 帧格式：[8 字节大端 int64 毫秒时间戳] + [JPEG 数据]
+    // 帧格式：[8 字节大端 int64 毫秒时间戳] + [WebP 数据]
     // 服务端读取前 8 字节即可还原采集时刻，用于 rPPG 时序对齐
     const qint64 timestampMs = QDateTime::currentMSecsSinceEpoch();
     QByteArray frame;
-    frame.reserve(static_cast<qsizetype>(sizeof(qint64)) + jpegData.size());
+    frame.reserve(static_cast<qsizetype>(sizeof(qint64)) + webpData.size());
     QDataStream ds(&frame, QIODevice::WriteOnly);
     ds.setByteOrder(QDataStream::BigEndian);
     ds << timestampMs;
-    frame.append(jpegData);
+    frame.append(webpData);
 
     // WebSocketClient 在独立线程中运行，必须通过 QueuedConnection 跨线程传递
     QMetaObject::invokeMethod(m_wsClient, "sendBinaryMessage",

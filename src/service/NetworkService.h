@@ -8,7 +8,7 @@ class WebSocketClient;
 /**
  * @brief 视频帧网络发送服务
  *
- * 将 VideoService 裁剪好的人脸 ROI 编码为 JPEG，通过 WebSocketClient 推送给服务器。
+ * 将 VideoService 裁剪好的人脸 ROI 编码为无损 WebP，通过 WebSocketClient 推送给服务器。
  * 内置帧率节流（30 fps），防止发送队列在 VideoService 高频产出时堆积。
  */
 class NetworkService : public QObject {
@@ -30,6 +30,4 @@ private:
     QElapsedTimer m_fpsTimer;
     static constexpr int TARGET_FPS        = 30;
     static constexpr int FRAME_INTERVAL_MS = 1000 / TARGET_FPS;
-
-    int m_jpegQuality {75}; ///< 质量与带宽的经验折中值
 };

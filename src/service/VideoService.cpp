@@ -2,9 +2,7 @@
 #include <QDir>
 #include <QFile>
 #include <QDebug>
-#include <QPainter>
 #include <QtConcurrentRun>
-#include <algorithm>
 
 #include "../util/ImageHelper.h"
 
@@ -36,40 +34,15 @@ void VideoService::processFrame(const QImage &image) {
 
     // ── 高频管线：每帧都执行，依赖上一次检测缓存的矩形 ──────────────────────
     if (m_hasFace && m_currentFaceRect.isValid()) {
-        if (m_currentFaceRect.intersected(image.rect()).width() > 0) {
-            constexpr int OUTPUT_SIZE = 256;
-
-            // 长边扩展 1.2 倍后取正方形，确保人脸在 rPPG 算法输入时不被裁切
-            const int faceW = m_currentFaceRect.width();
-            const int faceH = m_currentFaceRect.height();
-            const int squareSide = static_cast<int>(std::max(faceW, faceH) * 1.2);
-
-            const QPoint center = m_currentFaceRect.center();
-            const int half = squareSide / 2;
-            const QRect cropRect(center.x() - half, center.y() - half, squareSide, squareSide);
-
-            // 先在黑底画布上绘制，处理超出原图边界的情况
-            QImage roiImage(squareSide, squareSide, QImage::Format_RGB888);
-            roiImage.fill(Qt::black);
-
-            const QRect srcRect = cropRect.intersected(image.rect());
-            const QRect dstRect = srcRect.translated(-cropRect.topLeft());
-
-            if (srcRect.isValid()) {
-                QPainter painter(&roiImage);
-                painter.drawImage(dstRect, image, srcRect);
-            }
-
-            const QImage scaledRoi = roiImage.scaled(OUTPUT_SIZE, OUTPUT_SIZE,
-                                                      Qt::IgnoreAspectRatio,
-                                                      Qt::SmoothTransformation);
-            emit faceRoiExtracted(scaledRoi);
+        const QRect clipped = m_currentFaceRect.intersected(image.rect());
+        if (clipped.isValid()) {
+            emit faceRoiExtracted(image.copy(clipped));
         }
     }
 
-    // ── 低频管线：每 10 帧触发一次异步检测，防止吃满 CPU ──────────────────────
+    // ── 低频管线：每 5 帧触发一次异步检测，防止吃满 CPU ──────────────────────
     m_frameSkipCounter++;
-    if (m_frameSkipCounter % 10 == 0 && !m_faceDetector.empty() && !m_isProcessing.load()) {
+    if (m_frameSkipCounter % 5 == 0 && !m_faceDetector.empty() && !m_isProcessing.load()) {
         m_isProcessing.store(true);
         const auto mat = ImageHelper::QImage2CvMat(image);
         m_processingFuture = QtConcurrent::run([this, mat] { detectWorker(mat); });

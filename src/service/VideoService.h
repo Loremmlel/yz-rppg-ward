@@ -10,8 +10,8 @@
  * @brief 视频帧处理服务
  *
  * 内部维护两条并行管线：
- *  - 高频管线（每帧）：基于上一次检测结果裁剪人脸 ROI，发射 faceRoiExtracted。
- *  - 低频管线（每 10 帧）：异步运行 YuNet 人脸检测，更新矩形框位置。
+ *  - 高频管线（每帧）：基于上一次检测结果直接裁剪人脸检测框区域，发射 faceRoiExtracted。
+ *  - 低频管线（每 5 帧）：异步运行 YuNet 人脸检测，更新矩形框位置。
  *
  * 两条管线解耦，保证 rPPG 数据流不受检测延迟影响。
  */
@@ -28,7 +28,7 @@ public slots:
 signals:
     void facePositionUpdated(const QRect &rect, bool hasFace);
 
-    /** 裁剪并缩放到 256×256 的人脸 ROI，供 NetworkService 编码发送。 */
+    /** 直接从原图裁剪的人脸检测框区域，供 NetworkService 编码发送。 */
     void faceRoiExtracted(const QImage &roiImage);
 
 private:
