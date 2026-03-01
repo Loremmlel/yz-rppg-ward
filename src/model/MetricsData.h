@@ -1,5 +1,6 @@
 #pragma once
 #include <QMetaType>
+#include <optional>
 
 /**
  * @brief 监测指标数据快照（值对象）
@@ -8,15 +9,13 @@
  * 在 Service、Controller 与 View 之间传递，不持有状态，不触发副作用。
  */
 struct MetricsData {
-    double heartRate;  ///< 心率，单位 bpm
-    double sqi;        ///< 信号质量指数，0-100
+    std::optional<double> hr;   ///< 心率，单位 bpm
+    std::optional<double> sqi;  ///< 信号质量指数，0-1
 
-    MetricsData()
-        : heartRate(0.0), sqi(0.0)
-    {}
+    MetricsData() = default;
 
-    MetricsData(double hr, double sq)
-        : heartRate(hr), sqi(sq)
+    MetricsData(std::optional<double> h, std::optional<double> s)
+        : hr(h), sqi(s)
     {}
 };
 

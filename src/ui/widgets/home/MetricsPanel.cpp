@@ -1,7 +1,6 @@
 #include "MetricsPanel.h"
 #include <QVBoxLayout>
 #include <QLabel>
-#include <cmath>
 
 #include "../../../util/StyleLoader.h"
 
@@ -43,10 +42,21 @@ MetricsPanel::MetricsPanel(QWidget *parent) : QWidget(parent) {
 }
 
 void MetricsPanel::updateData(const MetricsData &data) {
-    if (m_cards.contains("HR"))
-        m_cards["HR"]->setValue(QString("%1 bpm").arg(formatOneDecimal(data.heartRate)));
-    if (m_cards.contains("SQI"))
-        m_cards["SQI"]->setValue(formatOneDecimal(data.sqi));
+    if (m_cards.contains("HR")) {
+        if (data.hr.has_value()) {
+            m_cards["HR"]->setValue(QString("%1 bpm").arg(formatOneDecimal(data.hr.value())));
+        } else {
+            m_cards["HR"]->setValue("-- bpm");
+        }
+    }
+
+    if (m_cards.contains("SQI")) {
+        if (data.sqi.has_value()) {
+            m_cards["SQI"]->setValue(formatOneDecimal(data.sqi.value()));
+        } else {
+            m_cards["SQI"]->setValue("--");
+        }
+    }
 }
 
 void MetricsPanel::addMetricCard(const QString &key, const QString &title, const QString &icon) {

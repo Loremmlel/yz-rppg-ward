@@ -48,18 +48,24 @@ void MetricsService::onServerMessage(const QString &jsonText) {
 
     const QJsonObject obj = doc.object();
 
-    // 字段缺失时回退到当前值，避免单字段异常导致整条数据丢失
-    const double hr = obj.value(WsProtocol::KEY_HEART_RATE).toDouble(m_lastData.heartRate);
-    const double sq = obj.value(WsProtocol::KEY_SQI).toDouble(m_lastData.sqi);
+    std::optional<double> hr;
+    if (obj.contains(WsProtocol::KEY_HEART_RATE) && !obj.value(WsProtocol::KEY_HEART_RATE).isNull()) {
+        hr = obj.value(WsProtocol::KEY_HEART_RATE).toDouble();
+    }
+
+    std::optional<double> sq;
+    if (obj.contains(WsProtocol::KEY_SQI) && !obj.value(WsProtocol::KEY_SQI).isNull()) {
+        sq = obj.value(WsProtocol::KEY_SQI).toDouble();
+    }
 
     m_lastData = MetricsData(hr, sq);
     emit dataUpdated(m_lastData);
 }
 
 void MetricsService::fetchLatestData() {
-    const double hr = 60.0 + QRandomGenerator::global()->generateDouble() * 40.0;  // 60-100
-    const double sq = 50.0 + QRandomGenerator::global()->generateDouble() * 50.0;  // 50-100
+    const double hrVal = 60.0 + QRandomGenerator::global()->generateDouble() * 40.0;
+    const double sqVal = 50.0 + QRandomGenerator::global()->generateDouble() * 50.0;
 
-    m_lastData = MetricsData(hr, sq);
+    m_lastData = MetricsData(hrVal, sqVal);
     emit dataUpdated(m_lastData);
 }
