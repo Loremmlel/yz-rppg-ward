@@ -49,18 +49,17 @@ void MetricsService::onServerMessage(const QString &jsonText) {
     const QJsonObject obj = doc.object();
 
     // 字段缺失时回退到当前值，避免单字段异常导致整条数据丢失
-    const int hr = obj.value(WsProtocol::KEY_HEART_RATE).toInt(m_lastData.heartRate);
-    const int sq = obj.value(WsProtocol::KEY_SQI).toInt(m_lastData.sqi);
+    const double hr = obj.value(WsProtocol::KEY_HEART_RATE).toDouble(m_lastData.heartRate);
+    const double sq = obj.value(WsProtocol::KEY_SQI).toDouble(m_lastData.sqi);
 
     m_lastData = MetricsData(hr, sq);
     emit dataUpdated(m_lastData);
 }
 
 void MetricsService::fetchLatestData() {
-    const int hr = QRandomGenerator::global()->bounded(60, 100);
-    const int sq = QRandomGenerator::global()->bounded(50, 100);
+    const double hr = 60.0 + QRandomGenerator::global()->generateDouble() * 40.0;  // 60-100
+    const double sq = 50.0 + QRandomGenerator::global()->generateDouble() * 50.0;  // 50-100
 
     m_lastData = MetricsData(hr, sq);
     emit dataUpdated(m_lastData);
 }
-

@@ -34,7 +34,7 @@ public slots:
     /**
      * @brief 解析服务器推送的指标 JSON，连接到 WebSocketClient::textMessageReceived。
      *
-     * 期望格式：{ "heart_rate": 72, "sqi": 85 }
+     * 期望格式：{ "heart_rate": 72.3, "sqi": 85.6 }
      * 字段缺失时保留上一次的值。
      */
     void onServerMessage(const QString &jsonText);
@@ -53,4 +53,3 @@ private:
     QTimer *m_timer;
     bool m_onlineMode{false};
 };
-

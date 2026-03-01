@@ -8,14 +8,14 @@
  * 在 Service、Controller 与 View 之间传递，不持有状态，不触发副作用。
  */
 struct MetricsData {
-    int heartRate;  ///< 心率，单位 bpm
-    int sqi;        ///< 信号质量指数，0-100
+    double heartRate;  ///< 心率，单位 bpm
+    double sqi;        ///< 信号质量指数，0-100
 
     MetricsData()
-        : heartRate(0), sqi(0)
+        : heartRate(0.0), sqi(0.0)
     {}
 
-    MetricsData(int hr, int sq)
+    MetricsData(double hr, double sq)
         : heartRate(hr), sqi(sq)
     {}
 };

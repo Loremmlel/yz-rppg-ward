@@ -1,8 +1,19 @@
 #include "MetricsPanel.h"
 #include <QVBoxLayout>
 #include <QLabel>
+#include <cmath>
 
 #include "../../../util/StyleLoader.h"
+
+namespace {
+    double truncateOneDecimal(double value) {
+        return std::trunc(value * 10.0) / 10.0;
+    }
+
+    QString formatOneDecimal(double value) {
+        return QString::number(truncateOneDecimal(value), 'f', 1);
+    }
+}
 
 MetricsPanel::MetricsPanel(QWidget *parent) : QWidget(parent) {
     this->setObjectName("metricsPanel");
@@ -12,7 +23,7 @@ MetricsPanel::MetricsPanel(QWidget *parent) : QWidget(parent) {
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
 
-    auto *titleLabel = new QLabel(QStringLiteral("实时监测指标"), this);
+    auto *titleLabel = new QLabel(QStringLiteral("实时信号"), this);
     titleLabel->setObjectName("metricsTitle");
     titleLabel->setAlignment(Qt::AlignCenter);
     mainLayout->addWidget(titleLabel);
@@ -33,9 +44,9 @@ MetricsPanel::MetricsPanel(QWidget *parent) : QWidget(parent) {
 
 void MetricsPanel::updateData(const MetricsData &data) {
     if (m_cards.contains("HR"))
-        m_cards["HR"]->setValue(QString("%1 bpm").arg(data.heartRate));
+        m_cards["HR"]->setValue(QString("%1 bpm").arg(formatOneDecimal(data.heartRate)));
     if (m_cards.contains("SQI"))
-        m_cards["SQI"]->setValue(QString::number(data.sqi));
+        m_cards["SQI"]->setValue(formatOneDecimal(data.sqi));
 }
 
 void MetricsPanel::addMetricCard(const QString &key, const QString &title, const QString &icon) {
@@ -44,4 +55,3 @@ void MetricsPanel::addMetricCard(const QString &key, const QString &title, const
     m_listLayout->addWidget(card, 1); // stretch=1 让每张卡片均分高度
     m_cards.insert(key, card);
 }
-
