@@ -12,10 +12,12 @@
 FrameUploadService::FrameUploadService(WebSocketClient *wsClient, QObject *parent)
     : QObject(parent), m_wsClient(wsClient),
       m_bedBound(ConfigService::instance()->config().hasBed()) {
-    m_fpsTimer.start();
-
     connect(ConfigService::instance(), &ConfigService::configChanged,
             this, &FrameUploadService::onConfigChanged);
+
+    m_statsTimer.setInterval(STATS_INTERVAL_MS);
+    connect(&m_statsTimer, &QTimer::timeout, this, &FrameUploadService::printStats);
+    m_statsTimer.start();
 }
 
 void FrameUploadService::onConfigChanged(const AppConfig &config) {
@@ -24,15 +26,11 @@ void FrameUploadService::onConfigChanged(const AppConfig &config) {
 
 void FrameUploadService::sendEncodedFrame(const QByteArray &frame) {
     if (!m_bedBound) {
-        return; // 未绑定床位，丢弃帧
-    }
-
-    if (m_fpsTimer.elapsed() < FRAME_INTERVAL_MS) {
+        m_statDropNoBed++;
         return;
     }
-    m_fpsTimer.restart();
 
-    // 调试预览：将已编码的 WebP 解码后显示在独立窗口
+    // 调试预览：将已编码的图像数据解码后显示在独立窗口
 #ifdef QT_DEBUG
     static QLabel *previewLabel = [] {
         auto *label = new QLabel();
@@ -41,9 +39,9 @@ void FrameUploadService::sendEncodedFrame(const QByteArray &frame) {
         label->show();
         return label;
     }();
-    // 跳过前 8 字节时间戳，剩余为 WebP 数据
-    const QByteArray webpData = frame.mid(static_cast<qsizetype>(sizeof(qint64)));
-    const std::vector<uchar> buf(webpData.cbegin(), webpData.cend());
+    // 跳过前 8 字节时间戳，剩余为 imageData
+    const QByteArray imageData = frame.mid(static_cast<qsizetype>(sizeof(qint64)));
+    const std::vector<uchar> buf(imageData.cbegin(), imageData.cend());
     if (const auto decoded = cv::imdecode(buf, cv::IMREAD_COLOR);
         !decoded.empty()) {
         const QImage img(decoded.data, decoded.cols, decoded.rows, decoded.step, QImage::Format_BGR888);
@@ -56,6 +54,23 @@ void FrameUploadService::sendEncodedFrame(const QByteArray &frame) {
     QMetaObject::invokeMethod(m_wsClient, "sendBinaryMessage",
                               Qt::QueuedConnection,
                               Q_ARG(QByteArray, frame));
+    m_statUploaded++;
+}
 
-    qDebug() << "[FrameUploadService] 已发送帧，帧大小:" << frame.size() << "字节";
+void FrameUploadService::printStats() {
+    const int arrived = m_statUploaded + m_statDropNoBed;
+    if (arrived == 0) return;
+
+    const double uploadFps = m_statUploaded * 1000.0 / STATS_INTERVAL_MS;
+
+    qDebug().noquote() << QString(
+        "[FrameUpload] 近 %1s | 到达 %2 | 上传 %3 (%4fps) | 无床位丢弃 %5"
+    ).arg(STATS_INTERVAL_MS / 1000)
+     .arg(arrived)
+     .arg(m_statUploaded)
+     .arg(QString::number(uploadFps, 'f', 1))
+     .arg(m_statDropNoBed);
+
+    m_statUploaded  = 0;
+    m_statDropNoBed = 0;
 }

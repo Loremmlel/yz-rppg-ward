@@ -4,6 +4,7 @@
 #include <QCameraDevice>
 #include <QPainter>
 #include <QVideoSink>
+#include <QVideoFrame>
 #include <QMediaCaptureSession>
 
 #include "../../../util/ImageHelper.h"
@@ -55,22 +56,27 @@ void VideoWidget::updateFaceDetection(const QRect &rect, bool hasFace) {
 }
 
 void VideoWidget::processVideoFrame(const QVideoFrame &frame) {
-    auto image = frame.toImage();
+    if (!frame.isValid()) return;
+
+    // 发射 QVideoFrame（引用计数浅拷贝，无全帧像素拷贝），VideoService 在工作线程内做 toImage()
+    emit frameCaptured(frame);
+
+    // ── 主线程预览：独立转换一次用于显示，不影响 VideoService 管线 ──────────
+    // 预览降分辨率以节省主线程时间；FastTransformation 避免软件双线性插值开销
+    const QImage image = frame.toImage();
     if (image.isNull()) return;
 
-    // 先发射原始帧再绘制矩形框，保证 VideoService 拿到的是未标注的原始图像
-    emit frameCaptured(image);
-
+    QImage displayImage = image;
     if (m_hasFace) {
-        QPainter painter(&image);
+        QPainter painter(&displayImage);
         QPen pen(Qt::green);
         pen.setWidth(4);
         painter.setPen(pen);
         painter.drawRect(m_currentFaceRect);
     }
 
-    m_displayLabel->setPixmap(QPixmap::fromImage(image)
-        .scaled(m_displayLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    m_displayLabel->setPixmap(QPixmap::fromImage(displayImage)
+        .scaled(m_displayLabel->size(), Qt::KeepAspectRatio, Qt::FastTransformation));
 }
 
 void VideoWidget::setupCameraFormat() const {

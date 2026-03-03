@@ -2,6 +2,7 @@
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QCamera>
+#include <QVideoFrame>
 #include <QVideoWidget>
 
 #include "../../../service/VideoService.h"
@@ -11,7 +12,9 @@
  * @brief 摄像头视频预览组件
  *
  * 负责摄像头初始化、帧采集与画面渲染。
- * 每帧通过 frameCaptured 向外发射原始图像，由 VideoService 做进一步处理。
+ * 每帧通过 frameCaptured 发射 QVideoFrame（引用计数，无深拷贝），
+ * 由 VideoService 在工作线程内完成 YUV→RGB 转换与后续处理。
+ * 主线程仅负责预览渲染，不参与任何图像处理。
  * 人脸检测结果由外部回调 updateFaceDetection 注入，组件不持有检测逻辑。
  * 状态提示（人脸未检测到、床位未绑定等）由外部 StatusBar 管理。
  */
@@ -24,8 +27,8 @@ public:
     ~VideoWidget() override;
 
 signals:
-    /** 摄像头每帧原始图像，发往 VideoService 做人脸检测与 ROI 裁剪。 */
-    void frameCaptured(const QImage &image);
+    /** 摄像头原始帧（QVideoFrame 引用计数浅拷贝），发往 VideoService 在工作线程处理。 */
+    void frameCaptured(const QVideoFrame &frame);
 
 public slots:
     void updateFaceDetection(const QRect &rect, bool hasFace);

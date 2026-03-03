@@ -16,7 +16,9 @@ AppController::AppController(QObject *parent)
     m_videoThread->start();
     m_wsThread->start();
 
-    // ── 上行：视频帧 → 人脸检测 → WebP 编码（工作线程） → WebSocket ──────────
+    // ── 上行：视频帧 → 人脸检测 → 编码（工作线程） → WebSocket ──────────
+    // QVideoFrame 是引用计数类型，QueuedConnection 跨线程传递无深拷贝（原 QImage 需拷贝 ~8MB）
+    // toImage()/YUV→RGB 转换在 VideoService 工作线程完成，主线程不参与任何图像处理
     connect(m_mainWindow->getVideoWidget(), &VideoWidget::frameCaptured,
             m_videoService.get(), &VideoService::processFrame, Qt::QueuedConnection);
 
