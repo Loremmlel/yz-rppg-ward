@@ -38,7 +38,7 @@ MetricChart::MetricChart(QColor lineColor,
     m_axisY = new QValueAxis(m_chart);
     m_axisY->setRange(0, 1);
     m_axisY->setTickCount(3);
-    m_axisY->setLabelFormat("%.1f");
+    m_axisY->setLabelFormat("%.3f");
     m_axisY->setLabelsColor(QColor(150, 150, 150));
     QFont axisFont;
     axisFont.setPointSize(8);
@@ -219,10 +219,10 @@ std::pair<double, double> MetricChart::calcYRange() const {
     double dMin = std::numeric_limits<double>::max();
     double dMax = std::numeric_limits<double>::lowest();
 
-    for (const auto &pt : m_points) {
-        if (pt.y.has_value()) {
-            dMin = std::min(dMin, pt.y.value());
-            dMax = std::max(dMax, pt.y.value());
+    for (const auto &[x, y] : m_points) {
+        if (y.has_value()) {
+            dMin = std::min(dMin, y.value());
+            dMax = std::max(dMax, y.value());
         }
     }
 

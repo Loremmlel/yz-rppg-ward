@@ -5,12 +5,12 @@
 #include "../../../util/StyleLoader.h"
 
 namespace {
-    double truncateOneDecimal(double value) {
-        return std::trunc(value * 10.0) / 10.0;
+    double truncateDecimal(const double value, const int precision) {
+        return std::floor(value * std::pow(10, precision)) / std::pow(10, precision);
     }
 
-    QString formatOneDecimal(double value) {
-        return QString::number(truncateOneDecimal(value), 'f', 1);
+    QString formatDecimal(const double value, const int precision) {
+        return QString::number(truncateDecimal(value, precision), 'f', precision);
     }
 
     constexpr double kSqiLowThreshold = 0.5;
@@ -50,7 +50,7 @@ void MetricsPanel::updateData(const MetricsData &data) {
     // ── HR ──
     if (m_cards.contains("HR")) {
         if (data.hr.has_value()) {
-            m_cards["HR"]->setValue(QString("%1 bpm").arg(formatOneDecimal(data.hr.value())));
+            m_cards["HR"]->setValue(QString("%1 bpm").arg(formatDecimal(data.hr.value(), 2)));
         } else {
             m_cards["HR"]->setValue("-- bpm");
         }
@@ -60,7 +60,7 @@ void MetricsPanel::updateData(const MetricsData &data) {
     // ── SQI ──
     if (m_cards.contains("SQI")) {
         if (data.sqi.has_value()) {
-            m_cards["SQI"]->setValue(formatOneDecimal(data.sqi.value()));
+            m_cards["SQI"]->setValue(formatDecimal(data.sqi.value(), 3));
         } else {
             m_cards["SQI"]->setValue("--");
         }
