@@ -50,7 +50,7 @@ void MetricsPanel::updateData(const MetricsData &data) {
     // ── HR ──
     if (m_cards.contains("HR")) {
         if (data.hr.has_value()) {
-            m_cards["HR"]->setValue(QString("%1 bpm").arg(formatDecimal(data.hr.value(), 2)));
+            m_cards["HR"]->setValue(QString("%1 bpm").arg(formatDecimal(data.hr.value(), 0)));
         } else {
             m_cards["HR"]->setValue("-- bpm");
         }

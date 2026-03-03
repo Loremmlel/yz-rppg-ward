@@ -101,9 +101,9 @@ void MetricChart::rebuildSeries() {
         return;
     }
 
-    // ── 更新 Y 轴 ──
+    // 先计算范围，但等所有 series attach 完后再设置，
+    // 否则 attachAxis 会用 series 数据范围覆盖掉 padding 后的值
     auto [yMin, yMax] = calcYRange();
-    m_axisY->setRange(yMin, yMax);
 
     // ── 辅助：构建一条从起始到结束的 QLineSeries（单段） ──
     // 返回值的所有权交给调用者（再 addSeries 给 chart）
@@ -212,6 +212,9 @@ void MetricChart::rebuildSeries() {
         line->attachAxis(m_axisX);
         line->attachAxis(m_axisY);
     }
+
+    // 所有 series 已 attach 完毕，现在设置 Y 轴范围才不会被覆盖
+    m_axisY->setRange(yMin, yMax);
 }
 
 // ── 内部：Y 轴范围计算 ────────────────────────────────────────

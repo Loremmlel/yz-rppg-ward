@@ -39,8 +39,9 @@ signals:
 private:
     void detectWorker(const cv::Mat &mat);
 
-    /** 将人脸 ROI 编码为 [8B 时间戳 + 无损 WebP]，返回空则编码失败。 */
-    static QByteArray encodeRoi(const QImage &roi);
+    /** 将人脸 ROI 编码为 [8B 时间戳 + 无损 WebP]，返回空则编码失败。
+     *  @param captureTimestampMs 摄像头采集时间戳（ms，来自调用方）*/
+    static QByteArray encodeRoi(const QImage &roi, qint64 captureTimestampMs);
 
     /**
      * @brief 将模型从 Qt 资源包解压到可执行文件同级目录

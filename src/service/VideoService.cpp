@@ -36,6 +36,9 @@ VideoService::~VideoService() {
 void VideoService::processFrame(const QImage &image) {
     if (image.isNull()) return;
 
+    // 摄像头采集时间戳：在帧进入处理管线的第一时间记录，作为帧的采集时间
+    const qint64 captureTimestampMs = QDateTime::currentMSecsSinceEpoch();
+
     // ── 高频管线：每帧都执行，用卡尔曼滤波平滑人脸位置 ──────────────────────
     if (m_hasFace && m_hasKalman) {
         // 跳帧时用上一次原始观测值做 update（hold + smooth）
@@ -63,8 +66,8 @@ void VideoService::processFrame(const QImage &image) {
         if (clipped.isValid() && !m_isEncoding.load()) {
             m_isEncoding.store(true);
             const QImage roi = image.copy(clipped);
-            QThreadPool::globalInstance()->start([this, roi] {
-                if (const auto frame = encodeRoi(roi);
+            QThreadPool::globalInstance()->start([this, roi, captureTimestampMs] {
+                if (const auto frame = encodeRoi(roi, captureTimestampMs);
                     !frame.isEmpty()) {
                     emit faceRoiEncoded(frame);
                 }
@@ -154,7 +157,7 @@ void VideoService::detectWorker(const cv::Mat &mat) {
     }, Qt::QueuedConnection);
 }
 
-QByteArray VideoService::encodeRoi(const QImage &roi) {
+QByteArray VideoService::encodeRoi(const QImage &roi, const qint64 captureTimestampMs) {
     const cv::Mat mat = ImageHelper::QImage2CvMat(roi);
     std::vector<uchar> webpBuf;
     if (const std::vector params = {cv::IMWRITE_WEBP_QUALITY, 101};
@@ -163,12 +166,11 @@ QByteArray VideoService::encodeRoi(const QImage &roi) {
         return {};
     }
 
-    const qint64 timestampMs = QDateTime::currentMSecsSinceEpoch();
     QByteArray frame;
     frame.reserve(static_cast<qsizetype>(sizeof(qint64) + webpBuf.size()));
     QDataStream ds(&frame, QIODevice::WriteOnly);
     ds.setByteOrder(QDataStream::BigEndian);
-    ds << timestampMs;
+    ds << captureTimestampMs;
     frame.append(reinterpret_cast<const char *>(webpBuf.data()),
                  static_cast<qsizetype>(webpBuf.size()));
     return frame;
