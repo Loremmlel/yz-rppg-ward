@@ -2,6 +2,7 @@
 
 #include <QVBoxLayout>
 #include <QMap>
+#include <QColor>
 
 #include "MetricCard.h"
 #include "../../../model/MetricsData.h"
@@ -22,10 +23,15 @@ public slots:
     void updateData(const MetricsData &data);
 
 private:
-    void addMetricCard(const QString &key, const QString &title, const QString &icon);
+    void addMetricCard(const QString &key, const QString &title, const QString &icon,
+                       QColor chartColor,
+                       bool enableLowQualityFill = false,
+                       double lowQualityThreshold = 0.5,
+                       bool showLowQualityWarning = false);
 
     QVBoxLayout *m_listLayout{nullptr};
+    QMap<QString, MetricCard *> m_cards;
 
-    QMap<QString, MetricCard *> m_cards; ///< key 与 MetricsData 字段名对应
+    bool m_lastLowQuality{false}; ///< 上一帧 SQI 低质量状态，避免重复 setLowQuality 调用
 };
 

@@ -63,10 +63,20 @@ MetricCard:hover {
     color: #7E57C2;
 }
 
-/* ---------- 趋势图预留区域 ---------- */
-#trendChartPlaceholder {
-    background-color: #F8F9FA;
-    border: 1px dashed #DEE2E6;
-    border-radius: 8px;
+/* ---------- 趋势折线图 ---------- */
+#trendChart {
+    background-color: transparent;
+    border-radius: 6px;
+}
+
+/* ---------- 信号质量不佳警告标签 ---------- */
+#metricWarningLabel {
+    color: #D32F2F;
+    font-size: 13px;
+    font-weight: bold;
+    background-color: rgba(255, 235, 235, 200);
+    border: 1px solid #FFCDD2;
+    border-radius: 6px;
+    padding: 3px 10px;
 }
 

@@ -22,6 +22,7 @@ find_package(Qt6 COMPONENTS
         MultimediaWidgets
         Network
         WebSockets
+        Charts
         REQUIRED)
 
 file(GLOB_RECURSE SRC_FILES
@@ -44,6 +45,7 @@ target_link_libraries(ward
         Qt6::MultimediaWidgets
         Qt6::Network
         Qt6::WebSockets
+        Qt6::Charts
         ${OpenCV_LIBS}
 )
 

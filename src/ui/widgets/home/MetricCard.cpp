@@ -1,6 +1,7 @@
 #include "MetricCard.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QStackedLayout>
 #include <QPainter>
 #include <QStyleOption>
 #include <QFile>
@@ -8,15 +9,22 @@
 
 #include "../../../util/StyleLoader.h"
 
-MetricCard::MetricCard(const QString &title, const QString &icon, QWidget *parent)
-    : QFrame(parent) {
+MetricCard::MetricCard(const QString &title, const QString &icon,
+                       QColor chartColor,
+                       bool enableLowQualityFill,
+                       double lowQualityThreshold,
+                       bool showLowQualityWarning,
+                       QWidget *parent)
+    : QFrame(parent)
+    , m_showWarning(showLowQualityWarning)
+{
     // objectName 与 QSS 选择器绑定，修改时需同步更新样式文件
     this->setObjectName("MetricCard");
     this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     this->setFrameShape(QFrame::StyledPanel);
     StyleLoader::apply(this, QStringLiteral(":/styles/metric_card.qss"));
 
-    // ── 整体纵向布局：上部信息行 + 下部趋势图区域 ──
+    // ── 整体纵向布局：上部信息行 + 下部趋势图 ──
     auto *mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(20, 15, 20, 15);
     mainLayout->setSpacing(10);
@@ -50,13 +58,22 @@ MetricCard::MetricCard(const QString &title, const QString &icon, QWidget *paren
 
     mainLayout->addLayout(topRow);
 
-    // ── 下部：预留趋势折线图区域 ──
-    m_trendArea = new QWidget(this);
-    m_trendArea->setObjectName("trendChartPlaceholder");
-    m_trendArea->setMinimumHeight(60);
-    m_trendArea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    // ── 中部可选警告标签（叠加在图表上方，默认隐藏） ──
+    if (m_showWarning) {
+        m_warningLabel = new QLabel(QStringLiteral("⚠ 信号质量不佳"), this);
+        m_warningLabel->setObjectName("metricWarningLabel");
+        m_warningLabel->setAlignment(Qt::AlignCenter);
+        m_warningLabel->setVisible(false);
+        mainLayout->addWidget(m_warningLabel, 0, Qt::AlignHCenter);
+    }
 
-    mainLayout->addWidget(m_trendArea, 1); // stretch=1 让趋势区域占据剩余空间
+    // ── 下部：趋势折线图 ──
+    m_chart = new MetricChart(chartColor, enableLowQualityFill, lowQualityThreshold, this);
+    m_chart->setObjectName("trendChart");
+    m_chart->setMinimumHeight(60);
+    m_chart->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+    mainLayout->addWidget(m_chart, 1); // stretch=1 让趋势图占据剩余空间
 }
 
 void MetricCard::setIcon(const QString &iconStr) const {
@@ -81,3 +98,13 @@ void MetricCard::setValue(const QString &value) const {
     m_valueLabel->setText(value);
 }
 
+void MetricCard::addDataPoint(std::optional<double> value) const {
+    m_chart->addDataPoint(value);
+}
+
+void MetricCard::setLowQuality(bool low) const {
+    m_chart->setLowQualityOverlay(low);
+    if (m_showWarning && m_warningLabel) {
+        m_warningLabel->setVisible(low);
+    }
+}
