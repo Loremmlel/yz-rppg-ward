@@ -1,9 +1,6 @@
 #include "MetricCard.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-#include <QStackedLayout>
-#include <QPainter>
-#include <QStyleOption>
 #include <QFile>
 #include <QPixmap>
 
@@ -11,8 +8,7 @@
 
 MetricCard::MetricCard(const QString &title, const QString &icon,
                        QColor chartColor,
-                       bool enableLowQualityFill,
-                       double lowQualityThreshold,
+                       MetricChart::AxisMode axisMode,
                        bool showLowQualityWarning,
                        QWidget *parent)
     : QFrame(parent)
@@ -68,7 +64,7 @@ MetricCard::MetricCard(const QString &title, const QString &icon,
     }
 
     // ── 下部：趋势折线图 ──
-    m_chart = new MetricChart(chartColor, enableLowQualityFill, lowQualityThreshold, this);
+    m_chart = new MetricChart(chartColor, axisMode, this);
     m_chart->setObjectName("trendChart");
     m_chart->setMinimumHeight(60);
     m_chart->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -98,13 +94,12 @@ void MetricCard::setValue(const QString &value) const {
     m_valueLabel->setText(value);
 }
 
-void MetricCard::addDataPoint(std::optional<double> value) const {
-    m_chart->addDataPoint(value);
+void MetricCard::addDataPoint(std::optional<double> value, bool lowQuality) const {
+    m_chart->addDataPoint(value, lowQuality);
 }
 
-void MetricCard::setLowQuality(bool low) const {
-    m_chart->setLowQualityOverlay(low);
+void MetricCard::setLowQualityWarning(bool show) const {
     if (m_showWarning && m_warningLabel) {
-        m_warningLabel->setVisible(low);
+        m_warningLabel->setVisible(show);
     }
 }

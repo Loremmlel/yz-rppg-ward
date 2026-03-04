@@ -11,20 +11,18 @@
 
 // ── 构造 ─────────────────────────────────────────────────────
 MetricChart::MetricChart(QColor lineColor,
-                         bool enableLowQualityFill,
-                         double lowQualityThreshold,
+                         AxisMode axisMode,
                          QWidget *parent)
     : QWidget(parent)
     , m_lineColor(lineColor)
-    , m_enableLowQualityFill(enableLowQualityFill)
-    , m_lowQualityThreshold(lowQualityThreshold)
+    , m_axisMode(axisMode)
 {
     setMinimumHeight(50);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     // ── Chart ──
     m_chart = new QChart();
-    m_chart->setBackgroundVisible(false);       // 背景透明，由 QSS 控制
+    m_chart->setBackgroundVisible(false);
     m_chart->setBackgroundRoundness(0);
     m_chart->setMargins(QMargins(0, 0, 0, 0));
     m_chart->legend()->hide();
@@ -33,10 +31,9 @@ MetricChart::MetricChart(QColor lineColor,
     // ── 坐标轴 ──
     m_axisX = new QValueAxis(m_chart);
     m_axisX->setRange(0, kMaxPoints - 1);
-    m_axisX->setVisible(false);               // 不显示 X 轴标签 / 网格线
+    m_axisX->setVisible(false);
 
     m_axisY = new QValueAxis(m_chart);
-    m_axisY->setRange(0, 1);
     m_axisY->setTickCount(3);
     m_axisY->setLabelFormat("%.3f");
     m_axisY->setLabelsColor(QColor(150, 150, 150));
@@ -45,6 +42,13 @@ MetricChart::MetricChart(QColor lineColor,
     m_axisY->setLabelsFont(axisFont);
     m_axisY->setGridLineColor(QColor(220, 220, 220, 80));
     m_axisY->setLinePen(Qt::NoPen);
+
+    // 初始 Y 轴范围
+    if (m_axisMode == AxisMode::Fixed01) {
+        m_axisY->setRange(0.0, 1.0);
+    } else {
+        m_axisY->setRange(0.0, 100.0);
+    }
 
     m_chart->addAxis(m_axisX, Qt::AlignBottom);
     m_chart->addAxis(m_axisY, Qt::AlignLeft);
@@ -62,10 +66,9 @@ MetricChart::MetricChart(QColor lineColor,
 }
 
 // ── 公开接口 ─────────────────────────────────────────────────
-void MetricChart::addDataPoint(std::optional<double> value) {
-    // 时间戳：始终填满 [0, kMaxPoints-1] 窗口
+void MetricChart::addDataPoint(std::optional<double> value, bool lowQuality) {
     double newX = m_points.isEmpty() ? 0.0 : m_points.back().x + 1.0;
-    m_points.append({newX, value});
+    m_points.append({newX, value, lowQuality});
 
     if (m_points.size() > kMaxPoints) {
         m_points.removeFirst();
@@ -85,29 +88,14 @@ void MetricChart::clearData() {
     rebuildSeries();
 }
 
-void MetricChart::setLowQualityOverlay(bool on) {
-    if (m_lowQualityOverlay == on) return;
-    m_lowQualityOverlay = on;
-    rebuildSeries();
-}
-
 // ── 内部：重建所有 series ─────────────────────────────────────
 void MetricChart::rebuildSeries() {
-    // 移除旧 series（QChart 会 delete 它们）
     m_chart->removeAllSeries();
 
-    if (m_points.isEmpty()) {
-        m_axisY->setRange(0, 1);
-        return;
-    }
-
-    // 先计算范围，但等所有 series attach 完后再设置，
-    // 否则 attachAxis 会用 series 数据范围覆盖掉 padding 后的值
     auto [yMin, yMax] = calcYRange();
 
-    // ── 辅助：构建一条从起始到结束的 QLineSeries（单段） ──
-    // 返回值的所有权交给调用者（再 addSeries 给 chart）
-    auto makeSegmentSeries = [&](const int from, const int to) -> QLineSeries * {
+    // ── 辅助：构建一段折线 ──
+    auto makeSegmentSeries = [&](int from, int to) -> QLineSeries * {
         auto *s = new QLineSeries();
         QPen pen(m_lineColor, 2.0);
         pen.setCapStyle(Qt::RoundCap);
@@ -121,16 +109,14 @@ void MetricChart::rebuildSeries() {
         return s;
     };
 
-    // ── 辅助：为一段折线创建红色渐变 area ──
+    // ── 辅助：为折线段创建红色渐变 area（从折线到 yMin） ──
     auto makeRedArea = [&](QLineSeries *upper) -> QAreaSeries * {
-        auto *lower = new QLineSeries(); // X 轴基线（y = yMin）
+        auto *lower = new QLineSeries();
         for (const QPointF &pt : upper->points()) {
             lower->append(pt.x(), yMin);
         }
         auto *area = new QAreaSeries(upper, lower);
         area->setOpacity(1.0);
-        // 渐变：从折线顶部（半透明红）到底部（透明）
-        // 使用 ObjectMode（Qt6 等价于 ObjectBoundingBoxMode）
         QLinearGradient grad(0, 0, 0, 1);
         grad.setCoordinateMode(QGradient::ObjectMode);
         grad.setColorAt(0.0, QColor(255, 60, 60, 110));
@@ -140,8 +126,8 @@ void MetricChart::rebuildSeries() {
         return area;
     };
 
-    // ── 1. 将数据按 null 断点切分成连续段 ──
-    QList<QPair<int, int>> segments; // [from, to] inclusive
+    // ── 1. 按 null 断点切出连续有效段 ──
+    QList<QPair<int, int>> segments;
     int segStart = -1;
     for (int i = 0; i < m_points.size(); ++i) {
         if (m_points[i].y.has_value()) {
@@ -153,50 +139,31 @@ void MetricChart::rebuildSeries() {
             }
         }
     }
-    if (segStart >= 0) {
-        segments.append({segStart, m_points.size() - 1});
-    }
+    if (segStart >= 0) segments.append({segStart, m_points.size() - 1});
 
-    // ── 2. 按段绘制折线，并在需要时叠加红色渐变 area ──
+    // ── 2. 对每个连续段，按 lowQuality 标记切出子段，分别绘制红色 area 和主折线 ──
     for (const auto &[from, to] : segments) {
-        // ── 2a. 对 SQI 卡：找出段内低质量子段并着色 ──
-        if (m_enableLowQualityFill && !m_lowQualityOverlay) {
-            // 在当前段内按阈值切出更细的子段
-            int subStart = -1;
-            for (int i = from; i <= to; ++i) {
-                bool low = m_points[i].y.has_value()
-                           && m_points[i].y.value() < m_lowQualityThreshold;
-                if (low) {
-                    if (subStart < 0) subStart = i;
-                } else {
-                    if (subStart >= 0) {
-                        auto *upper = makeSegmentSeries(subStart, i - 1);
-                        m_chart->addSeries(upper);
-                        upper->attachAxis(m_axisX);
-                        upper->attachAxis(m_axisY);
-                        auto *area = makeRedArea(upper);
-                        m_chart->addSeries(area);
-                        area->attachAxis(m_axisX);
-                        area->attachAxis(m_axisY);
-                        subStart = -1;
-                    }
+        // 2a. 找出段内所有 lowQuality 连续子段，叠加红色渐变
+        int subStart = -1;
+        for (int i = from; i <= to; ++i) {
+            if (m_points[i].lowQuality) {
+                if (subStart < 0) subStart = i;
+            } else {
+                if (subStart >= 0) {
+                    auto *upper = makeSegmentSeries(subStart, i - 1);
+                    m_chart->addSeries(upper);
+                    upper->attachAxis(m_axisX);
+                    upper->attachAxis(m_axisY);
+                    auto *area = makeRedArea(upper);
+                    m_chart->addSeries(area);
+                    area->attachAxis(m_axisX);
+                    area->attachAxis(m_axisY);
+                    subStart = -1;
                 }
             }
-            if (subStart >= 0) {
-                auto *upper = makeSegmentSeries(subStart, to);
-                m_chart->addSeries(upper);
-                upper->attachAxis(m_axisX);
-                upper->attachAxis(m_axisY);
-                auto *area = makeRedArea(upper);
-                m_chart->addSeries(area);
-                area->attachAxis(m_axisX);
-                area->attachAxis(m_axisY);
-            }
         }
-
-        // ── 2b. 全局低质量叠加（HR 卡跟随 SQI 状态） ──
-        if (m_lowQualityOverlay) {
-            auto *upper = makeSegmentSeries(from, to);
+        if (subStart >= 0) {
+            auto *upper = makeSegmentSeries(subStart, to);
             m_chart->addSeries(upper);
             upper->attachAxis(m_axisX);
             upper->attachAxis(m_axisY);
@@ -206,35 +173,41 @@ void MetricChart::rebuildSeries() {
             area->attachAxis(m_axisY);
         }
 
-        // ── 2c. 主折线（总是绘制，覆盖在渐变上方） ──
+        // 2b. 主折线（覆盖在渐变上方）
         auto *line = makeSegmentSeries(from, to);
         m_chart->addSeries(line);
         line->attachAxis(m_axisX);
         line->attachAxis(m_axisY);
     }
 
-    // 所有 series 已 attach 完毕，现在设置 Y 轴范围才不会被覆盖
+    // 所有 series attach 完毕后设置 Y 轴范围
     m_axisY->setRange(yMin, yMax);
 }
 
 // ── 内部：Y 轴范围计算 ────────────────────────────────────────
 std::pair<double, double> MetricChart::calcYRange() const {
+    if (m_axisMode == AxisMode::Fixed01) {
+        return {0.0, 1.0};
+    }
+
+    // ElasticFrom100：初始下限 0，上限至少 100，数据超出时弹性扩展
     double dMin = std::numeric_limits<double>::max();
     double dMax = std::numeric_limits<double>::lowest();
 
-    for (const auto &[x, y] : m_points) {
+    for (const auto &[x, y, lq] : m_points) {
         if (y.has_value()) {
             dMin = std::min(dMin, y.value());
             dMax = std::max(dMax, y.value());
         }
     }
 
-    if (dMin > dMax) return {0.0, 1.0};
+    if (dMin > dMax) return {0.0, 100.0};  // 无数据，保持初始范围
 
-    double span = dMax - dMin;
-    constexpr double kMinSpan = 1e-6;
-    if (span < kMinSpan) span = kMinSpan;
+    // 下限固定 0，上限至少 100
+    double lo = 0.0;
+    double hi = std::max(100.0, dMax);
 
-    constexpr double kPad = 0.15;
-    return {dMin - span * kPad, dMax + span * kPad};
+    double span = hi - lo;
+    constexpr double kPad = 0.10;
+    return {lo - span * kPad, hi + span * kPad};
 }

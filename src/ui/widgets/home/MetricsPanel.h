@@ -25,13 +25,11 @@ public slots:
 private:
     void addMetricCard(const QString &key, const QString &title, const QString &icon,
                        QColor chartColor,
-                       bool enableLowQualityFill = false,
-                       double lowQualityThreshold = 0.5,
+                       MetricChart::AxisMode axisMode = MetricChart::AxisMode::ElasticFrom100,
                        bool showLowQualityWarning = false);
 
     QVBoxLayout *m_listLayout{nullptr};
     QMap<QString, MetricCard *> m_cards;
 
-    bool m_lastLowQuality{false}; ///< 上一帧 SQI 低质量状态，避免重复 setLowQuality 调用
+    bool m_lastLowQuality{false}; ///< 上一帧 SQI 低质量状态，避免重复触发警告标签更新
 };
-

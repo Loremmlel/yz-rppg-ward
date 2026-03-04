@@ -19,30 +19,34 @@ class MetricCard : public QFrame {
 public:
     explicit MetricCard(const QString &title, const QString &icon,
                         QColor chartColor,
-                        bool enableLowQualityFill = false,
-                        double lowQualityThreshold = 0.5,
+                        MetricChart::AxisMode axisMode = MetricChart::AxisMode::ElasticFrom100,
                         bool showLowQualityWarning = false,
                         QWidget *parent = nullptr);
 
     void setValue(const QString &value) const;
     void setIcon(const QString &iconStr) const;
 
-    /** 向趋势图追加一个数据点；nullopt 表示数据缺失（折线断开） */
-    void addDataPoint(std::optional<double> value) const;
+    /**
+     * @brief 向趋势图追加一个数据点
+     * @param value      数值（nullopt 表示缺失，折线断开）
+     * @param lowQuality 该时刻信号质量不佳，折线下方填充红色渐变
+     */
+    void addDataPoint(std::optional<double> value, bool lowQuality = false) const;
 
     /**
-     * @brief 设置"信号质量不佳"状态
+     * @brief 设置"信号质量不佳"警告标签的显示状态
      *
-     * - 触发图表红色渐变叠加
-     * - 若 showLowQualityWarning=true，在卡片中央显示/隐藏警告文字
+     * 仅在 showLowQualityWarning=true 时有效。
+     * 图表着色已通过 addDataPoint 的 lowQuality 参数逐点控制，无需此接口操作图表。
      */
-    void setLowQuality(bool low) const;
+    void setLowQualityWarning(bool show) const;
 
 private:
     QLabel      *m_iconLabel{nullptr};
     QLabel      *m_titleLabel{nullptr};
     QLabel      *m_valueLabel{nullptr};
     QLabel      *m_warningLabel{nullptr};  ///< "信号质量不佳" 警告（可为 nullptr）
+
     MetricChart *m_chart{nullptr};
 
     bool m_showWarning{false};
