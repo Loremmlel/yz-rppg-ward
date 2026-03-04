@@ -109,11 +109,19 @@ void MetricChart::rebuildSeries() {
         return s;
     };
 
-    // ── 辅助：为折线段创建红色渐变 area（从折线到 yMin） ──
-    auto makeRedArea = [&](QLineSeries *upper) -> QAreaSeries * {
+    // ── 辅助：为指定点集创建红色渐变 area（从折线到 yMin）
+    //   注意：QAreaSeries 会接管 upper/lower 的所有权，
+    //   因此每次都新建独立的 QLineSeries，不与主折线对象共用。 ──
+    auto makeRedArea = [&](int from, int to) -> QAreaSeries * {
+        auto *upper = new QLineSeries();
         auto *lower = new QLineSeries();
-        for (const QPointF &pt : upper->points()) {
-            lower->append(pt.x(), yMin);
+        for (int i = from; i <= to; ++i) {
+            if (m_points[i].y.has_value()) {
+                double xv = m_points[i].x;
+                double yv = m_points[i].y.value();
+                upper->append(xv, yv);
+                lower->append(xv, yMin);
+            }
         }
         auto *area = new QAreaSeries(upper, lower);
         area->setOpacity(1.0);
@@ -143,18 +151,14 @@ void MetricChart::rebuildSeries() {
 
     // ── 2. 对每个连续段，按 lowQuality 标记切出子段，分别绘制红色 area 和主折线 ──
     for (const auto &[from, to] : segments) {
-        // 2a. 找出段内所有 lowQuality 连续子段，叠加红色渐变
+        // 2a. 找出段内所有 lowQuality 连续子段，叠加红色渐变 area
         int subStart = -1;
         for (int i = from; i <= to; ++i) {
             if (m_points[i].lowQuality) {
                 if (subStart < 0) subStart = i;
             } else {
                 if (subStart >= 0) {
-                    auto *upper = makeSegmentSeries(subStart, i - 1);
-                    m_chart->addSeries(upper);
-                    upper->attachAxis(m_axisX);
-                    upper->attachAxis(m_axisY);
-                    auto *area = makeRedArea(upper);
+                    auto *area = makeRedArea(subStart, i - 1);
                     m_chart->addSeries(area);
                     area->attachAxis(m_axisX);
                     area->attachAxis(m_axisY);
@@ -163,17 +167,13 @@ void MetricChart::rebuildSeries() {
             }
         }
         if (subStart >= 0) {
-            auto *upper = makeSegmentSeries(subStart, to);
-            m_chart->addSeries(upper);
-            upper->attachAxis(m_axisX);
-            upper->attachAxis(m_axisY);
-            auto *area = makeRedArea(upper);
+            auto *area = makeRedArea(subStart, to);
             m_chart->addSeries(area);
             area->attachAxis(m_axisX);
             area->attachAxis(m_axisY);
         }
 
-        // 2b. 主折线（覆盖在渐变上方）
+        // 2b. 主折线（覆盖在渐变上方，独立新建 series）
         auto *line = makeSegmentSeries(from, to);
         m_chart->addSeries(line);
         line->attachAxis(m_axisX);
@@ -209,5 +209,6 @@ std::pair<double, double> MetricChart::calcYRange() const {
 
     double span = hi - lo;
     constexpr double kPad = 0.10;
-    return {lo - span * kPad, hi + span * kPad};
+    // 下限 padding 后 clamp 到 0：心率不可能为负
+    return {std::max(0.0, lo - span * kPad), hi + span * kPad};
 }
