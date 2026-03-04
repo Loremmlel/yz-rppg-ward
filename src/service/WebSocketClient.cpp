@@ -2,13 +2,13 @@
 #include "ConfigService.h"
 #include <QDebug>
 #include <QUrlQuery>
+#include <QDateTime>
 
 WebSocketClient::WebSocketClient(QObject *parent)
     : QObject(parent),
       m_socket(new QWebSocket(QString(), QWebSocketProtocol::VersionLatest, this)),
       m_reconnectTimer(new QTimer(this)) {
     m_reconnectTimer->setSingleShot(true);
-    m_reconnectTimer->setInterval(m_reconnectInterval);
 
     connect(m_socket, &QWebSocket::connected, this, &WebSocketClient::onConnected);
     connect(m_socket, &QWebSocket::disconnected, this, &WebSocketClient::onDisconnected);
@@ -46,9 +46,18 @@ void WebSocketClient::connectToServer() {
     m_userDisconnected = false;
     m_reconnectTimer->stop();
 
-    if (m_socket->state() != QAbstractSocket::UnconnectedState) {
-        m_socket->close();
+    // 若已处于正在连接或已连接状态，则不重复发起 open()，避免内存泄漏
+    const auto state = m_socket->state();
+    if (state == QAbstractSocket::ConnectingState
+        || state == QAbstractSocket::ConnectedState) {
+        return;
     }
+
+    if (state != QAbstractSocket::UnconnectedState) {
+        m_socket->abort(); // 用 abort() 立即清理，不等待 close 握手
+    }
+
+    m_connectingInProgress = true;
     qDebug() << "[WebSocketClient] 正在连接" << buildUrl().toString();
     m_socket->open(buildUrl());
 }
@@ -61,7 +70,7 @@ void WebSocketClient::disconnectFromServer() {
 
 void WebSocketClient::sendBinaryMessage(const QByteArray &data) const {
     if (!isConnected()) {
-        qWarning() << "[WebSocketClient] 未连接，丢弃二进制帧，大小：" << data.size() << "字节";
+        logDropped(QStringLiteral("二进制帧（%1 字节）").arg(data.size()));
         return;
     }
     m_socket->sendBinaryMessage(data);
@@ -69,7 +78,8 @@ void WebSocketClient::sendBinaryMessage(const QByteArray &data) const {
 
 void WebSocketClient::sendTextMessage(const QString &message) const {
     if (!isConnected()) {
-        qWarning() << "[WebSocketClient] 未连接，丢弃文本消息";
+        Q_UNUSED(message)
+        logDropped(QStringLiteral("文本消息"));
         return;
     }
     m_socket->sendTextMessage(message);
@@ -90,17 +100,24 @@ void WebSocketClient::onConfigChanged(const AppConfig &config) {
 
 void WebSocketClient::onConnected() {
     qDebug() << "[WebSocketClient] 已连接到" << m_socket->requestUrl().toString();
+    m_connectingInProgress = false;
+    m_reconnectAttempts = 0;
     m_reconnectTimer->stop();
     emit connected();
 }
 
 void WebSocketClient::onDisconnected() {
+    m_connectingInProgress = false;
     qDebug() << "[WebSocketClient] 连接已断开";
     emit disconnected();
 
     if (!m_userDisconnected) {
-        // 意外掉线，启动重连计时
-        m_reconnectTimer->start();
+        // 指数退避：2s, 4s, 8s, ... 最大 60s
+        const int delayMs = qMin(k_reconnectBaseMs << m_reconnectAttempts, k_reconnectMaxMs);
+        ++m_reconnectAttempts;
+        qDebug() << "[WebSocketClient] 将在" << delayMs << "ms 后尝试重连（第"
+                 << m_reconnectAttempts << "次）";
+        m_reconnectTimer->start(delayMs);
     }
 }
 
@@ -115,6 +132,9 @@ void WebSocketClient::onBinaryMessageReceived(const QByteArray &data) {
 void WebSocketClient::onError(QAbstractSocket::SocketError /*error*/) {
     const QString errStr = m_socket->errorString();
     qWarning() << "[WebSocketClient] 连接错误:" << errStr;
+    m_connectingInProgress = false;
+    // 不在此处启动重连，onDisconnected 会在 errorOccurred 后紧接着触发，
+    // 由 onDisconnected 负责退避重连，避免双重触发。
     emit errorOccurred(errStr);
 }
 
@@ -138,3 +158,19 @@ QUrl WebSocketClient::buildUrl() const {
     }
     return url;
 }
+
+void WebSocketClient::logDropped(const QString &what) const {
+    ++m_dropLogSuppressed;
+    const qint64 now = QDateTime::currentMSecsSinceEpoch();
+    if (now - m_lastDropLogMs >= k_dropLogIntervalMs) {
+        if (m_dropLogSuppressed > 1) {
+            qWarning() << "[WebSocketClient] 未连接，已丢弃" << m_dropLogSuppressed
+                       << "条消息（最新：" << what << "）";
+        } else {
+            qWarning() << "[WebSocketClient] 未连接，丢弃" << what;
+        }
+        m_dropLogSuppressed = 0;
+        m_lastDropLogMs = now;
+    }
+}
+

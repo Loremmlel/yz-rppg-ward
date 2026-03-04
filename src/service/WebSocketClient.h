@@ -65,6 +65,7 @@ private slots:
 
 private:
     [[nodiscard]] QUrl buildUrl() const;
+    void logDropped(const QString &what) const; ///< 限速日志：未连接时丢弃消息
 
     QWebSocket *m_socket{nullptr};
     QTimer *m_reconnectTimer{nullptr};
@@ -72,6 +73,13 @@ private:
     QString m_host;
     quint16 m_port{0};
     qint64 m_bedId{-1}; ///< 绑定的床位 ID，附加到 WS URL query
-    bool m_userDisconnected{false}; ///< 区分主动断开与意外掉线，避免主动断开后触发重连
-    int m_reconnectInterval{5000}; ///< 毫秒
+    mutable int m_dropLogSuppressed{0};          ///< 被抑制的丢弃日志计数
+    mutable qint64 m_lastDropLogMs{0};           ///< 上次打印丢弃日志的时间戳（ms）
+    static constexpr int k_dropLogIntervalMs{5000}; ///< 丢弃日志最小打印间隔
+
+    bool m_userDisconnected{false};    ///< 区分主动断开与意外掉线，避免主动断开后触发重连
+    bool m_connectingInProgress{false}; ///< 防止连接尝试期间重复 open()
+    int m_reconnectAttempts{0};        ///< 连续重连次数，用于指数退避
+    static constexpr int k_reconnectBaseMs{2000};  ///< 基础重连间隔（毫秒）
+    static constexpr int k_reconnectMaxMs{60000};  ///< 最大重连间隔（毫秒）
 };
