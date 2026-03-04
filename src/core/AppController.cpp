@@ -73,25 +73,25 @@ AppController::AppController(QObject *parent)
 }
 
 AppController::~AppController() {
-    auto safeDeleteOnThread = [](std::unique_ptr<QObject> &obj, const std::unique_ptr<QThread> &thread) {
+    // 工作线程对象的销毁必须发生在其所属线程，否则 QTimer::stop() 等操作会跨线程触发警告。
+    // 正确方案：
+    //   1. 通过 QThread::finished + Qt::DirectConnection 注册一个 lambda，
+    //      在工作线程的 exec() 返回后（仍处于工作线程上下文）直接 delete 对象。
+    //   2. 调用 quit() 令工作线程退出事件循环，触发 finished 信号。
+    //   3. wait() 阻塞主线程直到工作线程完全退出（delete 已执行完毕）。
+    // 注意：不能用 deleteLater——finished 触发时事件循环已退出，延迟删除永远不会被处理。
+    // 注意：不能在主线程 moveToThread——只有对象当前所在线程才能调用 moveToThread。
+    auto safeStopThread = [](QObject *obj, const std::unique_ptr<QThread> &thread) {
         if (!obj || !thread) return;
-        auto *rawObj = obj.release();
-        if (thread->isRunning()) {
-            // deleteLater 会向 thread 的事件循环发送一个销毁事件
-            // 这样析构函数就会在 thread 线程中执行，而不是主线程
-            rawObj->deleteLater();
-            thread->quit();
-            thread->wait();
-        } else {
-            // 兜底
-            delete rawObj;
-        }
+        connect(thread.get(), &QThread::finished,
+                         thread.get(), [obj]() { delete obj; },
+                         Qt::DirectConnection);
+        thread->quit();
+        thread->wait();
     };
 
-    auto wsPtr = std::unique_ptr<QObject>(m_wsClient.release());
-    auto videoPtr = std::unique_ptr<QObject>(m_videoService.release());
-    safeDeleteOnThread(videoPtr, m_videoThread);
-    safeDeleteOnThread(wsPtr, m_wsThread);
+    safeStopThread(m_videoService.release(), m_videoThread);
+    safeStopThread(m_wsClient.release(),     m_wsThread);
 }
 
 void AppController::start() const {

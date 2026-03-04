@@ -33,6 +33,7 @@ VideoService::VideoService(QObject *parent) : QObject(parent) {
 }
 
 VideoService::~VideoService() {
+    m_statsTimer.stop();
     if (m_processingFuture.isRunning()) {
         m_processingFuture.waitForFinished();
     }

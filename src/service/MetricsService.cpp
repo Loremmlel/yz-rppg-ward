@@ -13,7 +13,9 @@ MetricsService::MetricsService(QObject *parent)
     connect(m_timer, &QTimer::timeout, this, &MetricsService::fetchLatestData);
 }
 
-MetricsService::~MetricsService() = default;
+MetricsService::~MetricsService() {
+    m_timer->stop();
+};
 
 void MetricsService::startCollection() const {
     if (!m_timer->isActive()) {

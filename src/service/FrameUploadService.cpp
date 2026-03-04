@@ -20,6 +20,10 @@ FrameUploadService::FrameUploadService(WebSocketClient *wsClient, QObject *paren
     m_statsTimer.start();
 }
 
+FrameUploadService::~FrameUploadService() {
+    m_statsTimer.stop();
+}
+
 void FrameUploadService::onConfigChanged(const AppConfig &config) {
     m_bedBound = config.hasBed();
 }

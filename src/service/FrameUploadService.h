@@ -19,6 +19,8 @@ class FrameUploadService : public QObject {
 public:
     explicit FrameUploadService(WebSocketClient *wsClient, QObject *parent = nullptr);
 
+    ~FrameUploadService() override;
+
 public slots:
     /** 接收已编码的图像帧（8B 时间戳 + imageData），转发至 WebSocket。 */
     void sendEncodedFrame(const QByteArray &frame);
