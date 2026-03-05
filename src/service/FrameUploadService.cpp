@@ -10,18 +10,18 @@
 #endif
 
 FrameUploadService::FrameUploadService(WebSocketClient *wsClient, QObject *parent)
-    : QObject(parent), m_wsClient(wsClient),
+    : QObject(parent), m_wsClient(wsClient), m_statsTimer(new QTimer(this)),
       m_bedBound(ConfigService::instance()->config().hasBed()) {
     connect(ConfigService::instance(), &ConfigService::configChanged,
             this, &FrameUploadService::onConfigChanged);
 
-    m_statsTimer.setInterval(STATS_INTERVAL_MS);
-    connect(&m_statsTimer, &QTimer::timeout, this, &FrameUploadService::printStats);
-    m_statsTimer.start();
+    m_statsTimer->setInterval(STATS_INTERVAL_MS);
+    connect(m_statsTimer, &QTimer::timeout, this, &FrameUploadService::printStats);
+    m_statsTimer->start();
 }
 
 FrameUploadService::~FrameUploadService() {
-    m_statsTimer.stop();
+    m_statsTimer->stop();
 }
 
 void FrameUploadService::onConfigChanged(const AppConfig &config) {

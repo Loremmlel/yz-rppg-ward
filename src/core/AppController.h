@@ -37,8 +37,9 @@ private:
     std::unique_ptr<MetricsService> m_metricsService;
     std::unique_ptr<VideoService> m_videoService;
     std::unique_ptr<FrameUploadService> m_frameUploadService;
-    std::unique_ptr<MainWindow> m_mainWindow;
 
     std::unique_ptr<QThread> m_videoThread;
     std::unique_ptr<QThread> m_wsThread; ///< WebSocketClient 独占，确保 QWebSocket 的所有调用在同一线程
+
+    std::unique_ptr<MainWindow> m_mainWindow;
 };

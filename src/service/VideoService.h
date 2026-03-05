@@ -71,14 +71,13 @@ private:
     int m_frameSkipCounter{0};
 
     // 卡尔曼滤波器：分别跟踪人脸框的 x, y, w, h
-    // 参数参考 open-rppg: processNoise=0.01, measureNoise=0.5, initialError=1
     KalmanFilter1D m_kfX{0.01, 0.5, 0.0, 1.0};
     KalmanFilter1D m_kfY{0.01, 0.5, 0.0, 1.0};
     KalmanFilter1D m_kfW{0.01, 0.5, 0.0, 1.0};
     KalmanFilter1D m_kfH{0.01, 0.5, 0.0, 1.0};
 
     // ── 帧命运统计（所有字段仅在 VideoService 所在线程访问，无需 atomic）──
-    QTimer m_statsTimer;
+    QTimer *m_statsTimer;
     static constexpr int STATS_INTERVAL_MS = 5000;
 
     int m_statReceived{0};      ///< 摄像头送入的帧总数

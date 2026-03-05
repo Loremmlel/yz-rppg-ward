@@ -11,7 +11,7 @@
 
 #include "../util/ImageHelper.h"
 
-VideoService::VideoService(QObject *parent) : QObject(parent) {
+VideoService::VideoService(QObject *parent) : QObject(parent), m_statsTimer(new QTimer(this)) {
     const auto path = loadModel("face_detection_yunet_2023mar.onnx");
     if (path.isEmpty()) {
         qWarning() << "人脸检测模型加载失败";
@@ -27,14 +27,17 @@ VideoService::VideoService(QObject *parent) : QObject(parent) {
         qWarning() << "人脸检测模型初始化失败：" << e.what();
     }
 
-    m_statsTimer.setInterval(STATS_INTERVAL_MS);
-    connect(&m_statsTimer, &QTimer::timeout, this, &VideoService::printStats);
-    m_statsTimer.start();
+    m_statsTimer->setInterval(STATS_INTERVAL_MS);
+    connect(m_statsTimer, &QTimer::timeout, this, &VideoService::printStats);
+    m_statsTimer->start();
 }
 
 VideoService::~VideoService() {
-    m_statsTimer.stop();
+    m_statsTimer->stop();
+
     if (m_processingFuture.isRunning()) {
+        // 忘加cancel导致死锁？
+        m_processingFuture.cancel();
         m_processingFuture.waitForFinished();
     }
 }

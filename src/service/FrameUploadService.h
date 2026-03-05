@@ -36,7 +36,7 @@ private:
     bool m_bedBound{false};               ///< 是否已绑定有效床位
 
     // ── 统计计数器（每个统计周期重置）──────────────────────────────────────
-    QTimer m_statsTimer;
+    QTimer *m_statsTimer;
     static constexpr int STATS_INTERVAL_MS = 5000;
 
     int m_statUploaded{0};   ///< 已上传帧数
