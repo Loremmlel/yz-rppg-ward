@@ -2,7 +2,6 @@
 
 #include <QGridLayout>
 #include <QHBoxLayout>
-#include <QVBoxLayout>
 #include <QScrollArea>
 #include <QGroupBox>
 #include <QFrame>
@@ -10,7 +9,6 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QJsonDocument>
-#include <QUrlQuery>
 #include <QDateTime>
 #include <algorithm>
 
@@ -20,20 +18,20 @@
 
 // ── 时间粒度映射 ────────────────────────────────────────────────────────────
 struct IntervalItem {
-    QString label;    ///< 下拉框显示文本
+    QString label; ///< 下拉框显示文本
     QString apiValue; ///< 传给服务端的 interval 参数
 };
 
 static const QList<IntervalItem> kIntervalItems = {
-    { QStringLiteral("1 分钟"),  QStringLiteral("1m")  },
-    { QStringLiteral("5 分钟"),  QStringLiteral("5m")  },
-    { QStringLiteral("10 分钟"), QStringLiteral("10m") },
-    { QStringLiteral("15 分钟"), QStringLiteral("15m") },
-    { QStringLiteral("30 分钟"), QStringLiteral("30m") },
-    { QStringLiteral("1 小时"),  QStringLiteral("1h")  },
-    { QStringLiteral("6 小时"),  QStringLiteral("6h")  },
-    { QStringLiteral("12 小时"), QStringLiteral("12h") },
-    { QStringLiteral("1 天"),    QStringLiteral("1d")  },
+    {QStringLiteral("1 分钟"), QStringLiteral("1m")},
+    {QStringLiteral("5 分钟"), QStringLiteral("5m")},
+    {QStringLiteral("10 分钟"), QStringLiteral("10m")},
+    {QStringLiteral("15 分钟"), QStringLiteral("15m")},
+    {QStringLiteral("30 分钟"), QStringLiteral("30m")},
+    {QStringLiteral("1 小时"), QStringLiteral("1h")},
+    {QStringLiteral("6 小时"), QStringLiteral("6h")},
+    {QStringLiteral("12 小时"), QStringLiteral("12h")},
+    {QStringLiteral("1 天"), QStringLiteral("1d")},
 };
 
 // ── 解析辅助 ────────────────────────────────────────────────────────────────
@@ -45,8 +43,7 @@ static std::optional<double> parseOptDouble(const QJsonObject &obj, const QStrin
 
 // ============================================================
 VitalsTrendPage::VitalsTrendPage(QWidget *parent)
-    : QWidget(parent)
-{
+    : QWidget(parent) {
     setObjectName("VitalsTrendPage");
     initUI();
     StyleLoader::apply(this, QStringLiteral(":/styles/vitals_trend_page.qss"));
@@ -77,7 +74,7 @@ void VitalsTrendPage::initUI() {
 
     auto *scrollContent = new QWidget(scrollArea);
     scrollContent->setObjectName("trendScrollContent");
-    setupMetricsArea();     // 在内部构建卡片，稍后重新挂载到 scrollContent
+    setupMetricsArea(); // 在内部构建卡片，稍后重新挂载到 scrollContent
     // 注意：setupMetricsArea 将卡片写入 m_card* 成员，但不挂载到任何 layout，
     // 下面重新构建。
     scrollArea->setWidget(scrollContent);
@@ -89,16 +86,16 @@ void VitalsTrendPage::initUI() {
     contentLayout->setSpacing(20);
 
     buildGroupSection(contentLayout,
-        QStringLiteral("基础生命体征"),
-        { m_cardHrAvg, m_cardBrAvg, m_cardSqiAvg });
+                      QStringLiteral("基础生命体征"),
+                      {m_cardHrAvg, m_cardBrAvg, m_cardSqiAvg});
 
     buildGroupSection(contentLayout,
-        QStringLiteral("HRV 时域中位数"),
-        { m_cardSdnn, m_cardRmssd, m_cardSdsd, m_cardPnn50, m_cardPnn20 });
+                      QStringLiteral("HRV 时域中位数"),
+                      {m_cardSdnn, m_cardRmssd, m_cardSdsd, m_cardPnn50, m_cardPnn20});
 
     buildGroupSection(contentLayout,
-        QStringLiteral("HRV 频域均值"),
-        { m_cardLfHfRatio, m_cardHf, m_cardLf, m_cardVlf, m_cardTp });
+                      QStringLiteral("HRV 频域均值"),
+                      {m_cardLfHfRatio, m_cardHf, m_cardLf, m_cardVlf, m_cardTp});
 
     contentLayout->addStretch();
 }
@@ -122,7 +119,7 @@ void VitalsTrendPage::setupControlPanel() {
     m_intervalCombo = new QComboBox(panel);
     m_intervalCombo->setObjectName("TrendCombo");
     m_intervalCombo->setFixedWidth(110);
-    for (const auto &item : kIntervalItems)
+    for (const auto &item: kIntervalItems)
         m_intervalCombo->addItem(item.label, item.apiValue);
     m_intervalCombo->setCurrentIndex(1); // 默认 5 分钟
 
@@ -135,12 +132,12 @@ void VitalsTrendPage::setupControlPanel() {
     shortcutLabel->setObjectName("trendLabel");
     row1->addWidget(shortcutLabel);
 
-    const QList<QPair<QString, int>> shortcuts = {
-        { QStringLiteral("最近 1 小时"),  1  },
-        { QStringLiteral("最近 6 小时"),  6  },
-        { QStringLiteral("最近 24 小时"), 24 },
+    const QList<QPair<QString, int> > shortcuts = {
+        {QStringLiteral("最近 1 小时"), 1},
+        {QStringLiteral("最近 6 小时"), 6},
+        {QStringLiteral("最近 24 小时"), 24},
     };
-    for (const auto &[btnText, hours] : shortcuts) {
+    for (const auto &[btnText, hours]: shortcuts) {
         auto *btn = new QPushButton(btnText, panel);
         btn->setObjectName("TrendShortcutButton");
         btn->setCursor(Qt::PointingHandCursor);
@@ -195,30 +192,30 @@ void VitalsTrendPage::setupControlPanel() {
 // ── 指标卡片预创建 ────────────────────────────────────────────────────────────
 void VitalsTrendPage::setupMetricsArea() {
     // 基础生命体征
-    m_cardHrAvg  = new TrendCard(QStringLiteral("心率均值"),     "❤",  QStringLiteral("bpm"), QColor(0xFF, 0x52, 0x52), this);
-    m_cardBrAvg  = new TrendCard(QStringLiteral("呼吸率均值"),   "🫁", QStringLiteral("Hz"),  QColor(0x21, 0x96, 0xF3), this);
-    m_cardSqiAvg = new TrendCard(QStringLiteral("信号质量均值"), "📶",  QString{},            QColor(0x7E, 0x57, 0xC2), this);
+    m_cardHrAvg = new TrendCard(QStringLiteral("心率均值"), "❤", QStringLiteral("bpm"), QColor(0xFF, 0x52, 0x52), this);
+    m_cardBrAvg = new TrendCard(QStringLiteral("呼吸率均值"), "🫁", QStringLiteral("Hz"), QColor(0x21, 0x96, 0xF3), this);
+    m_cardSqiAvg = new TrendCard(QStringLiteral("信号质量均值"), "📶", QString{}, QColor(0x7E, 0x57, 0xC2), this);
 
     // HRV 时域
-    m_cardSdnn  = new TrendCard(QStringLiteral("SDNN 中位数"),  "📊", QStringLiteral("ms"), QColor(0x26, 0xA6, 0x9A), this);
-    m_cardRmssd = new TrendCard(QStringLiteral("RMSSD 中位数"), "📊", QStringLiteral("ms"), QColor(0x26, 0xA6, 0x9A), this);
-    m_cardSdsd  = new TrendCard(QStringLiteral("SDSD 中位数"),  "📊", QStringLiteral("ms"), QColor(0x26, 0xA6, 0x9A), this);
-    m_cardPnn50 = new TrendCard(QStringLiteral("pNN50 中位数"), "📈", QString{},            QColor(0x00, 0x96, 0x88), this);
-    m_cardPnn20 = new TrendCard(QStringLiteral("pNN20 中位数"), "📈", QString{},            QColor(0x00, 0x96, 0x88), this);
+    m_cardSdnn = new TrendCard(QStringLiteral("SDNN 中位数"), "📊", QStringLiteral("ms"), QColor(0x26, 0xA6, 0x9A), this);
+    m_cardRmssd = new TrendCard(QStringLiteral("RMSSD 中位数"), "📊", QStringLiteral("ms"), QColor(0x26, 0xA6, 0x9A),
+                                this);
+    m_cardSdsd = new TrendCard(QStringLiteral("SDSD 中位数"), "📊", QStringLiteral("ms"), QColor(0x26, 0xA6, 0x9A), this);
+    m_cardPnn50 = new TrendCard(QStringLiteral("pNN50 中位数"), "📈", QString{}, QColor(0x00, 0x96, 0x88), this);
+    m_cardPnn20 = new TrendCard(QStringLiteral("pNN20 中位数"), "📈", QString{}, QColor(0x00, 0x96, 0x88), this);
 
     // HRV 频域
-    m_cardLfHfRatio = new TrendCard(QStringLiteral("LF/HF 比值"), "⚖",  QString{},           QColor(0xFF, 0x98, 0x00), this);
-    m_cardHf        = new TrendCard(QStringLiteral("HF 均值"),    "〰",  QString{},           QColor(0x66, 0xBB, 0x6A), this);
-    m_cardLf        = new TrendCard(QStringLiteral("LF 均值"),    "〰",  QString{},           QColor(0xFF, 0xB3, 0x00), this);
-    m_cardVlf       = new TrendCard(QStringLiteral("VLF 均值"),   "〰",  QString{},           QColor(0xEF, 0x53, 0x50), this);
-    m_cardTp        = new TrendCard(QStringLiteral("总功率均值"), "⚡",  QString{},           QColor(0x78, 0x90, 0x9C), this);
+    m_cardLfHfRatio = new TrendCard(QStringLiteral("LF/HF 比值"), "⚖", QString{}, QColor(0xFF, 0x98, 0x00), this);
+    m_cardHf = new TrendCard(QStringLiteral("HF 均值"), "〰", QString{}, QColor(0x66, 0xBB, 0x6A), this);
+    m_cardLf = new TrendCard(QStringLiteral("LF 均值"), "〰", QString{}, QColor(0xFF, 0xB3, 0x00), this);
+    m_cardVlf = new TrendCard(QStringLiteral("VLF 均值"), "〰", QString{}, QColor(0xEF, 0x53, 0x50), this);
+    m_cardTp = new TrendCard(QStringLiteral("总功率均值"), "⚡", QString{}, QColor(0x78, 0x90, 0x9C), this);
 }
 
 // ── 构建分组 Box ─────────────────────────────────────────────────────────────
 void VitalsTrendPage::buildGroupSection(QVBoxLayout *layout,
                                         const QString &groupTitle,
-                                        const QList<TrendCard *> &cards)
-{
+                                        const QList<TrendCard *> &cards) {
     auto *group = new QGroupBox(groupTitle);
     group->setObjectName("TrendGroup");
 
@@ -246,9 +243,9 @@ void VitalsTrendPage::onShortcutClicked(const int hours) const {
 
     // 根据时间范围自动选择合适粒度
     QString autoInterval;
-    if (hours <= 1)        autoInterval = QStringLiteral("1m");
-    else if (hours <= 6)   autoInterval = QStringLiteral("5m");
-    else                   autoInterval = QStringLiteral("15m");
+    if (hours <= 1) autoInterval = QStringLiteral("1m");
+    else if (hours <= 6) autoInterval = QStringLiteral("5m");
+    else autoInterval = QStringLiteral("15m");
 
     for (int i = 0; i < m_intervalCombo->count(); ++i) {
         if (m_intervalCombo->itemData(i).toString() == autoInterval) {
@@ -259,15 +256,15 @@ void VitalsTrendPage::onShortcutClicked(const int hours) const {
 }
 
 // ── 查询按钮响应 ─────────────────────────────────────────────────────────────
-void VitalsTrendPage::onQueryClicked() {
-    const AppConfig cfg = ConfigService::instance()->config();
-    if (!cfg.hasBed()) {
+void VitalsTrendPage::onQueryClicked() const {
+    if (const AppConfig cfg = ConfigService::instance()->config();
+        !cfg.hasBed()) {
         showError(QStringLiteral("⚠ 请先在设置页面配置床位信息"));
         return;
     }
 
     const QDateTime start = m_startEdit->dateTime();
-    const QDateTime end   = m_endEdit->dateTime();
+    const QDateTime end = m_endEdit->dateTime();
     if (start >= end) {
         showError(QStringLiteral("⚠ 开始时间必须早于结束时间"));
         return;
@@ -279,82 +276,94 @@ void VitalsTrendPage::onQueryClicked() {
 
 // ── 发起 HTTP 请求 ───────────────────────────────────────────────────────────
 void VitalsTrendPage::fetchTrend(const QDateTime &start,
-                                  const QDateTime &end,
-                                  const QString   &interval) const {
+                                 const QDateTime &end,
+                                 const QString &interval) const {
     setLoading(true);
 
     const auto cfg = ConfigService::instance()->config();
 
     // ISO-8601 UTC 格式（服务端要求）
     const QString startStr = start.toUTC().toString(Qt::ISODate);
-    const QString endStr   = end.toUTC().toString(Qt::ISODate);
+    const QString endStr = end.toUTC().toString(Qt::ISODate);
 
     // 用 QUrlQuery 构建查询参数，Qt 会为每个值独立做百分号编码，
     // 不会误编码 '?' 与 '&' 分隔符
     QUrlQuery query;
-    query.addQueryItem(QStringLiteral("bedId"),    QString::number(cfg.bedId));
+    query.addQueryItem(QStringLiteral("bedId"), QString::number(cfg.bedId));
     query.addQueryItem(QStringLiteral("startTime"), startStr);
-    query.addQueryItem(QStringLiteral("endTime"),   endStr);
-    query.addQueryItem(QStringLiteral("interval"),  interval);
+    query.addQueryItem(QStringLiteral("endTime"), endStr);
+    query.addQueryItem(QStringLiteral("interval"), interval);
 
     ApiClient::instance()->getJson(QStringLiteral("/api/vitals/trend"), query,
-        [this](const QJsonDocument &doc) {
-            setLoading(false);
-            if (!doc.isArray()) {
-                showError(QStringLiteral("⚠ 服务端返回数据格式异常"));
-                return;
-            }
+                                   [this](const QJsonDocument &doc) {
+                                       setLoading(false);
+                                       if (!doc.isArray()) {
+                                           showError(QStringLiteral("⚠ 服务端返回数据格式异常"));
+                                           return;
+                                       }
 
-            QList<VitalsTrendData> records;
-            const QJsonArray arr = doc.array();
-            for (const auto &val : arr) {
-                if (!val.isObject()) continue;
-                const QJsonObject obj = val.toObject();
+                                       QList<VitalsTrendData> records;
+                                       const QJsonArray arr = doc.array();
+                                       for (const auto &val: arr) {
+                                           if (!val.isObject()) continue;
+                                           const QJsonObject obj = val.toObject();
 
-                VitalsTrendData rec;
-                rec.bucketTime = QDateTime::fromString(
-                    obj.value(QStringLiteral("bucketTime")).toString(),
-                    Qt::ISODate);
+                                           VitalsTrendData rec;
+                                           rec.bucketTime = QDateTime::fromString(
+                                               obj.value(QStringLiteral("bucketTime")).toString(),
+                                               Qt::ISODate);
 
-                if (obj.contains(QStringLiteral("basicVitals")) && obj.value(QStringLiteral("basicVitals")).isObject()) {
-                    const QJsonObject bv = obj.value(QStringLiteral("basicVitals")).toObject();
-                    rec.basicVitals.hrAvg  = parseOptDouble(bv, QStringLiteral("hrAvg"));
-                    rec.basicVitals.brAvg  = parseOptDouble(bv, QStringLiteral("brAvg"));
-                    rec.basicVitals.sqiAvg = parseOptDouble(bv, QStringLiteral("sqiAvg"));
-                }
+                                           if (obj.contains(QStringLiteral("basicVitals")) && obj.value(
+                                                   QStringLiteral("basicVitals")).isObject()) {
+                                               const QJsonObject bv = obj.value(QStringLiteral("basicVitals")).
+                                                       toObject();
+                                               rec.basicVitals.hrAvg = parseOptDouble(bv, QStringLiteral("hrAvg"));
+                                               rec.basicVitals.brAvg = parseOptDouble(bv, QStringLiteral("brAvg"));
+                                               rec.basicVitals.sqiAvg = parseOptDouble(bv, QStringLiteral("sqiAvg"));
+                                           }
 
-                if (obj.contains(QStringLiteral("hrvTimeDomain")) && obj.value(QStringLiteral("hrvTimeDomain")).isObject()) {
-                    const QJsonObject td = obj.value(QStringLiteral("hrvTimeDomain")).toObject();
-                    rec.hrvTimeDomain.sdnnMedian  = parseOptDouble(td, QStringLiteral("sdnnMedian"));
-                    rec.hrvTimeDomain.rmssdMedian = parseOptDouble(td, QStringLiteral("rmssdMedian"));
-                    rec.hrvTimeDomain.sdsdMedian  = parseOptDouble(td, QStringLiteral("sdsdMedian"));
-                    rec.hrvTimeDomain.pnn50Median = parseOptDouble(td, QStringLiteral("pnn50Median"));
-                    rec.hrvTimeDomain.pnn20Median = parseOptDouble(td, QStringLiteral("pnn20Median"));
-                }
+                                           if (obj.contains(QStringLiteral("hrvTimeDomain")) && obj.value(
+                                                   QStringLiteral("hrvTimeDomain")).isObject()) {
+                                               const QJsonObject td = obj.value(QStringLiteral("hrvTimeDomain")).
+                                                       toObject();
+                                               rec.hrvTimeDomain.sdnnMedian = parseOptDouble(
+                                                   td, QStringLiteral("sdnnMedian"));
+                                               rec.hrvTimeDomain.rmssdMedian = parseOptDouble(
+                                                   td, QStringLiteral("rmssdMedian"));
+                                               rec.hrvTimeDomain.sdsdMedian = parseOptDouble(
+                                                   td, QStringLiteral("sdsdMedian"));
+                                               rec.hrvTimeDomain.pnn50Median = parseOptDouble(
+                                                   td, QStringLiteral("pnn50Median"));
+                                               rec.hrvTimeDomain.pnn20Median = parseOptDouble(
+                                                   td, QStringLiteral("pnn20Median"));
+                                           }
 
-                if (obj.contains(QStringLiteral("hrvFreqDomain")) && obj.value(QStringLiteral("hrvFreqDomain")).isObject()) {
-                    const QJsonObject fd = obj.value(QStringLiteral("hrvFreqDomain")).toObject();
-                    rec.hrvFreqDomain.lfHfRatio = parseOptDouble(fd, QStringLiteral("lfHfRatio"));
-                    rec.hrvFreqDomain.hfAvg     = parseOptDouble(fd, QStringLiteral("hfAvg"));
-                    rec.hrvFreqDomain.lfAvg     = parseOptDouble(fd, QStringLiteral("lfAvg"));
-                    rec.hrvFreqDomain.vlfAvg    = parseOptDouble(fd, QStringLiteral("vlfAvg"));
-                    rec.hrvFreqDomain.tpAvg     = parseOptDouble(fd, QStringLiteral("tpAvg"));
-                }
+                                           if (obj.contains(QStringLiteral("hrvFreqDomain")) && obj.value(
+                                                   QStringLiteral("hrvFreqDomain")).isObject()) {
+                                               const QJsonObject fd = obj.value(QStringLiteral("hrvFreqDomain")).
+                                                       toObject();
+                                               rec.hrvFreqDomain.lfHfRatio = parseOptDouble(
+                                                   fd, QStringLiteral("lfHfRatio"));
+                                               rec.hrvFreqDomain.hfAvg = parseOptDouble(fd, QStringLiteral("hfAvg"));
+                                               rec.hrvFreqDomain.lfAvg = parseOptDouble(fd, QStringLiteral("lfAvg"));
+                                               rec.hrvFreqDomain.vlfAvg = parseOptDouble(fd, QStringLiteral("vlfAvg"));
+                                               rec.hrvFreqDomain.tpAvg = parseOptDouble(fd, QStringLiteral("tpAvg"));
+                                           }
 
-                records.append(rec);
-            }
+                                           records.append(rec);
+                                       }
 
-            if (records.isEmpty()) {
-                showError(QStringLiteral("📭 该时间段内暂无数据"));
-            } else {
-                m_statusLabel->setVisible(false);
-                applyData(records);
-            }
-        },
-        [this](const QString &err) {
-            setLoading(false);
-            showError(QStringLiteral("⚠ 请求失败：") + err);
-        }
+                                       if (records.isEmpty()) {
+                                           showError(QStringLiteral("📭 该时间段内暂无数据"));
+                                       } else {
+                                           m_statusLabel->setVisible(false);
+                                           applyData(records);
+                                       }
+                                   },
+                                   [this](const QString &err) {
+                                       setLoading(false);
+                                       showError(QStringLiteral("⚠ 请求失败：") + err);
+                                   }
     );
 }
 
@@ -362,32 +371,32 @@ void VitalsTrendPage::fetchTrend(const QDateTime &start,
 
 /** 从 records 中提取单个字段的点序列 */
 template<typename Extractor>
-static QList<std::optional<double>> extractPoints(
-    const QList<VitalsTrendData> &records, Extractor extractor)
-{
-    QList<std::optional<double>> pts;
+static QList<std::optional<double> > extractPoints(
+    const QList<VitalsTrendData> &records, Extractor extractor) {
+    QList<std::optional<double> > pts;
     pts.reserve(records.size());
-    for (const auto &r : records)
+    for (const auto &r: records)
         pts.append(extractor(r));
     return pts;
 }
 
 /** 计算有效值的算术均值；无有效值返回 nullopt */
-static std::optional<double> calcMean(const QList<std::optional<double>> &pts)
-{
+static std::optional<double> calcMean(const QList<std::optional<double> > &pts) {
     double sum = 0.0;
     int cnt = 0;
-    for (const auto &p : pts) {
-        if (p.has_value()) { sum += *p; ++cnt; }
+    for (const auto &p: pts) {
+        if (p.has_value()) {
+            sum += *p;
+            ++cnt;
+        }
     }
     return cnt > 0 ? std::optional(sum / cnt) : std::nullopt;
 }
 
 /** 计算有效值的中位数；无有效值返回 nullopt */
-static std::optional<double> calcMedian(const QList<std::optional<double>> &pts)
-{
+static std::optional<double> calcMedian(const QList<std::optional<double> > &pts) {
     QList<double> vals;
-    for (const auto &p : pts) if (p.has_value()) vals.append(*p);
+    for (const auto &p: pts) if (p.has_value()) vals.append(*p);
     if (vals.isEmpty()) return std::nullopt;
     const int n = vals.size();
     const auto midIter = vals.begin() + n / 2;
@@ -405,43 +414,43 @@ void VitalsTrendPage::applyData(const QList<VitalsTrendData> &records) const {
     // 提取时间戳列表（本地时间，供 X 轴显示）
     QList<QDateTime> timestamps;
     timestamps.reserve(records.size());
-    for (const auto &r : records)
+    for (const auto &r: records)
         timestamps.append(r.bucketTime.toLocalTime());
 
     // ── 基础生命体征（参考线 = 均值） ──
-    const auto hrPts  = extractPoints(records, [](const VitalsTrendData &r){ return r.basicVitals.hrAvg; });
-    const auto brPts  = extractPoints(records, [](const VitalsTrendData &r){ return r.basicVitals.brAvg; });
-    const auto sqiPts = extractPoints(records, [](const VitalsTrendData &r){ return r.basicVitals.sqiAvg; });
+    const auto hrPts = extractPoints(records, [](const VitalsTrendData &r) { return r.basicVitals.hrAvg; });
+    const auto brPts = extractPoints(records, [](const VitalsTrendData &r) { return r.basicVitals.brAvg; });
+    const auto sqiPts = extractPoints(records, [](const VitalsTrendData &r) { return r.basicVitals.sqiAvg; });
 
-    m_cardHrAvg ->setData(timestamps, hrPts,  calcMean(hrPts));
-    m_cardBrAvg ->setData(timestamps, brPts,  calcMean(brPts));
+    m_cardHrAvg->setData(timestamps, hrPts, calcMean(hrPts));
+    m_cardBrAvg->setData(timestamps, brPts, calcMean(brPts));
     m_cardSqiAvg->setData(timestamps, sqiPts, calcMean(sqiPts));
 
     // ── HRV 时域（后端返回各 bucket 中位数；参考线 = 全局中位数的中位数） ──
-    const auto sdnnPts  = extractPoints(records, [](const VitalsTrendData &r){ return r.hrvTimeDomain.sdnnMedian; });
-    const auto rmssdPts = extractPoints(records, [](const VitalsTrendData &r){ return r.hrvTimeDomain.rmssdMedian; });
-    const auto sdsdPts  = extractPoints(records, [](const VitalsTrendData &r){ return r.hrvTimeDomain.sdsdMedian; });
-    const auto pnn50Pts = extractPoints(records, [](const VitalsTrendData &r){ return r.hrvTimeDomain.pnn50Median; });
-    const auto pnn20Pts = extractPoints(records, [](const VitalsTrendData &r){ return r.hrvTimeDomain.pnn20Median; });
+    const auto sdnnPts = extractPoints(records, [](const VitalsTrendData &r) { return r.hrvTimeDomain.sdnnMedian; });
+    const auto rmssdPts = extractPoints(records, [](const VitalsTrendData &r) { return r.hrvTimeDomain.rmssdMedian; });
+    const auto sdsdPts = extractPoints(records, [](const VitalsTrendData &r) { return r.hrvTimeDomain.sdsdMedian; });
+    const auto pnn50Pts = extractPoints(records, [](const VitalsTrendData &r) { return r.hrvTimeDomain.pnn50Median; });
+    const auto pnn20Pts = extractPoints(records, [](const VitalsTrendData &r) { return r.hrvTimeDomain.pnn20Median; });
 
-    m_cardSdnn ->setData(timestamps, sdnnPts,  calcMedian(sdnnPts));
+    m_cardSdnn->setData(timestamps, sdnnPts, calcMedian(sdnnPts));
     m_cardRmssd->setData(timestamps, rmssdPts, calcMedian(rmssdPts));
-    m_cardSdsd ->setData(timestamps, sdsdPts,  calcMedian(sdsdPts));
+    m_cardSdsd->setData(timestamps, sdsdPts, calcMedian(sdsdPts));
     m_cardPnn50->setData(timestamps, pnn50Pts, calcMedian(pnn50Pts));
     m_cardPnn20->setData(timestamps, pnn20Pts, calcMedian(pnn20Pts));
 
     // ── HRV 频域（参考线 = 均值） ──
-    const auto lfHfPts = extractPoints(records, [](const VitalsTrendData &r){ return r.hrvFreqDomain.lfHfRatio; });
-    const auto hfPts   = extractPoints(records, [](const VitalsTrendData &r){ return r.hrvFreqDomain.hfAvg; });
-    const auto lfPts   = extractPoints(records, [](const VitalsTrendData &r){ return r.hrvFreqDomain.lfAvg; });
-    const auto vlfPts  = extractPoints(records, [](const VitalsTrendData &r){ return r.hrvFreqDomain.vlfAvg; });
-    const auto tpPts   = extractPoints(records, [](const VitalsTrendData &r){ return r.hrvFreqDomain.tpAvg; });
+    const auto lfHfPts = extractPoints(records, [](const VitalsTrendData &r) { return r.hrvFreqDomain.lfHfRatio; });
+    const auto hfPts = extractPoints(records, [](const VitalsTrendData &r) { return r.hrvFreqDomain.hfAvg; });
+    const auto lfPts = extractPoints(records, [](const VitalsTrendData &r) { return r.hrvFreqDomain.lfAvg; });
+    const auto vlfPts = extractPoints(records, [](const VitalsTrendData &r) { return r.hrvFreqDomain.vlfAvg; });
+    const auto tpPts = extractPoints(records, [](const VitalsTrendData &r) { return r.hrvFreqDomain.tpAvg; });
 
     m_cardLfHfRatio->setData(timestamps, lfHfPts, calcMean(lfHfPts));
-    m_cardHf       ->setData(timestamps, hfPts,   calcMean(hfPts));
-    m_cardLf       ->setData(timestamps, lfPts,   calcMean(lfPts));
-    m_cardVlf      ->setData(timestamps, vlfPts,  calcMean(vlfPts));
-    m_cardTp       ->setData(timestamps, tpPts,   calcMean(tpPts));
+    m_cardHf->setData(timestamps, hfPts, calcMean(hfPts));
+    m_cardLf->setData(timestamps, lfPts, calcMean(lfPts));
+    m_cardVlf->setData(timestamps, vlfPts, calcMean(vlfPts));
+    m_cardTp->setData(timestamps, tpPts, calcMean(tpPts));
 }
 
 // ── 加载状态 ─────────────────────────────────────────────────────────────────
@@ -462,6 +471,3 @@ void VitalsTrendPage::showError(const QString &message) const {
     m_statusLabel->style()->unpolish(m_statusLabel);
     m_statusLabel->style()->polish(m_statusLabel);
 }
-
-
-

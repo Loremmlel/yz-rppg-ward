@@ -1,15 +1,12 @@
 #pragma once
 
-#include <QWidget>
-#include <QLabel>
 #include <QComboBox>
 #include <QPushButton>
 #include <QDateTimeEdit>
 #include <QVBoxLayout>
-#include <QList>
 
 #include "../../model/VitalsTrendData.h"
-#include "../widgets/home/TrendCard.h"
+#include "../widgets/trend/TrendCard.h"
 
 /**
  * @brief 患者生命体征历史趋势查询页面
@@ -28,16 +25,17 @@ public:
     explicit VitalsTrendPage(QWidget *parent = nullptr);
 
 private slots:
-    void onQueryClicked();
+    void onQueryClicked() const;
     void onShortcutClicked(int hours) const;
 
 private:
     void initUI();
     void setupControlPanel();
     void setupMetricsArea();
-    void buildGroupSection(QVBoxLayout *layout,
-                           const QString &groupTitle,
-                           const QList<TrendCard *> &cards);
+
+    static void buildGroupSection(QVBoxLayout *layout,
+                                  const QString &groupTitle,
+                                  const QList<TrendCard *> &cards);
 
     void fetchTrend(const QDateTime &start, const QDateTime &end, const QString &interval) const;
     void applyData(const QList<VitalsTrendData> &records) const;

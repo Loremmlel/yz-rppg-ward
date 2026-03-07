@@ -49,7 +49,7 @@ public:
 private:
     explicit ApiClient(QObject *parent = nullptr);
 
-    [[nodiscard]] QUrl buildUrl(const QString &path) const;
+    [[nodiscard]] static QUrl buildUrl(const QString &path);
 
     QNetworkAccessManager *m_nam{nullptr};
 };

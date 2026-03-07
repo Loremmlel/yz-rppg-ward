@@ -1,9 +1,6 @@
 #pragma once
 
-#include <QFrame>
 #include <QLabel>
-#include <QList>
-#include <QDateTime>
 #include <optional>
 
 #include "TrendChart.h"

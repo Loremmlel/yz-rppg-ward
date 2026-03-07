@@ -16,7 +16,7 @@ ApiClient *ApiClient::instance() {
     return &s_instance;
 }
 
-QUrl ApiClient::buildUrl(const QString &path) const {
+QUrl ApiClient::buildUrl(const QString &path) {
     const auto cfg = ConfigService::instance()->config();
     QUrl url;
     url.setScheme(QStringLiteral("http"));

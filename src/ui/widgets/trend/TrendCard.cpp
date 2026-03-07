@@ -1,7 +1,6 @@
 #include "TrendCard.h"
 #include "TrendChart.h"
 
-#include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <cmath>
 
@@ -105,7 +104,7 @@ void TrendCard::clearData() const {
 }
 
 // ── 私有工具 ──────────────────────────────────────────────────────────────────
-QString TrendCard::formatValue(double v, int precision) {
+QString TrendCard::formatValue(const double v, const int precision) {
     const double factor = std::pow(10.0, precision);
     const double truncated = std::floor(v * factor) / factor;
     return QString::number(truncated, 'f', precision);
