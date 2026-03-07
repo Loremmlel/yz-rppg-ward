@@ -50,8 +50,6 @@ void AppDialog::show(const QString &title,
     // ── 遮罩层 ──
     m_overlay = new QWidget(m_parentWidget);
     m_overlay->setObjectName("dialogOverlay");
-    m_overlay->setStyleSheet(
-        "QWidget#dialogOverlay { background-color: rgba(0, 0, 0, 120); }");
     m_overlay->setGeometry(m_parentWidget->rect());
     m_overlay->show();
     m_overlay->raise();
@@ -59,13 +57,6 @@ void AppDialog::show(const QString &title,
     // ── 对话框框架 ──
     m_dialog = new QFrame(m_parentWidget);
     m_dialog->setObjectName("AppDialog");
-    m_dialog->setStyleSheet(
-        "QFrame#AppDialog {"
-        "  background-color: #FFFFFF;"
-        "  border-radius: 12px;"
-        "  border: 1px solid #DEE2E6;"
-        "}"
-    );
     m_dialog->setFixedWidth(420);
 
     auto *dialogLayout = new QVBoxLayout(m_dialog);
@@ -75,22 +66,18 @@ void AppDialog::show(const QString &title,
     // ── 标题 ──
     m_titleLabel = new QLabel(title, m_dialog);
     m_titleLabel->setObjectName("dialogTitle");
-    m_titleLabel->setStyleSheet(
-        "font-size: 16px; font-weight: bold; color: #212529; margin-bottom: 12px;");
     m_titleLabel->setWordWrap(true);
     dialogLayout->addWidget(m_titleLabel);
 
     // ── 分隔线 ──
     auto *divider = new QFrame(m_dialog);
+    divider->setObjectName("dialogDivider");
     divider->setFrameShape(QFrame::HLine);
-    divider->setStyleSheet("color: #E9ECEF; margin-bottom: 14px;");
     dialogLayout->addWidget(divider);
 
     // ── 内容 ──
     m_contentLabel = new QLabel(content, m_dialog);
     m_contentLabel->setObjectName("dialogContent");
-    m_contentLabel->setStyleSheet(
-        "font-size: 13px; color: #495057; line-height: 1.6; margin-bottom: 20px;");
     m_contentLabel->setWordWrap(true);
     m_contentLabel->setTextFormat(Qt::RichText);
     m_contentLabel->setOpenExternalLinks(false);
@@ -114,26 +101,8 @@ void AppDialog::show(const QString &title,
         // 最后一个按钮（主操作）用蓝色，其余用灰色
         if (i == buttons.size() - 1) {
             btn->setObjectName("dialogPrimaryButton");
-            btn->setStyleSheet(
-                "QPushButton#dialogPrimaryButton {"
-                "  background-color: #4A90D9; color: #FFF;"
-                "  border: none; border-radius: 6px;"
-                "  font-size: 13px; font-weight: bold;"
-                "}"
-                "QPushButton#dialogPrimaryButton:hover  { background-color: #357ABD; }"
-                "QPushButton#dialogPrimaryButton:pressed { background-color: #2C6EA6; }"
-            );
         } else {
             btn->setObjectName("dialogSecondaryButton");
-            btn->setStyleSheet(
-                "QPushButton#dialogSecondaryButton {"
-                "  background-color: #F8F9FA; color: #495057;"
-                "  border: 1px solid #DEE2E6; border-radius: 6px;"
-                "  font-size: 13px;"
-                "}"
-                "QPushButton#dialogSecondaryButton:hover  { background-color: #E9ECEF; }"
-                "QPushButton#dialogSecondaryButton:pressed { background-color: #DEE2E6; }"
-            );
         }
 
         // 捕获 callback 副本并在点击时执行

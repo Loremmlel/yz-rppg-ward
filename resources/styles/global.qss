@@ -150,3 +150,104 @@ QMessageBox QPushButton:pressed {
     background-color: #2C6EA6;
 }
 
+/* ---------- Toast 通知 ---------- */
+QLabel#Toast {
+    background-color: rgba(33, 37, 41, 220);
+    color: #FFFFFF;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 30);
+}
+
+/* ---------- AppDialog 全局对话框 ---------- */
+QWidget#dialogOverlay {
+    background-color: rgba(0, 0, 0, 120);
+}
+
+QFrame#AppDialog {
+    background-color: #FFFFFF;
+    border-radius: 12px;
+    border: 1px solid #DEE2E6;
+}
+
+QLabel#dialogTitle {
+    font-size: 16px;
+    font-weight: bold;
+    color: #212529;
+    margin-bottom: 12px;
+    background: transparent;
+}
+
+QFrame#dialogDivider {
+    color: #E9ECEF;
+    margin-bottom: 14px;
+}
+
+QLabel#dialogContent {
+    font-size: 13px;
+    color: #495057;
+    margin-bottom: 20px;
+    background: transparent;
+}
+
+QPushButton#dialogPrimaryButton {
+    background-color: #4A90D9;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+QPushButton#dialogPrimaryButton:hover   { background-color: #357ABD; }
+QPushButton#dialogPrimaryButton:pressed { background-color: #2C6EA6; }
+
+QPushButton#dialogSecondaryButton {
+    background-color: #F8F9FA;
+    color: #495057;
+    border: 1px solid #DEE2E6;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+QPushButton#dialogSecondaryButton:hover   { background-color: #E9ECEF; }
+QPushButton#dialogSecondaryButton:pressed { background-color: #DEE2E6; }
+
+/* ---------- TrendCard 指标卡片（静态部分） ---------- */
+TrendCard {
+    background-color: #FFFFFF;
+    border: 1px solid #E0E4E8;
+    border-radius: 10px;
+}
+
+TrendCard:hover {
+    background-color: #FAFBFC;
+    border-color: #CED4DA;
+}
+
+QLabel#trendCardTitle {
+    font-size: 12px;
+    color: #495057;
+    font-weight: 600;
+    background: transparent;
+}
+
+QPushButton#trendCardInfoBtn {
+    background: transparent;
+    border: none;
+    color: #ADB5BD;
+    font-size: 13px;
+    padding: 0;
+}
+
+QPushButton#trendCardInfoBtn:hover   { color: #4A90D9; }
+QPushButton#trendCardInfoBtn:pressed { color: #357ABD; }
+
+QLabel#trendCardValue {
+    font-size: 20px;
+    font-weight: bold;
+    font-family: "Segoe UI", "PingFang SC", sans-serif;
+    background: transparent;
+}

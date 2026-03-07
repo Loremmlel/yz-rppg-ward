@@ -23,18 +23,6 @@ void ToastManager::showToast(const QString &text, const int durationMs) {
     label->setObjectName("Toast");
     label->setAlignment(Qt::AlignCenter);
     label->setWordWrap(true);
-    label->setStyleSheet(
-        QStringLiteral(
-            "QLabel#Toast {"
-            "  background-color: rgba(33, 37, 41, 220);"
-            "  color: #FFFFFF;"
-            "  font-size: 13px;"
-            "  font-weight: bold;"
-            "  padding: 10px 20px;"
-            "  border-radius: 6px;"
-            "  border: 1px solid rgba(255,255,255,30);"
-            "}")
-    );
     label->adjustSize();
 
     // 透明度效果

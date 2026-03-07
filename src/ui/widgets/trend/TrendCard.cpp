@@ -20,18 +20,10 @@ TrendCard::TrendCard(const QString    &title,
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     setFrameShape(QFrame::StyledPanel);
 
+    // 仅注入动态 accent 色（border-left 和悬停时同色），其余静态样式在 global.qss 中
     setStyleSheet(QString(
-        "TrendCard {"
-        "  background-color: #FFFFFF;"
-        "  border: 1px solid #E0E4E8;"
-        "  border-radius: 10px;"
-        "  border-left: 4px solid %1;"
-        "}"
-        "TrendCard:hover {"
-        "  background-color: #FAFBFC;"
-        "  border-color: #CED4DA;"
-        "  border-left: 4px solid %1;"
-        "}"
+        "TrendCard        { border-left: 4px solid %1; }"
+        "TrendCard:hover  { border-left: 4px solid %1; }"
     ).arg(accentColor.name()));
 
     auto *mainLayout = new QVBoxLayout(this);
@@ -45,8 +37,6 @@ TrendCard::TrendCard(const QString    &title,
     // 名称
     m_titleLabel = new QLabel(title, this);
     m_titleLabel->setObjectName("trendCardTitle");
-    m_titleLabel->setStyleSheet(
-        "font-size: 12px; color: #495057; font-weight: 600; background: transparent;");
 
     // ⓘ 提示按钮
     auto *infoBtn = new QPushButton(QStringLiteral("ⓘ"), this);
@@ -54,14 +44,6 @@ TrendCard::TrendCard(const QString    &title,
     infoBtn->setFixedSize(18, 18);
     infoBtn->setCursor(Qt::PointingHandCursor);
     infoBtn->setToolTip(QStringLiteral("查看指标说明"));
-    infoBtn->setStyleSheet(
-        "QPushButton#trendCardInfoBtn {"
-        "  background: transparent; border: none;"
-        "  color: #ADB5BD; font-size: 13px; padding: 0;"
-        "}"
-        "QPushButton#trendCardInfoBtn:hover  { color: #4A90D9; }"
-        "QPushButton#trendCardInfoBtn:pressed { color: #357ABD; }"
-    );
 
     // 捕获 info 副本，点击时弹出 AppDialog
     connect(infoBtn, &QPushButton::clicked, this, [info, title] {
@@ -72,11 +54,8 @@ TrendCard::TrendCard(const QString    &title,
     m_valueLabel = new QLabel("--", this);
     m_valueLabel->setObjectName("trendCardValue");
     m_valueLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-    m_valueLabel->setStyleSheet(QString(
-        "font-size: 20px; font-weight: bold; color: %1;"
-        "font-family: \"Segoe UI\", \"PingFang SC\", sans-serif;"
-        "background: transparent;"
-    ).arg(accentColor.name()));
+    // 仅注入动态 accent 色，字体/字重等静态样式在 global.qss 中
+    m_valueLabel->setStyleSheet(QString("color: %1;").arg(accentColor.name()));
 
     topRow->addWidget(m_titleLabel);
     topRow->addWidget(infoBtn);

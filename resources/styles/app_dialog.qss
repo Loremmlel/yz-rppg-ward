@@ -1,0 +1,74 @@
+/* ============================================================
+ * 全局对话框样式 — AppDialog
+ * ============================================================ */
+
+/* ---------- 遮罩层 ---------- */
+QWidget#dialogOverlay {
+    background-color: rgba(0, 0, 0, 120);
+}
+
+/* ---------- 对话框容器 ---------- */
+QFrame#AppDialog {
+    background-color: #FFFFFF;
+    border-radius: 12px;
+    border: 1px solid #DEE2E6;
+}
+
+/* ---------- 标题 ---------- */
+QLabel#dialogTitle {
+    font-size: 16px;
+    font-weight: bold;
+    color: #212529;
+    margin-bottom: 12px;
+    background: transparent;
+}
+
+/* ---------- 分隔线 ---------- */
+QFrame#dialogDivider {
+    color: #E9ECEF;
+    margin-bottom: 14px;
+}
+
+/* ---------- 内容正文 ---------- */
+QLabel#dialogContent {
+    font-size: 13px;
+    color: #495057;
+    margin-bottom: 20px;
+    background: transparent;
+}
+
+/* ---------- 主操作按钮（蓝色） ---------- */
+QPushButton#dialogPrimaryButton {
+    background-color: #4A90D9;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+QPushButton#dialogPrimaryButton:hover {
+    background-color: #357ABD;
+}
+
+QPushButton#dialogPrimaryButton:pressed {
+    background-color: #2C6EA6;
+}
+
+/* ---------- 次要操作按钮（灰色） ---------- */
+QPushButton#dialogSecondaryButton {
+    background-color: #F8F9FA;
+    color: #495057;
+    border: 1px solid #DEE2E6;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+QPushButton#dialogSecondaryButton:hover {
+    background-color: #E9ECEF;
+}
+
+QPushButton#dialogSecondaryButton:pressed {
+    background-color: #DEE2E6;
+}
+
