@@ -22,7 +22,7 @@ private slots:
 private:
     void initUI();
 
-    void loadCurrentConfig();
+    void loadCurrentConfig() const;
 
     NetworkSettingsGroup *m_networkGroup{};
     BedSettingsGroup *m_bedGroup{};

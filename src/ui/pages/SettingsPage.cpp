@@ -40,7 +40,7 @@ void SettingsPage::initUI() {
     connect(m_saveBtn, &QPushButton::clicked, this, &SettingsPage::onSaveClicked);
 }
 
-void SettingsPage::loadCurrentConfig() {
+void SettingsPage::loadCurrentConfig() const {
     const AppConfig cfg = ConfigService::instance()->config();
     m_networkGroup->loadConfig(cfg);
     m_bedGroup->loadConfig(cfg);
