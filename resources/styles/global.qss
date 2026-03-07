@@ -192,6 +192,14 @@ QLabel#dialogContent {
     background: transparent;
 }
 
+QScrollArea#dialogContentScroll {
+    background: transparent;
+}
+
+QScrollArea#dialogContentScroll > QWidget > QWidget {
+    background: transparent;
+}
+
 QPushButton#dialogPrimaryButton {
     background-color: #4A90D9;
     color: #FFFFFF;

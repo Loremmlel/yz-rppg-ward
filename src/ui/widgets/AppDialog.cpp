@@ -4,7 +4,8 @@
 #include <QHBoxLayout>
 #include <QGraphicsOpacityEffect>
 #include <QPropertyAnimation>
-#include <QResizeEvent>
+#include <QMainWindow>
+#include <QScrollArea>
 
 // ── 单例 ─────────────────────────────────────────────────────────────────────
 AppDialog *AppDialog::instance() {
@@ -15,7 +16,12 @@ AppDialog *AppDialog::instance() {
 AppDialog::AppDialog(QObject *parent) : QObject(parent) {}
 
 void AppDialog::setParentWidget(QWidget *parent) {
-    m_parentWidget = parent;
+    // 若传入的是 QMainWindow，使用 centralWidget 作为实际父控件，
+    // 这样 rect() 和 move() 坐标系与可视内容区完全一致。
+    if (auto *mw = qobject_cast<QMainWindow *>(parent))
+        m_parentWidget = mw->centralWidget();
+    else
+        m_parentWidget = parent;
 }
 
 // ── 公开接口 ─────────────────────────────────────────────────────────────────
@@ -75,13 +81,23 @@ void AppDialog::show(const QString &title,
     divider->setFrameShape(QFrame::HLine);
     dialogLayout->addWidget(divider);
 
-    // ── 内容 ──
-    m_contentLabel = new QLabel(content, m_dialog);
+    // ── 内容（可滚动，支持长文本） ──
+    auto *contentScroll = new QScrollArea(m_dialog);
+    contentScroll->setObjectName("dialogContentScroll");
+    contentScroll->setWidgetResizable(true);
+    contentScroll->setFrameShape(QFrame::NoFrame);
+    contentScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    contentScroll->setMaximumHeight(360);   // 超出时出现滚动条
+
+    m_contentLabel = new QLabel(content, contentScroll);
     m_contentLabel->setObjectName("dialogContent");
     m_contentLabel->setWordWrap(true);
     m_contentLabel->setTextFormat(Qt::RichText);
     m_contentLabel->setOpenExternalLinks(false);
-    dialogLayout->addWidget(m_contentLabel);
+    m_contentLabel->setFixedWidth(420 - 28 * 2 - 20); // 对话框宽 - 左右边距 - 滚动条预留
+    m_contentLabel->adjustSize();
+    contentScroll->setWidget(m_contentLabel);
+    dialogLayout->addWidget(contentScroll);
 
     dialogLayout->addSpacing(6);
 
@@ -112,13 +128,12 @@ void AppDialog::show(const QString &title,
 
     dialogLayout->addWidget(m_buttonRow);
 
+    m_dialog->show();   // show 先于 adjustSize，让 Qt 完成布局再计算尺寸
     m_dialog->adjustSize();
-    m_dialog->show();
     m_dialog->raise();
-
     updateGeometry();
 
-    // ── 入场动画：从中心略微向上弹出 + 淡入 ──
+    // ── 入场动画：淡入 ──
     auto *opacity = new QGraphicsOpacityEffect(m_dialog);
     m_dialog->setGraphicsEffect(opacity);
     opacity->setOpacity(0.0);
@@ -141,11 +156,11 @@ void AppDialog::close() {
 // ── 居中定位 ──────────────────────────────────────────────────────────────────
 void AppDialog::updateGeometry() const {
     if (!m_dialog || !m_parentWidget) return;
-    const QRect pr = m_parentWidget->rect();
-    const QSize ds = m_dialog->sizeHint();
-    m_dialog->move(
-        pr.x() + (pr.width()  - ds.width())  / 2,
-        pr.y() + (pr.height() - ds.height()) / 2 - 20  // 稍微偏上
-    );
+    // m_dialog 是 m_parentWidget 的子 widget，坐标系相同
+    const QRect  pr = m_parentWidget->rect();
+    const QSize  ds = m_dialog->size();  // adjustSize 后已有正确尺寸
+    const int    x  = (pr.width()  - ds.width())  / 2;
+    const int    y  = (pr.height() - ds.height()) / 2 - 20; // 稍微偏上
+    m_dialog->move(x, y);
 }
 

@@ -5,6 +5,7 @@
 #include <QFrame>
 #include <QLabel>
 #include <QPushButton>
+#include <QScrollArea>
 #include <functional>
 
 /**
