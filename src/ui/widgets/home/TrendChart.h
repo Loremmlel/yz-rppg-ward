@@ -2,49 +2,49 @@
 
 #include <QWidget>
 #include <QList>
+#include <QDateTime>
 #include <optional>
 
 #include <QtCharts/QChartView>
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QValueAxis>
+#include <QtCharts/QDateTimeAxis>
 
 /**
  * @brief 历史趋势折线图（批量数据，Qt Charts 实现）
  *
  * 特性：
- *  - 接受 (x_index, y_value) 列表，null 值令折线断开
- *  - Y 轴显示 5 个刻度
- *  - 可选：绘制 y = refValue 的水平虚线，并在 Y 轴额外标注该值
- *  - X 轴仅作索引，不显示
+ *  - 接受 (bucketTime, y_value) 列表，null 值令折线断开
+ *  - Y 轴显示 5 个刻度（有参考线时用 TicksDynamic 使参考值恰好落在刻度上）
+ *  - X 轴显示约 5 个时间刻度（HH:mm 格式）
+ *  - 参考线：y = refValue 水平虚线，Y 轴上额外标注该值
  */
 class TrendChart : public QWidget {
     Q_OBJECT
 
 public:
-    /**
-     * @param lineColor 折线颜色
-     * @param parent    父控件
-     */
     explicit TrendChart(QColor lineColor, QWidget *parent = nullptr);
 
     /**
      * @brief 用新数据集全量替换图表内容
      *
-     * @param points    数据点列表，index 即为 X 轴序号
-     * @param refValue  参考线值（均值或中位数），nullopt 则不绘制参考线
+     * @param timestamps  每个数据点对应的 bucket 时刻（本地时间）
+     * @param points      对应的数值，nullopt 表示该 bucket 缺失
+     * @param refValue    参考线值（均值或中位数），nullopt 则不绘制参考线
      */
-    void setData(const QList<std::optional<double>> &points,
-                 std::optional<double> refValue = std::nullopt);
+    void setData(const QList<QDateTime>              &timestamps,
+                 const QList<std::optional<double>>  &points,
+                 std::optional<double>                refValue = std::nullopt);
 
     /** @brief 清空图表 */
     void clearData();
 
 private:
     void rebuildSeries();
-
     [[nodiscard]] std::pair<double, double> calcYRange() const;
 
     // ── 数据 ──
+    QList<QDateTime>             m_timestamps;
     QList<std::optional<double>> m_points;
     std::optional<double>        m_refValue;
 
@@ -52,9 +52,9 @@ private:
     QColor m_lineColor;
 
     // ── Qt Charts 对象 ──
-    QChart     *m_chart{nullptr};
-    QChartView *m_chartView{nullptr};
-    QValueAxis *m_axisX{nullptr};
-    QValueAxis *m_axisY{nullptr};
+    QChart        *m_chart{nullptr};
+    QChartView    *m_chartView{nullptr};
+    QDateTimeAxis *m_axisX{nullptr};
+    QValueAxis    *m_axisY{nullptr};
 };
 

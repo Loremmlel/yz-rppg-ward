@@ -402,27 +402,33 @@ static std::optional<double> calcMedian(const QList<std::optional<double>> &pts)
 
 // ── 将全量记录展示到各卡片 ───────────────────────────────────────────────────
 void VitalsTrendPage::applyData(const QList<VitalsTrendData> &records) const {
+    // 提取时间戳列表（本地时间，供 X 轴显示）
+    QList<QDateTime> timestamps;
+    timestamps.reserve(records.size());
+    for (const auto &r : records)
+        timestamps.append(r.bucketTime.toLocalTime());
+
     // ── 基础生命体征（参考线 = 均值） ──
     const auto hrPts  = extractPoints(records, [](const VitalsTrendData &r){ return r.basicVitals.hrAvg; });
     const auto brPts  = extractPoints(records, [](const VitalsTrendData &r){ return r.basicVitals.brAvg; });
     const auto sqiPts = extractPoints(records, [](const VitalsTrendData &r){ return r.basicVitals.sqiAvg; });
 
-    m_cardHrAvg ->setData(hrPts,  calcMean(hrPts));
-    m_cardBrAvg ->setData(brPts,  calcMean(brPts));
-    m_cardSqiAvg->setData(sqiPts, calcMean(sqiPts));
+    m_cardHrAvg ->setData(timestamps, hrPts,  calcMean(hrPts));
+    m_cardBrAvg ->setData(timestamps, brPts,  calcMean(brPts));
+    m_cardSqiAvg->setData(timestamps, sqiPts, calcMean(sqiPts));
 
-    // ── HRV 时域（后端返回的是各 bucket 的中位数；参考线 = 全局中位数的中位数） ──
+    // ── HRV 时域（后端返回各 bucket 中位数；参考线 = 全局中位数的中位数） ──
     const auto sdnnPts  = extractPoints(records, [](const VitalsTrendData &r){ return r.hrvTimeDomain.sdnnMedian; });
     const auto rmssdPts = extractPoints(records, [](const VitalsTrendData &r){ return r.hrvTimeDomain.rmssdMedian; });
     const auto sdsdPts  = extractPoints(records, [](const VitalsTrendData &r){ return r.hrvTimeDomain.sdsdMedian; });
     const auto pnn50Pts = extractPoints(records, [](const VitalsTrendData &r){ return r.hrvTimeDomain.pnn50Median; });
     const auto pnn20Pts = extractPoints(records, [](const VitalsTrendData &r){ return r.hrvTimeDomain.pnn20Median; });
 
-    m_cardSdnn ->setData(sdnnPts,  calcMedian(sdnnPts));
-    m_cardRmssd->setData(rmssdPts, calcMedian(rmssdPts));
-    m_cardSdsd ->setData(sdsdPts,  calcMedian(sdsdPts));
-    m_cardPnn50->setData(pnn50Pts, calcMedian(pnn50Pts));
-    m_cardPnn20->setData(pnn20Pts, calcMedian(pnn20Pts));
+    m_cardSdnn ->setData(timestamps, sdnnPts,  calcMedian(sdnnPts));
+    m_cardRmssd->setData(timestamps, rmssdPts, calcMedian(rmssdPts));
+    m_cardSdsd ->setData(timestamps, sdsdPts,  calcMedian(sdsdPts));
+    m_cardPnn50->setData(timestamps, pnn50Pts, calcMedian(pnn50Pts));
+    m_cardPnn20->setData(timestamps, pnn20Pts, calcMedian(pnn20Pts));
 
     // ── HRV 频域（参考线 = 均值） ──
     const auto lfHfPts = extractPoints(records, [](const VitalsTrendData &r){ return r.hrvFreqDomain.lfHfRatio; });
@@ -431,11 +437,11 @@ void VitalsTrendPage::applyData(const QList<VitalsTrendData> &records) const {
     const auto vlfPts  = extractPoints(records, [](const VitalsTrendData &r){ return r.hrvFreqDomain.vlfAvg; });
     const auto tpPts   = extractPoints(records, [](const VitalsTrendData &r){ return r.hrvFreqDomain.tpAvg; });
 
-    m_cardLfHfRatio->setData(lfHfPts, calcMean(lfHfPts));
-    m_cardHf       ->setData(hfPts,   calcMean(hfPts));
-    m_cardLf       ->setData(lfPts,   calcMean(lfPts));
-    m_cardVlf      ->setData(vlfPts,  calcMean(vlfPts));
-    m_cardTp       ->setData(tpPts,   calcMean(tpPts));
+    m_cardLfHfRatio->setData(timestamps, lfHfPts, calcMean(lfHfPts));
+    m_cardHf       ->setData(timestamps, hfPts,   calcMean(hfPts));
+    m_cardLf       ->setData(timestamps, lfPts,   calcMean(lfPts));
+    m_cardVlf      ->setData(timestamps, vlfPts,  calcMean(vlfPts));
+    m_cardTp       ->setData(timestamps, tpPts,   calcMean(tpPts));
 }
 
 // ── 加载状态 ─────────────────────────────────────────────────────────────────

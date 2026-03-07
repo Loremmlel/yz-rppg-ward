@@ -4,10 +4,10 @@
 #include <QtCharts/QChart>
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QValueAxis>
+#include <QtCharts/QDateTimeAxis>
 #include <algorithm>
 #include <cmath>
 #include <limits>
-#include <numeric>
 
 // ── 构造 ─────────────────────────────────────────────────────────────────────
 TrendChart::TrendChart(QColor lineColor, QWidget *parent)
@@ -15,28 +15,38 @@ TrendChart::TrendChart(QColor lineColor, QWidget *parent)
     , m_lineColor(lineColor)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    setMinimumHeight(90);
+    setMinimumHeight(160);
 
     m_chart = new QChart();
     m_chart->setBackgroundVisible(false);
     m_chart->setBackgroundRoundness(0);
-    m_chart->setMargins(QMargins(0, 4, 8, 0));
+    // 左边距留足给 Y 轴标签，底部留给 X 轴时间标签
+    m_chart->setMargins(QMargins(4, 6, 10, 2));
     m_chart->legend()->hide();
     m_chart->setAnimationOptions(QChart::NoAnimation);
 
-    // ── X 轴（隐藏，仅作索引） ──
-    m_axisX = new QValueAxis(m_chart);
-    m_axisX->setRange(0.0, 1.0);
-    m_axisX->setVisible(false);
+    // ── X 轴（QDateTimeAxis，显示时间刻度） ──
+    m_axisX = new QDateTimeAxis(m_chart);
+    m_axisX->setTickCount(5);
+    m_axisX->setFormat(QStringLiteral("HH:mm"));
+    m_axisX->setLabelsColor(QColor(130, 130, 130));
+    QFont xFont;
+    xFont.setPointSize(7);
+    m_axisX->setLabelsFont(xFont);
+    m_axisX->setGridLineColor(QColor(220, 220, 220, 80));
+    m_axisX->setLinePen(Qt::NoPen);
+    // 初始范围随意设置，setData 时会更新
+    m_axisX->setRange(QDateTime::currentDateTime().addSecs(-3600),
+                      QDateTime::currentDateTime());
 
     // ── Y 轴 ──
     m_axisY = new QValueAxis(m_chart);
     m_axisY->setTickCount(5);
-    m_axisY->setLabelFormat("%.4g");   // 自适应精度
-    m_axisY->setLabelsColor(QColor(140, 140, 140));
-    QFont axisFont;
-    axisFont.setPointSize(8);
-    m_axisY->setLabelsFont(axisFont);
+    m_axisY->setLabelFormat(QStringLiteral("%.4g"));
+    m_axisY->setLabelsColor(QColor(130, 130, 130));
+    QFont yFont;
+    yFont.setPointSize(7);
+    m_axisY->setLabelsFont(yFont);
     m_axisY->setGridLineColor(QColor(220, 220, 220, 100));
     m_axisY->setMinorGridLineVisible(false);
     m_axisY->setLinePen(Qt::NoPen);
@@ -57,15 +67,18 @@ TrendChart::TrendChart(QColor lineColor, QWidget *parent)
 }
 
 // ── 公开接口 ─────────────────────────────────────────────────────────────────
-void TrendChart::setData(const QList<std::optional<double>> &points,
-                         std::optional<double> refValue)
+void TrendChart::setData(const QList<QDateTime>             &timestamps,
+                         const QList<std::optional<double>> &points,
+                         std::optional<double>               refValue)
 {
-    m_points   = points;
-    m_refValue = refValue;
+    m_timestamps = timestamps;
+    m_points     = points;
+    m_refValue   = refValue;
     rebuildSeries();
 }
 
 void TrendChart::clearData() {
+    m_timestamps.clear();
     m_points.clear();
     m_refValue = std::nullopt;
     rebuildSeries();
@@ -75,67 +88,81 @@ void TrendChart::clearData() {
 void TrendChart::rebuildSeries() {
     m_chart->removeAllSeries();
 
-    if (m_points.isEmpty()) {
-        m_axisX->setRange(0.0, 1.0);
+    const int n = m_points.size();
+
+    if (n == 0 || m_timestamps.size() != n) {
+        m_axisX->setRange(QDateTime::currentDateTime().addSecs(-3600),
+                          QDateTime::currentDateTime());
         m_axisY->setRange(0.0, 1.0);
+        m_axisY->setTickType(QValueAxis::TicksFixed);
         m_axisY->setTickCount(5);
         return;
     }
 
-    const int n = m_points.size();
-    m_axisX->setRange(0.0, static_cast<double>(n - 1));
+    // ── X 轴范围（用首尾时间戳） ──
+    m_axisX->setRange(m_timestamps.first(), m_timestamps.last());
+
+    // 跨度超过 1 小时显示 HH:mm，跨度在日期边界时附加日期
+    const qint64 spanSecs = m_timestamps.first().secsTo(m_timestamps.last());
+    if (spanSecs > 23 * 3600) {
+        m_axisX->setFormat(QStringLiteral("MM-dd HH:mm"));
+    } else {
+        m_axisX->setFormat(QStringLiteral("HH:mm"));
+    }
 
     auto [yMin, yMax] = calcYRange();
 
-    // ── 1. 折线：按 null 断点切出连续有效段，每段一条 QLineSeries ──
+    // ── 1. 折线：按 null 断点切出连续有效段，X 坐标用 msecsSinceEpoch ──
     QLineSeries *current = nullptr;
     for (int i = 0; i < n; ++i) {
         if (m_points[i].has_value()) {
             if (!current) {
                 current = new QLineSeries();
-                QPen pen(m_lineColor, 1.8);
+                QPen pen(m_lineColor, 2.0);
                 pen.setCapStyle(Qt::RoundCap);
                 pen.setJoinStyle(Qt::RoundJoin);
                 current->setPen(pen);
                 m_chart->addSeries(current);
             }
-            current->append(static_cast<double>(i), m_points[i].value());
+            current->append(
+                static_cast<qreal>(m_timestamps[i].toMSecsSinceEpoch()),
+                m_points[i].value());
         } else {
-            current = nullptr; // null 点 → 断开，下一个有效点开启新 series
+            current = nullptr; // null → 断开，下一个有效点开启新段
         }
     }
 
-    // attach 所有折线 series 到坐标轴
+    // attach 所有折线到坐标轴
     for (auto *s : m_chart->series()) {
         s->attachAxis(m_axisX);
         s->attachAxis(m_axisY);
     }
 
-    // ── 2. 参考线（y = refValue），贯穿整个 X 范围的水平虚线 ──
+    // ── 2. 参考线（y = refValue）水平虚线 ──
     if (m_refValue.has_value()) {
         const double rv = m_refValue.value();
+        const qreal  xStart = static_cast<qreal>(m_timestamps.first().toMSecsSinceEpoch());
+        const qreal  xEnd   = static_cast<qreal>(m_timestamps.last().toMSecsSinceEpoch());
 
         auto *refLine = new QLineSeries();
-        QPen dashPen(m_lineColor.lighter(160), 1.4);
+        QPen dashPen(m_lineColor.lighter(170), 1.6);
         dashPen.setStyle(Qt::CustomDashLine);
-        dashPen.setDashPattern({5.0, 4.0});
+        dashPen.setDashPattern({6.0, 4.0});
         refLine->setPen(dashPen);
-        refLine->append(0.0,                        rv);
-        refLine->append(static_cast<double>(n - 1), rv);
+        refLine->append(xStart, rv);
+        refLine->append(xEnd,   rv);
 
         m_chart->addSeries(refLine);
         refLine->attachAxis(m_axisX);
         refLine->attachAxis(m_axisY);
 
-        // ── Y 轴刻度：使用 TicksDynamic，以 refValue 为锚点，
-        //   步距 = span/4（使可见范围内约显示 5 个刻度）。
-        //   refValue 必然是一条刻度线，自然在 Y 轴上产生对应标注。 ──
+        // ── Y 轴：TicksDynamic，以 refValue 为锚点，步距 = span/4
+        //   确保 refValue 必然出现在 Y 轴刻度上 ──
         const double step4 = (yMax - yMin) / 4.0;
         m_axisY->setTickType(QValueAxis::TicksDynamic);
         m_axisY->setTickAnchor(rv);
-        m_axisY->setTickInterval(step4);
+        m_axisY->setTickInterval(step4 > 0 ? step4 : 1.0);
     } else {
-        // 无参考线，正常 5 刻度
         m_axisY->setTickType(QValueAxis::TicksFixed);
         m_axisY->setTickCount(5);
     }
@@ -154,14 +181,12 @@ std::pair<double, double> TrendChart::calcYRange() const {
             dMax = std::max(dMax, pt.value());
         }
     }
-
-    // 把 refValue 也纳入范围，确保参考线可见
     if (m_refValue.has_value()) {
         dMin = std::min(dMin, m_refValue.value());
         dMax = std::max(dMax, m_refValue.value());
     }
 
-    if (dMin > dMax) return {0.0, 1.0}; // 无有效数据
+    if (dMin > dMax) return {0.0, 1.0};
 
     double span = dMax - dMin;
     if (span < 1e-9) span = std::max(1.0, std::abs(dMin) * 0.1);
@@ -169,5 +194,4 @@ std::pair<double, double> TrendChart::calcYRange() const {
     constexpr double kPad = 0.15;
     return {dMin - span * kPad, dMax + span * kPad};
 }
-
 

@@ -33,7 +33,7 @@ TrendCard::TrendCard(const QString &title,
     ).arg(accentColor.name()));
 
     auto *mainLayout = new QVBoxLayout(this);
-    mainLayout->setContentsMargins(14, 10, 14, 10);
+    mainLayout->setContentsMargins(14, 10, 10, 10);
     mainLayout->setSpacing(6);
 
     // ── 顶部行：图标+名称  |  数值 ──
@@ -69,33 +69,34 @@ TrendCard::TrendCard(const QString &title,
     topRow->addWidget(m_valueLabel);
     mainLayout->addLayout(topRow);
 
-    // ── 下部：折线图 ──
+    // ── 下部：折线图（拉伸填满剩余空间） ──
     m_chart = new TrendChart(accentColor, this);
-    m_chart->setMinimumHeight(80);
+    m_chart->setMinimumHeight(160);
     mainLayout->addWidget(m_chart, 1);
 }
 
 // ── 公开接口 ──────────────────────────────────────────────────────────────────
-void TrendCard::setData(const QList<std::optional<double>> &points,
-                        const std::optional<double> refValue) const {
-    // 找最后一个有效值作为顶部展示数值
+void TrendCard::setData(const QList<QDateTime>             &timestamps,
+                        const QList<std::optional<double>> &points,
+                        const std::optional<double>         refValue) const
+{
+    // 找最后一个有效值显示在顶部
     std::optional<double> lastValid;
     for (int i = points.size() - 1; i >= 0; --i) {
         if (points[i].has_value()) { lastValid = points[i]; break; }
     }
 
     if (lastValid.has_value()) {
-        // 用 refValue 的精度作为显示精度（粗略）；无 refValue 时用 2 位
         int prec = 2;
-        if (refValue.has_value() && std::abs(*refValue) >= 10.0)  prec = 1;
-        if (refValue.has_value() && std::abs(*refValue) >= 100.0) prec = 0;
+        if (std::abs(*lastValid) >= 100.0) prec = 0;
+        else if (std::abs(*lastValid) >= 10.0)  prec = 1;
         const QString txt = formatValue(*lastValid, prec);
         m_valueLabel->setText(m_unit.isEmpty() ? txt : txt + " " + m_unit);
     } else {
         m_valueLabel->setText("--");
     }
 
-    m_chart->setData(points, refValue);
+    m_chart->setData(timestamps, points, refValue);
 }
 
 void TrendCard::clearData() const {
@@ -104,7 +105,7 @@ void TrendCard::clearData() const {
 }
 
 // ── 私有工具 ──────────────────────────────────────────────────────────────────
-QString TrendCard::formatValue(const double v, const int precision) {
+QString TrendCard::formatValue(double v, int precision) {
     const double factor = std::pow(10.0, precision);
     const double truncated = std::floor(v * factor) / factor;
     return QString::number(truncated, 'f', precision);

@@ -3,6 +3,7 @@
 #include <QFrame>
 #include <QLabel>
 #include <QList>
+#include <QDateTime>
 #include <optional>
 
 #include "TrendChart.h"
@@ -12,7 +13,7 @@
  *
  * 布局：
  *  - 顶部行：左侧图标 + 名称，右侧最新聚合数值
- *  - 下部：TrendChart 折线图（含参考线）
+ *  - 下部：TrendChart 折线图（含 X 时间轴和参考线）
  */
 class TrendCard : public QFrame {
     Q_OBJECT
@@ -34,11 +35,13 @@ public:
     /**
      * @brief 用完整数据列表刷新卡片
      *
-     * @param points    每个 bucket 的数值，nullopt 表示该 bucket 缺失
-     * @param refValue  参考线值（均值/中位数），nullopt 则不绘参考线
+     * @param timestamps  每个 bucket 对应的时刻（本地时间）
+     * @param points      每个 bucket 的数值，nullopt 表示缺失
+     * @param refValue    参考线值（均值/中位数），nullopt 则不绘参考线
      */
-    void setData(const QList<std::optional<double>> &points,
-                 std::optional<double> refValue = std::nullopt) const;
+    void setData(const QList<QDateTime>             &timestamps,
+                 const QList<std::optional<double>> &points,
+                 std::optional<double>               refValue = std::nullopt) const;
 
     /** @brief 清空数据，显示 "--" */
     void clearData() const;
