@@ -1,6 +1,7 @@
 #include "MainWindow.h"
 #include "../util/StyleLoader.h"
 #include "widgets/ToastManager.h"
+#include "widgets/AppDialog.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -13,6 +14,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     // Toast 管理器绑定到主窗口
     ToastManager::instance()->setParentWidget(this);
+    // 全局对话框绑定到主窗口
+    AppDialog::instance()->setParentWidget(this);
 
     // 全局样式 + 导航栏样式
     setStyleSheet(StyleLoader::loadMultiple({

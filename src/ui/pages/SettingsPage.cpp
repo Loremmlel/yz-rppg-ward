@@ -1,5 +1,4 @@
 #include "SettingsPage.h"
-#include <QMessageBox>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 
@@ -7,6 +6,7 @@
 #include "../../util/StyleLoader.h"
 #include "../widgets/setting/NetworkSettingsGroup.h"
 #include "../widgets/setting/BedSettingsGroup.h"
+#include "../widgets/AppDialog.h"
 
 SettingsPage::SettingsPage(QWidget *parent) : QWidget(parent) {
     initUI();
@@ -57,7 +57,7 @@ void SettingsPage::onSaveClicked() {
 
     ConfigService::instance()->saveConfig(newConfig);
 
-    QMessageBox::information(this,
-                             QStringLiteral("保存成功"),
-                             QStringLiteral("配置已保存并立即生效。"));
+    AppDialog::instance()->showInfo(
+        QStringLiteral("保存成功"),
+        QStringLiteral("配置已保存并立即生效。"));
 }
