@@ -2,23 +2,28 @@
 
 #include <QFrame>
 #include <QLabel>
+#include <QList>
+#include <optional>
+
+#include "TrendChart.h"
 
 /**
- * @brief 历史趋势页面中的紧凑指标卡片
+ * @brief 历史趋势页面中的指标卡片（含折线图）
  *
- * 仅展示指标名称与最新聚合数值，不含折线图，体积比 MetricCard 小。
- * 布局：左侧图标 + 名称标签，右侧数值标签。
+ * 布局：
+ *  - 顶部行：左侧图标 + 名称，右侧最新聚合数值
+ *  - 下部：TrendChart 折线图（含参考线）
  */
 class TrendCard : public QFrame {
     Q_OBJECT
 
 public:
     /**
-     * @param title   指标中文名，如 "心率均值"
-     * @param icon    emoji 或资源路径
-     * @param unit    单位字符串，如 "bpm"；为空则不显示单位
-     * @param accentColor 左侧色带颜色
-     * @param parent  父控件
+     * @param title       指标中文名，如 "心率均值"
+     * @param icon        emoji 或资源路径
+     * @param unit        单位字符串，如 "bpm"；为空则不显示
+     * @param accentColor 左侧色带 & 折线颜色
+     * @param parent      父控件
      */
     explicit TrendCard(const QString &title,
                        const QString &icon,
@@ -26,20 +31,27 @@ public:
                        const QColor  &accentColor,
                        QWidget       *parent = nullptr);
 
-    /** @brief 更新显示的数值；传空字符串显示 "--" */
-    void setValue(const QString &value) const;
+    /**
+     * @brief 用完整数据列表刷新卡片
+     *
+     * @param points    每个 bucket 的数值，nullopt 表示该 bucket 缺失
+     * @param refValue  参考线值（均值/中位数），nullopt 则不绘参考线
+     */
+    void setData(const QList<std::optional<double>> &points,
+                 std::optional<double> refValue = std::nullopt) const;
 
-    /** @brief 便捷接口：传入 double 按指定精度格式化，并附加单位 */
-    void setValue(double value, int precision = 1) const;
-
-    /** @brief 标记为"无数据"状态 */
-    void clearValue() const;
+    /** @brief 清空数据，显示 "--" */
+    void clearData() const;
 
 private:
-    QLabel   *m_iconLabel{nullptr};
-    QLabel   *m_titleLabel{nullptr};
-    QLabel   *m_valueLabel{nullptr};
+    static QString formatValue(double v, int precision);
 
-    QString   m_unit;
+    QLabel      *m_iconLabel{nullptr};
+    QLabel      *m_titleLabel{nullptr};
+    QLabel      *m_valueLabel{nullptr};  ///< 最新（末尾）有效值
+    TrendChart  *m_chart{nullptr};
+
+    QString      m_unit;
+    QColor       m_accentColor;
 };
 

@@ -1,14 +1,18 @@
 #include "VitalsTrendPage.h"
 
 #include <QGridLayout>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
 #include <QScrollArea>
 #include <QGroupBox>
-#include <QButtonGroup>
 #include <QFrame>
+#include <QLabel>
 #include <QJsonArray>
 #include <QJsonObject>
+#include <QJsonDocument>
 #include <QUrlQuery>
 #include <QDateTime>
+#include <algorithm>
 
 #include "../../service/ApiClient.h"
 #include "../../service/ConfigService.h"
@@ -276,11 +280,10 @@ void VitalsTrendPage::onQueryClicked() {
 // ── 发起 HTTP 请求 ───────────────────────────────────────────────────────────
 void VitalsTrendPage::fetchTrend(const QDateTime &start,
                                   const QDateTime &end,
-                                  const QString   &interval)
-{
+                                  const QString   &interval) const {
     setLoading(true);
 
-    const AppConfig cfg = ConfigService::instance()->config();
+    const auto cfg = ConfigService::instance()->config();
 
     // ISO-8601 UTC 格式（服务端要求）
     const QString startStr = start.toUTC().toString(Qt::ISODate);
@@ -355,29 +358,84 @@ void VitalsTrendPage::fetchTrend(const QDateTime &start,
     );
 }
 
-// ── 将最后一条记录展示到卡片 ─────────────────────────────────────────────────
+// ── 统计辅助 ────────────────────────────────────────────────────────────────
+
+/** 从 records 中提取单个字段的点序列 */
+template<typename Extractor>
+static QList<std::optional<double>> extractPoints(
+    const QList<VitalsTrendData> &records, Extractor extractor)
+{
+    QList<std::optional<double>> pts;
+    pts.reserve(records.size());
+    for (const auto &r : records)
+        pts.append(extractor(r));
+    return pts;
+}
+
+/** 计算有效值的算术均值；无有效值返回 nullopt */
+static std::optional<double> calcMean(const QList<std::optional<double>> &pts)
+{
+    double sum = 0.0;
+    int cnt = 0;
+    for (const auto &p : pts) {
+        if (p.has_value()) { sum += *p; ++cnt; }
+    }
+    return cnt > 0 ? std::optional(sum / cnt) : std::nullopt;
+}
+
+/** 计算有效值的中位数；无有效值返回 nullopt */
+static std::optional<double> calcMedian(const QList<std::optional<double>> &pts)
+{
+    QList<double> vals;
+    for (const auto &p : pts) if (p.has_value()) vals.append(*p);
+    if (vals.isEmpty()) return std::nullopt;
+    const int n = vals.size();
+    const auto midIter = vals.begin() + n / 2;
+    std::ranges::nth_element(vals, midIter);
+
+    if (n % 2 == 1) {
+        return *midIter;
+    }
+    const auto leftMaxIter = std::ranges::max_element(vals.begin(), midIter);
+    return std::midpoint(*leftMaxIter, *midIter);
+}
+
+// ── 将全量记录展示到各卡片 ───────────────────────────────────────────────────
 void VitalsTrendPage::applyData(const QList<VitalsTrendData> &records) const {
-    // 取最新一条（列表末尾）展示为"最新聚合值"
-    const VitalsTrendData &last = records.last();
+    // ── 基础生命体征（参考线 = 均值） ──
+    const auto hrPts  = extractPoints(records, [](const VitalsTrendData &r){ return r.basicVitals.hrAvg; });
+    const auto brPts  = extractPoints(records, [](const VitalsTrendData &r){ return r.basicVitals.brAvg; });
+    const auto sqiPts = extractPoints(records, [](const VitalsTrendData &r){ return r.basicVitals.sqiAvg; });
 
-    // 基础生命体征
-    last.basicVitals.hrAvg  ? m_cardHrAvg->setValue(*last.basicVitals.hrAvg, 0)  : m_cardHrAvg->clearValue();
-    last.basicVitals.brAvg  ? m_cardBrAvg->setValue(*last.basicVitals.brAvg, 2)  : m_cardBrAvg->clearValue();
-    last.basicVitals.sqiAvg ? m_cardSqiAvg->setValue(*last.basicVitals.sqiAvg, 3): m_cardSqiAvg->clearValue();
+    m_cardHrAvg ->setData(hrPts,  calcMean(hrPts));
+    m_cardBrAvg ->setData(brPts,  calcMean(brPts));
+    m_cardSqiAvg->setData(sqiPts, calcMean(sqiPts));
 
-    // HRV 时域
-    last.hrvTimeDomain.sdnnMedian  ? m_cardSdnn->setValue(*last.hrvTimeDomain.sdnnMedian, 1)   : m_cardSdnn->clearValue();
-    last.hrvTimeDomain.rmssdMedian ? m_cardRmssd->setValue(*last.hrvTimeDomain.rmssdMedian, 1) : m_cardRmssd->clearValue();
-    last.hrvTimeDomain.sdsdMedian  ? m_cardSdsd->setValue(*last.hrvTimeDomain.sdsdMedian, 1)   : m_cardSdsd->clearValue();
-    last.hrvTimeDomain.pnn50Median ? m_cardPnn50->setValue(*last.hrvTimeDomain.pnn50Median, 3) : m_cardPnn50->clearValue();
-    last.hrvTimeDomain.pnn20Median ? m_cardPnn20->setValue(*last.hrvTimeDomain.pnn20Median, 3) : m_cardPnn20->clearValue();
+    // ── HRV 时域（后端返回的是各 bucket 的中位数；参考线 = 全局中位数的中位数） ──
+    const auto sdnnPts  = extractPoints(records, [](const VitalsTrendData &r){ return r.hrvTimeDomain.sdnnMedian; });
+    const auto rmssdPts = extractPoints(records, [](const VitalsTrendData &r){ return r.hrvTimeDomain.rmssdMedian; });
+    const auto sdsdPts  = extractPoints(records, [](const VitalsTrendData &r){ return r.hrvTimeDomain.sdsdMedian; });
+    const auto pnn50Pts = extractPoints(records, [](const VitalsTrendData &r){ return r.hrvTimeDomain.pnn50Median; });
+    const auto pnn20Pts = extractPoints(records, [](const VitalsTrendData &r){ return r.hrvTimeDomain.pnn20Median; });
 
-    // HRV 频域
-    last.hrvFreqDomain.lfHfRatio ? m_cardLfHfRatio->setValue(*last.hrvFreqDomain.lfHfRatio, 2) : m_cardLfHfRatio->clearValue();
-    last.hrvFreqDomain.hfAvg     ? m_cardHf->setValue(*last.hrvFreqDomain.hfAvg, 2)             : m_cardHf->clearValue();
-    last.hrvFreqDomain.lfAvg     ? m_cardLf->setValue(*last.hrvFreqDomain.lfAvg, 2)             : m_cardLf->clearValue();
-    last.hrvFreqDomain.vlfAvg    ? m_cardVlf->setValue(*last.hrvFreqDomain.vlfAvg, 2)           : m_cardVlf->clearValue();
-    last.hrvFreqDomain.tpAvg     ? m_cardTp->setValue(*last.hrvFreqDomain.tpAvg, 2)             : m_cardTp->clearValue();
+    m_cardSdnn ->setData(sdnnPts,  calcMedian(sdnnPts));
+    m_cardRmssd->setData(rmssdPts, calcMedian(rmssdPts));
+    m_cardSdsd ->setData(sdsdPts,  calcMedian(sdsdPts));
+    m_cardPnn50->setData(pnn50Pts, calcMedian(pnn50Pts));
+    m_cardPnn20->setData(pnn20Pts, calcMedian(pnn20Pts));
+
+    // ── HRV 频域（参考线 = 均值） ──
+    const auto lfHfPts = extractPoints(records, [](const VitalsTrendData &r){ return r.hrvFreqDomain.lfHfRatio; });
+    const auto hfPts   = extractPoints(records, [](const VitalsTrendData &r){ return r.hrvFreqDomain.hfAvg; });
+    const auto lfPts   = extractPoints(records, [](const VitalsTrendData &r){ return r.hrvFreqDomain.lfAvg; });
+    const auto vlfPts  = extractPoints(records, [](const VitalsTrendData &r){ return r.hrvFreqDomain.vlfAvg; });
+    const auto tpPts   = extractPoints(records, [](const VitalsTrendData &r){ return r.hrvFreqDomain.tpAvg; });
+
+    m_cardLfHfRatio->setData(lfHfPts, calcMean(lfHfPts));
+    m_cardHf       ->setData(hfPts,   calcMean(hfPts));
+    m_cardLf       ->setData(lfPts,   calcMean(lfPts));
+    m_cardVlf      ->setData(vlfPts,  calcMean(vlfPts));
+    m_cardTp       ->setData(tpPts,   calcMean(tpPts));
 }
 
 // ── 加载状态 ─────────────────────────────────────────────────────────────────

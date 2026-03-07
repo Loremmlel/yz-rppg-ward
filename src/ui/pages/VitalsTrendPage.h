@@ -1,9 +1,12 @@
 #pragma once
 
+#include <QWidget>
+#include <QLabel>
 #include <QComboBox>
 #include <QPushButton>
 #include <QDateTimeEdit>
 #include <QVBoxLayout>
+#include <QList>
 
 #include "../../model/VitalsTrendData.h"
 #include "../widgets/home/TrendCard.h"
@@ -36,7 +39,7 @@ private:
                            const QString &groupTitle,
                            const QList<TrendCard *> &cards);
 
-    void fetchTrend(const QDateTime &start, const QDateTime &end, const QString &interval);
+    void fetchTrend(const QDateTime &start, const QDateTime &end, const QString &interval) const;
     void applyData(const QList<VitalsTrendData> &records) const;
     void setLoading(bool loading) const;
     void showError(const QString &message) const;
