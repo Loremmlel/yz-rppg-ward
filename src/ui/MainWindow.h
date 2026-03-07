@@ -6,6 +6,7 @@
 
 #include "pages/HomePage.h"
 #include "pages/SettingsPage.h"
+#include "pages/VitalsTrendPage.h"
 #include "widgets/StatusBar.h"
 
 /**
@@ -29,6 +30,7 @@ public:
 
     [[nodiscard]] HomePage *homePage() const { return m_homePage; }
     [[nodiscard]] SettingsPage *settingsPage() const { return m_settingsPage; }
+    [[nodiscard]] VitalsTrendPage *vitalsTrendPage() const { return m_vitalsTrendPage; }
 
 private:
     void initUI();
@@ -43,4 +45,5 @@ private:
     StatusBar *m_statusBar = nullptr;
     HomePage *m_homePage = nullptr;
     SettingsPage *m_settingsPage = nullptr;
+    VitalsTrendPage *m_vitalsTrendPage = nullptr;
 };

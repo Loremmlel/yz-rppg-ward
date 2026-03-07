@@ -35,9 +35,11 @@ void MainWindow::initUI() {
 
     m_homePage = new HomePage(m_stackedWidget);
     m_settingsPage = new SettingsPage(m_stackedWidget);
+    m_vitalsTrendPage = new VitalsTrendPage(m_stackedWidget);
 
-    m_stackedWidget->addWidget(m_homePage); // index 0
-    m_stackedWidget->addWidget(m_settingsPage); // index 1
+    m_stackedWidget->addWidget(m_homePage);       // index 0
+    m_stackedWidget->addWidget(m_settingsPage);   // index 1
+    m_stackedWidget->addWidget(m_vitalsTrendPage);// index 2
 
     // ——— 顶部导航栏 ———
     setupNavBar();
@@ -63,12 +65,15 @@ void MainWindow::setupNavBar() {
     m_navGroup->setExclusive(true);
 
     auto *homeBtn = createNavButton(QStringLiteral("主页"));
+    auto *trendBtn = createNavButton(QStringLiteral("历史趋势"));
     auto *settingsBtn = createNavButton(QStringLiteral("设置"));
 
     m_navGroup->addButton(homeBtn, 0);
+    m_navGroup->addButton(trendBtn, 2);
     m_navGroup->addButton(settingsBtn, 1);
 
     navLayout->addWidget(homeBtn);
+    navLayout->addWidget(trendBtn);
     navLayout->addWidget(settingsBtn);
     navLayout->addStretch();
 

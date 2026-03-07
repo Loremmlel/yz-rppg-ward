@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QJsonDocument>
 #include <QNetworkAccessManager>
+#include <QUrlQuery>
 
 #include <functional>
 
@@ -30,6 +31,18 @@ public:
      * @param onError   失败回调，参数为错误描述字符串；可省略
      */
     void getJson(const QString &path,
+                 const SuccessCallback &onSuccess,
+                 const ErrorCallback &onError = nullptr);
+
+    /**
+     * @brief 发起 GET 请求（带查询参数），以 JSON 形式回调
+     * @param path    URL 路径，如 "/api/vitals/trend"（不含 '?'）
+     * @param query   查询参数，由调用方用 QUrlQuery 构建，避免手动拼接导致二次编码
+     * @param onSuccess 成功回调
+     * @param onError   失败回调；可省略
+     */
+    void getJson(const QString &path,
+                 const QUrlQuery &query,
                  const SuccessCallback &onSuccess,
                  const ErrorCallback &onError = nullptr);
 

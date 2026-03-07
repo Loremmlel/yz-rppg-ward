@@ -8,6 +8,7 @@
         <file>styles/metric_card.qss</file>
         <file>styles/settings.qss</file>
         <file>styles/status_bar.qss</file>
+        <file>styles/vitals_trend_page.qss</file>
     </qresource>
     <qresource prefix="/">
         <file>icons/Heartbeat.png</file>

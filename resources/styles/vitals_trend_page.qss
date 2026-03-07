@@ -1,0 +1,225 @@
+/* ============================================================
+ * 生命体征历史趋势页样式 — VitalsTrendPage
+ * ============================================================ */
+
+/* ---------- 页面背景 ---------- */
+VitalsTrendPage {
+    background-color: #F8F9FA;
+}
+
+/* ---------- 顶部控制面板 ---------- */
+#trendControlPanel {
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #DEE2E6;
+}
+
+/* ---------- 标签 ---------- */
+#trendLabel {
+    font-size: 13px;
+    color: #495057;
+    font-weight: 500;
+}
+
+/* ---------- 时间粒度下拉框 ---------- */
+QComboBox#TrendCombo {
+    background-color: #FFFFFF;
+    border: 1px solid #DEE2E6;
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 13px;
+    color: #212529;
+    min-height: 28px;
+}
+
+QComboBox#TrendCombo:focus {
+    border-color: #4A90D9;
+}
+
+QComboBox#TrendCombo:hover {
+    border-color: #CED4DA;
+}
+
+QComboBox#TrendCombo::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: center right;
+    width: 22px;
+    border-left: 1px solid #DEE2E6;
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+    background-color: #F8F9FA;
+}
+
+QComboBox#TrendCombo::drop-down:hover {
+    background-color: #E9ECEF;
+}
+
+QComboBox#TrendCombo::down-arrow {
+    image: none;
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid #495057;
+}
+
+QComboBox#TrendCombo QAbstractItemView {
+    background-color: #FFFFFF;
+    border: 1px solid #DEE2E6;
+    border-radius: 4px;
+    selection-background-color: #4A90D9;
+    selection-color: #FFFFFF;
+    outline: none;
+    padding: 4px;
+    font-size: 13px;
+    color: #212529;
+}
+
+QComboBox#TrendCombo QAbstractItemView::item {
+    padding: 5px 12px;
+    border-radius: 3px;
+}
+
+QComboBox#TrendCombo QAbstractItemView::item:hover {
+    background-color: #E9ECEF;
+}
+
+/* ---------- 快捷时间按钮 ---------- */
+QPushButton#TrendShortcutButton {
+    background-color: #F0F4F8;
+    color: #4A90D9;
+    border: 1px solid #C6D8EE;
+    border-radius: 6px;
+    font-size: 13px;
+    padding: 5px 12px;
+    min-height: 28px;
+}
+
+QPushButton#TrendShortcutButton:hover {
+    background-color: #D9EAFB;
+    border-color: #4A90D9;
+}
+
+QPushButton#TrendShortcutButton:pressed {
+    background-color: #B3D4F5;
+    border-color: #357ABD;
+}
+
+/* ---------- 日期时间选择器 ---------- */
+QDateTimeEdit#TrendDateTimeEdit {
+    background-color: #FFFFFF;
+    border: 1px solid #DEE2E6;
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 13px;
+    color: #212529;
+    min-height: 28px;
+}
+
+QDateTimeEdit#TrendDateTimeEdit:focus {
+    border-color: #4A90D9;
+}
+
+QDateTimeEdit#TrendDateTimeEdit:hover {
+    border-color: #CED4DA;
+}
+
+QDateTimeEdit#TrendDateTimeEdit::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: center right;
+    width: 22px;
+    border-left: 1px solid #DEE2E6;
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+    background-color: #F8F9FA;
+}
+
+QDateTimeEdit#TrendDateTimeEdit::drop-down:hover {
+    background-color: #E9ECEF;
+}
+
+QDateTimeEdit#TrendDateTimeEdit::down-arrow {
+    image: none;
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid #495057;
+}
+
+/* ---------- 查询主按钮（复用全局 PrimaryButton） ---------- */
+QPushButton#PrimaryButton {
+    background-color: #4A90D9;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 5px 16px;
+}
+
+QPushButton#PrimaryButton:hover {
+    background-color: #357ABD;
+}
+
+QPushButton#PrimaryButton:pressed {
+    background-color: #2C6EA6;
+}
+
+QPushButton#PrimaryButton:disabled {
+    background-color: #ADB5BD;
+}
+
+/* ---------- 状态/错误标签 ---------- */
+#trendStatusLabel {
+    font-size: 13px;
+    padding: 6px 20px;
+    border-radius: 6px;
+    margin: 6px 20px;
+}
+
+#trendStatusLabel[state="loading"] {
+    color: #495057;
+    background-color: #E9ECEF;
+}
+
+#trendStatusLabel[state="error"] {
+    color: #D32F2F;
+    background-color: #FFEBEE;
+    border: 1px solid #FFCDD2;
+}
+
+/* ---------- 滚动区域 ---------- */
+#trendScrollArea {
+    border: none;
+    background-color: transparent;
+}
+
+#trendScrollContent {
+    background-color: transparent;
+}
+
+/* ---------- 指标分组框 ---------- */
+QGroupBox#TrendGroup {
+    background-color: #FFFFFF;
+    border: 1px solid #E0E4E8;
+    border-radius: 10px;
+    padding: 20px 12px 12px 12px;
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #212529;
+}
+
+QGroupBox#TrendGroup:hover {
+    border-color: #CED4DA;
+}
+
+QGroupBox#TrendGroup::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    left: 14px;
+    padding: 0 8px;
+    background-color: #FFFFFF;
+    color: #212529;
+}
+
