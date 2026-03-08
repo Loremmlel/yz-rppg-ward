@@ -61,10 +61,10 @@ TrendMetricsPanel::TrendMetricsPanel(QWidget *parent) : QWidget(parent) {
 
     m_cardLfHfRatio = new TrendCard(QStringLiteral("LF/HF 比值"), kLfHfRatio, QString{}, kColorLfHfRatio, kYMaxLfHfRatio,
                                     scrollContent);
-    m_cardHf = new TrendCard(QStringLiteral("HF 均值"), kHfAvg, QString{}, kColorHfAvg, kYMaxHfAvg, scrollContent);
-    m_cardLf = new TrendCard(QStringLiteral("LF 均值"), kLfAvg, QString{}, kColorLfAvg, kYMaxLfAvg, scrollContent);
-    m_cardVlf = new TrendCard(QStringLiteral("VLF 均值"), kVlfAvg, QString{}, kColorVlfAvg, kYMaxVlfAvg, scrollContent);
-    m_cardTp = new TrendCard(QStringLiteral("总功率均值"), kTpAvg, QString{}, kColorTpAvg, kYMaxTpAvg, scrollContent);
+    m_cardHf = new TrendCard(QStringLiteral("HF 均值"), kHfAvg, QStringLiteral("ms²"), kColorHfAvg, kYMaxHfAvg, scrollContent);
+    m_cardLf = new TrendCard(QStringLiteral("LF 均值"), kLfAvg, QStringLiteral("ms²"), kColorLfAvg, kYMaxLfAvg, scrollContent);
+    m_cardVlf = new TrendCard(QStringLiteral("VLF 均值"), kVlfAvg, QStringLiteral("ms²"), kColorVlfAvg, kYMaxVlfAvg, scrollContent);
+    m_cardTp = new TrendCard(QStringLiteral("总功率均值"), kTpAvg, QStringLiteral("ms²"), kColorTpAvg, kYMaxTpAvg, scrollContent);
 
     // ── 布局三个分组 ──
     auto *contentLayout = new QVBoxLayout(scrollContent);

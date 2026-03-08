@@ -75,13 +75,13 @@ namespace TrendChartConstants {
     inline constexpr double kYMaxPnn20 = 1.0;
 
     /// LF/HF 比值上限
-    inline constexpr double kYMaxLfHfRatio = 5.0;
-    /// HF 均值上限（ms²，归一化后约 ≤5）
-    inline constexpr double kYMaxHfAvg = 5.0;
-    /// LF 均值上限（ms²，归一化后约 ≤5）
-    inline constexpr double kYMaxLfAvg = 5.0;
-    /// VLF 均值上限（ms²，归一化后约 ≤5）
-    inline constexpr double kYMaxVlfAvg = 5.0;
-    /// 总功率均值上限（ms²，归一化后约 ≤10）
-    inline constexpr double kYMaxTpAvg = 10.0;
+    inline constexpr double kYMaxLfHfRatio = 4.0;
+    /// HF 均值上限（ms²）
+    inline constexpr double kYMaxHfAvg = 1200.0;
+    /// LF 均值上限（ms²）
+    inline constexpr double kYMaxLfAvg = 1700.0;
+    /// VLF 均值上限（ms²）
+    inline constexpr double kYMaxVlfAvg = 1000.0;
+    /// 总功率均值上限（ms²）
+    inline constexpr double kYMaxTpAvg = 5000.0;
 } // namespace TrendChartConstants

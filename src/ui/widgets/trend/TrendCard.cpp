@@ -2,7 +2,6 @@
 #include "TrendChart.h"
 #include "../AppDialog.h"
 
-#include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QPushButton>
 #include <cmath>
@@ -75,7 +74,7 @@ void TrendCard::setData(const QList<QDateTime> &timestamps,
                         const std::optional<double> refValue,
                         const QDateTime &axisStart,
                         const QDateTime &axisEnd,
-                        qint64 intervalSecs) const {
+                        const qint64 intervalSecs) const {
     std::optional<double> lastValid;
     for (auto i = points.size() - 1; i >= 0; --i) {
         if (points[i].has_value()) {
