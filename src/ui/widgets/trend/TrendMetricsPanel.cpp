@@ -75,7 +75,7 @@ void TrendMetricsPanel::applyResult(const VitalsTrendService::TrendResult &r) co
     m_statusLabel->setVisible(false);
 
     auto apply = [&r](const TrendCard *card, const VitalsTrendService::MetricSeries &s) {
-        card->setData(s.timestamps, s.points, s.refValue, r.queryStart, r.queryEnd);
+        card->setData(s.timestamps, s.points, s.refValue, r.queryStart, r.queryEnd, r.intervalSecs);
     };
 
     apply(m_cardHrAvg,      r.hrAvg);

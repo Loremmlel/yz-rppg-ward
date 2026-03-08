@@ -74,7 +74,8 @@ void TrendCard::setData(const QList<QDateTime>             &timestamps,
                         const QList<std::optional<double>> &points,
                         const std::optional<double>         refValue,
                         const QDateTime                    &axisStart,
-                        const QDateTime                    &axisEnd) const
+                        const QDateTime                    &axisEnd,
+                        qint64                              intervalSecs) const
 {
     std::optional<double> lastValid;
     for (auto i = points.size() - 1; i >= 0; --i) {
@@ -91,7 +92,7 @@ void TrendCard::setData(const QList<QDateTime>             &timestamps,
         m_valueLabel->setText("--");
     }
 
-    m_chart->setData(timestamps, points, refValue, axisStart, axisEnd);
+    m_chart->setData(timestamps, points, refValue, axisStart, axisEnd, intervalSecs);
 }
 
 void TrendCard::clearData() const {

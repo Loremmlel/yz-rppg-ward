@@ -3,6 +3,7 @@
 #include <QVBoxLayout>
 #include <QtCharts/QChart>
 #include <QtCharts/QLineSeries>
+#include <QtCharts/QScatterSeries>
 #include <QtCharts/QValueAxis>
 #include <QtCharts/QDateTimeAxis>
 #include <algorithm>
@@ -71,13 +72,15 @@ void TrendChart::setData(const QList<QDateTime>             &timestamps,
                          const QList<std::optional<double>> &points,
                          std::optional<double>               refValue,
                          const QDateTime                    &axisStart,
-                         const QDateTime                    &axisEnd)
+                         const QDateTime                    &axisEnd,
+                         qint64                              intervalSecs)
 {
-    m_timestamps = timestamps;
-    m_points     = points;
-    m_refValue   = refValue;
-    m_axisStart  = axisStart;
-    m_axisEnd    = axisEnd;
+    m_timestamps   = timestamps;
+    m_points       = points;
+    m_refValue     = refValue;
+    m_axisStart    = axisStart;
+    m_axisEnd      = axisEnd;
+    m_intervalSecs = intervalSecs;
     rebuildSeries();
 }
 
@@ -118,24 +121,71 @@ void TrendChart::rebuildSeries() {
 
     auto [yMin, yMax] = calcYRange();
 
-    // ── 1. 折线：按 null 断点切出连续有效段，X 坐标用 msecsSinceEpoch ──
-    QLineSeries *current = nullptr;
-    for (int i = 0; i < n; ++i) {
-        if (m_points[i].has_value()) {
-            if (!current) {
-                current = new QLineSeries();
-                QPen pen(m_lineColor, 2.0);
-                pen.setCapStyle(Qt::RoundCap);
-                pen.setJoinStyle(Qt::RoundJoin);
-                current->setPen(pen);
-                m_chart->addSeries(current);
+    // ── 1. 折线 & 散点：
+    //   规则：相邻两个有效数据点，若它们的时间戳之差 ≤ 1.5 × intervalSecs，
+    //   则连线；否则各自作为孤立点用散点绘制。
+    //   当 intervalSecs == 0（未提供粒度）时，退化为原有行为：全部连线。
+    // ──────────────────────────────────────────────────────────────────────
+    // 先收集所有有效点的下标
+    QList<int> validIdx;
+    for (int i = 0; i < n; ++i)
+        if (m_points[i].has_value()) validIdx.append(i);
+
+    // 判断第 k 个有效点（validIdx[k]）是否与下一个有效点相邻（可连线）
+    // "相邻"：时间差 ≤ 1.5 × intervalSecs
+    auto isAdjacentToNext = [&](int k) -> bool {
+        if (m_intervalSecs <= 0) return true; // 无粒度信息 → 全连线
+        if (k + 1 >= validIdx.size()) return false;
+        const qint64 gap = m_timestamps[validIdx[k]].secsTo(
+                               m_timestamps[validIdx[k + 1]]);
+        return gap <= m_intervalSecs * 3 / 2; // 1.5 倍容差
+    };
+
+    // 用于创建（并注册）一条新折线段的 helper
+    auto newLineSeries = [&]() -> QLineSeries * {
+        auto *ls = new QLineSeries();
+        QPen pen(m_lineColor, 2.0);
+        pen.setCapStyle(Qt::RoundCap);
+        pen.setJoinStyle(Qt::RoundJoin);
+        ls->setPen(pen);
+        m_chart->addSeries(ls);
+        return ls;
+    };
+
+    // 用于创建（并注册）一个散点系列的 helper
+    auto newDotSeries = [&]() -> QScatterSeries * {
+        auto *ss = new QScatterSeries();
+        ss->setColor(m_lineColor);
+        ss->setBorderColor(Qt::transparent);
+        ss->setMarkerSize(6.0);
+        ss->setMarkerShape(QScatterSeries::MarkerShapeCircle);
+        m_chart->addSeries(ss);
+        return ss;
+    };
+
+    // 遍历有效点，按相邻关系切分为折线段或孤立散点
+    int k = 0;
+    while (k < validIdx.size()) {
+        const int idx = validIdx[k];
+        const qreal x = static_cast<qreal>(m_timestamps[idx].toMSecsSinceEpoch());
+        const double y = m_points[idx].value();
+
+        if (isAdjacentToNext(k)) {
+            // 开始一条新折线段，持续追加直到断开
+            auto *ls = newLineSeries();
+            ls->append(x, y);
+            while (isAdjacentToNext(k)) {
+                ++k;
+                const int ni = validIdx[k];
+                ls->append(static_cast<qreal>(m_timestamps[ni].toMSecsSinceEpoch()),
+                           m_points[ni].value());
             }
-            current->append(
-                static_cast<qreal>(m_timestamps[i].toMSecsSinceEpoch()),
-                m_points[i].value());
         } else {
-            current = nullptr; // null → 断开，下一个有效点开启新段
+            // 孤立点 → 散点
+            auto *ss = newDotSeries();
+            ss->append(x, y);
         }
+        ++k;
     }
 
     // attach 所有折线到坐标轴

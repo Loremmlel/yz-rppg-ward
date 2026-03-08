@@ -34,14 +34,15 @@ void VitalsTrendService::query(const qint64 bedId,
     q.addQueryItem(QStringLiteral("endTime"),   endTime.toUTC().toString(Qt::ISODate));
     q.addQueryItem(QStringLiteral("interval"),  interval);
 
-    // 捕获本地时间供 buildResult 使用
-    const QDateTime localStart = startTime.toLocalTime();
-    const QDateTime localEnd   = endTime.toLocalTime();
+    // 捕获本地时间和粒度秒数供 buildResult 使用
+    const QDateTime localStart   = startTime.toLocalTime();
+    const QDateTime localEnd     = endTime.toLocalTime();
+    const qint64    intervalSecs = parseIntervalSecs(interval);
 
     ApiClient::instance()->getJson(
         QStringLiteral("/api/vitals/trend"),
         q,
-        [this, localStart, localEnd](const QJsonDocument &doc) {
+        [this, localStart, localEnd, intervalSecs](const QJsonDocument &doc) {
             emit loadingChanged(false);
 
             if (!doc.isArray()) {
@@ -96,7 +97,7 @@ void VitalsTrendService::query(const qint64 bedId,
                 emit errorOccurred(QStringLiteral("📭 该时间段内暂无数据"));
                 return;
             }
-            emit resultReady(buildResult(records, localStart, localEnd));
+            emit resultReady(buildResult(records, localStart, localEnd, intervalSecs));
         },
         [this](const QString &err) {
             emit loadingChanged(false);
@@ -109,7 +110,8 @@ void VitalsTrendService::query(const qint64 bedId,
 VitalsTrendService::TrendResult
 VitalsTrendService::buildResult(const QList<VitalsTrendData> &records,
                                 const QDateTime &queryStart,
-                                const QDateTime &queryEnd)
+                                const QDateTime &queryEnd,
+                                const qint64 intervalSecs)
 {
     // 提取时间戳（本地时间）
     QList<QDateTime> ts;
@@ -131,8 +133,9 @@ VitalsTrendService::buildResult(const QList<VitalsTrendData> &records,
     };
 
     TrendResult res;
-    res.queryStart = queryStart;
-    res.queryEnd   = queryEnd;
+    res.queryStart   = queryStart;
+    res.queryEnd     = queryEnd;
+    res.intervalSecs = intervalSecs;
     // 基础生命体征 → 均值参考线
     res.hrAvg  = make([](const VitalsTrendData &r){ return r.basicVitals.hrAvg;  }, false);
     res.brAvg  = make([](const VitalsTrendData &r){ return r.basicVitals.brAvg;  }, false);
@@ -177,3 +180,22 @@ VitalsTrendService::calcMedian(const QList<std::optional<double>> &pts)
     return std::midpoint(*std::ranges::max_element(vals.begin(), mid), *mid);
 }
 
+// ── 工具：间隔字符串 → 秒数 ──────────────────────────────────────────────────
+qint64 VitalsTrendService::parseIntervalSecs(const QString &interval)
+{
+    if (interval.isEmpty()) return 0;
+
+    // 格式：<数字><单位>，单位 s/m/h/d
+    bool ok = false;
+    const QChar unit = interval.back().toLower();
+    const qint64 num = interval.chopped(1).toLongLong(&ok);
+    if (!ok || num <= 0) return 0;
+
+    switch (unit.unicode()) {
+    case 's': return num;
+    case 'm': return num * 60;
+    case 'h': return num * 3600;
+    case 'd': return num * 86400;
+    default:  return 0;
+    }
+}

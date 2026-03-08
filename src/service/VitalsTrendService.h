@@ -31,8 +31,9 @@ public:
 
     /** 一次查询结果，包含全部 13 个指标序列 */
     struct TrendResult {
-        QDateTime queryStart; ///< 用户选择的查询起始时刻（本地时间）
-        QDateTime queryEnd;   ///< 用户选择的查询结束时刻（本地时间）
+        QDateTime queryStart;  ///< 用户选择的查询起始时刻（本地时间）
+        QDateTime queryEnd;    ///< 用户选择的查询结束时刻（本地时间）
+        qint64    intervalSecs{0}; ///< 时间粒度（秒），用于判断相邻点是否连续
         // 基础生命体征
         MetricSeries hrAvg;
         MetricSeries brAvg;
@@ -84,7 +85,11 @@ private:
     /** 将解析完的 records 转换为 TrendResult */
     static TrendResult buildResult(const QList<VitalsTrendData> &records,
                                    const QDateTime &queryStart,
-                                   const QDateTime &queryEnd);
+                                   const QDateTime &queryEnd,
+                                   qint64 intervalSecs);
+
+    /** 将间隔字符串（如 "5m"、"1h"、"2d"）解析为秒数，解析失败返回 0 */
+    static qint64 parseIntervalSecs(const QString &interval);
 
     /** 计算均值 */
     static std::optional<double> calcMean(const QList<std::optional<double>> &pts);
