@@ -1,13 +1,13 @@
 #include "VideoWidget.h"
 #include <QMediaDevices>
-#include <QLabel>
 #include <QCameraDevice>
-#include <QPainter>
 #include <QVideoSink>
 #include <QVideoFrame>
 #include <QMediaCaptureSession>
+#include <QOpenGLWidget>
+#include <QPen>
+#include <QResizeEvent>
 
-#include "../../../util/ImageHelper.h"
 #include "../../../util/StyleLoader.h"
 
 VideoWidget::VideoWidget(QWidget *parent) : QWidget(parent) {
@@ -17,29 +17,68 @@ VideoWidget::VideoWidget(QWidget *parent) : QWidget(parent) {
     auto *layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
 
-    m_displayLabel = new QLabel(this);
-    m_displayLabel->setObjectName("videoDisplayLabel");
-    m_displayLabel->setAlignment(Qt::AlignCenter);
-
-    layout->addWidget(m_displayLabel);
-
     const auto cameras = QMediaDevices::videoInputs();
     if (cameras.isEmpty()) {
-        m_displayLabel->setText("未检测到有效摄像头设备");
-        m_displayLabel->setProperty("noCamera", true);
+        m_noDeviceLabel = new QLabel(QStringLiteral("未检测到有效摄像头设备"), this);
+        m_noDeviceLabel->setObjectName("videoDisplayLabel");
+        m_noDeviceLabel->setAlignment(Qt::AlignCenter);
+        m_noDeviceLabel->setProperty("noCamera", true);
+        layout->addWidget(m_noDeviceLabel);
         return;
     }
 
+    // ── GPU 渲染管线初始化 ────────────────────────────────────────────────
+    m_scene = new QGraphicsScene(this);
+
+    m_videoItem = new QGraphicsVideoItem();
+    m_videoItem->setAspectRatioMode(Qt::KeepAspectRatio);
+    m_scene->addItem(m_videoItem);
+
+    // 人脸框叠加层：z-order 高于视频项，颜色空间无关，纯几何绘制
+    m_faceRect = new QGraphicsRectItem();
+    QPen pen(Qt::green);
+    pen.setWidth(3);
+    m_faceRect->setPen(pen);
+    m_faceRect->setBrush(Qt::NoBrush);
+    m_faceRect->setVisible(false);
+    m_faceRect->setZValue(1.0); // 确保在 videoItem (z=0) 之上
+    m_scene->addItem(m_faceRect);
+
+    m_graphicsView = new QGraphicsView(m_scene, this);
+    m_graphicsView->setObjectName("videoDisplayLabel");
+    m_graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    m_graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    m_graphicsView->setFrameShape(QFrame::NoFrame);
+    m_graphicsView->setRenderHint(QPainter::Antialiasing, false);
+    m_graphicsView->setBackgroundBrush(Qt::black);
+
+    // 使用 QOpenGLWidget 作为 viewport，所有合成由 GPU 完成
+    auto *glWidget = new QOpenGLWidget(m_graphicsView);
+    m_graphicsView->setViewport(glWidget);
+    m_graphicsView->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+
+    layout->addWidget(m_graphicsView);
+
+    // ── 摄像头与捕获会话 ─────────────────────────────────────────────────
     m_camera = new QCamera(cameras.first(), this);
     m_captureSession = new QMediaCaptureSession(this);
     m_captureSession->setCamera(m_camera);
 
     setupCameraFormat();
 
+    // setVideoOutput 与 setVideoSink 互斥，后者覆盖前者。
+    // 解决方案：只用 setVideoSink 接收帧，在回调中手动分发：
+    //   ① 转发给 QGraphicsVideoItem 内部 sink → GPU 渲染
+    //   ② 发射 frameCaptured 信号           → VideoService 工作线程
     m_videoSink = new QVideoSink(this);
     m_captureSession->setVideoSink(m_videoSink);
 
-    connect(m_videoSink, &QVideoSink::videoFrameChanged, this, &VideoWidget::processVideoFrame);
+    QVideoSink *renderSink = m_videoItem->videoSink();
+    connect(m_videoSink, &QVideoSink::videoFrameChanged,
+            this, [this, renderSink](const QVideoFrame &frame) {
+        renderSink->setVideoFrame(frame); // GPU 渲染
+        emit frameCaptured(frame);        // 工作线程
+    });
 
     m_camera->start();
 }
@@ -50,38 +89,50 @@ VideoWidget::~VideoWidget() {
     }
 }
 
-void VideoWidget::updateFaceDetection(const QRect &rect, bool hasFace) {
-    m_currentFaceRect = rect;
-    m_hasFace = hasFace;
-}
+void VideoWidget::updateFaceDetection(const QRect &rect, const bool hasFace) const {
+    if (!m_faceRect) return;
 
-void VideoWidget::processVideoFrame(const QVideoFrame &frame) {
-    if (!frame.isValid()) return;
-
-    // 发射 QVideoFrame（引用计数浅拷贝，无全帧像素拷贝），VideoService 在工作线程内做 toImage()
-    emit frameCaptured(frame);
-
-    // ── 主线程预览：独立转换一次用于显示，不影响 VideoService 管线 ──────────
-    // 预览降分辨率以节省主线程时间；FastTransformation 避免软件双线性插值开销
-    const QImage image = frame.toImage();
-    if (image.isNull()) return;
-
-    QImage displayImage = image;
-    if (m_hasFace) {
-        QPainter painter(&displayImage);
-        QPen pen(Qt::green);
-        pen.setWidth(4);
-        painter.setPen(pen);
-        painter.drawRect(m_currentFaceRect);
+    if (!hasFace || rect.isEmpty()) {
+        m_faceRect->setVisible(false);
+        return;
     }
 
-    m_displayLabel->setPixmap(QPixmap::fromImage(displayImage)
-        .scaled(m_displayLabel->size(), Qt::KeepAspectRatio, Qt::FastTransformation));
+    // 视频项在 scene 中的实际显示区域（保持宽高比后的矩形）
+    const QSizeF videoNativeSize = m_videoItem->nativeSize();
+    if (videoNativeSize.isEmpty()) {
+        m_faceRect->setVisible(false);
+        return;
+    }
+
+    // 将检测结果坐标（原始帧坐标系）映射到 videoItem 本地坐标系
+    const QRectF itemBounds = m_videoItem->boundingRect();
+    const double scaleX = itemBounds.width()  / videoNativeSize.width();
+    const double scaleY = itemBounds.height() / videoNativeSize.height();
+
+    const QRectF mappedRect(
+        itemBounds.x() + rect.x() * scaleX,
+        itemBounds.y() + rect.y() * scaleY,
+        rect.width()  * scaleX,
+        rect.height() * scaleY
+    );
+
+    m_faceRect->setRect(mappedRect);
+    m_faceRect->setVisible(true);
+}
+
+void VideoWidget::resizeEvent(QResizeEvent *event) {
+    QWidget::resizeEvent(event);
+    if (m_videoItem && m_graphicsView) {
+        // 让 videoItem 充满 view，scene 坐标系与 view 像素坐标一致
+        const QSizeF viewSize = m_graphicsView->size();
+        m_videoItem->setSize(viewSize);
+        m_scene->setSceneRect(0, 0, viewSize.width(), viewSize.height());
+    }
 }
 
 void VideoWidget::setupCameraFormat() const {
     QCameraFormat bestFormat;
-    for (const auto &format: m_camera->cameraDevice().videoFormats()) {
+    for (const auto &format : m_camera->cameraDevice().videoFormats()) {
         if (format.resolution() == QSize(TARGET_WIDTH, TARGET_HEIGHT) &&
             format.maxFrameRate() >= 25.0f && format.maxFrameRate() <= 30.0f) {
             bestFormat = format;
@@ -93,8 +144,8 @@ void VideoWidget::setupCameraFormat() const {
         m_camera->setCameraFormat(bestFormat);
         qDebug() << "摄像头格式:" << bestFormat.resolution() << bestFormat.maxFrameRate() << "FPS";
     } else {
-        auto defaultFormat = m_camera->cameraDevice().videoFormats().first();
+        const auto defaultFormat = m_camera->cameraDevice().videoFormats().first();
         qWarning() << "未找到目标格式，使用系统默认:" << defaultFormat.resolution()
-                << defaultFormat.maxFrameRate() << "FPS";
+                   << defaultFormat.maxFrameRate() << "FPS";
     }
 }

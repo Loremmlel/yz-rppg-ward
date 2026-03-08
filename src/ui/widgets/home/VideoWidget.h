@@ -1,22 +1,26 @@
 #pragma once
-#include <QLabel>
+#include <QWidget>
+#include <QResizeEvent>
 #include <QVBoxLayout>
 #include <QCamera>
 #include <QVideoFrame>
-#include <QVideoWidget>
-
-#include "../../../service/VideoService.h"
-
+#include <QVideoSink>
+#include <QGraphicsView>
+#include <QGraphicsScene>
+#include <QGraphicsVideoItem>
+#include <QGraphicsRectItem>
+#include <QMediaCaptureSession>
+#include <QLabel>
 
 /**
  * @brief 摄像头视频预览组件
  *
- * 负责摄像头初始化、帧采集与画面渲染。
- * 每帧通过 frameCaptured 发射 QVideoFrame（引用计数，无深拷贝），
- * 由 VideoService 在工作线程内完成 YUV→RGB 转换与后续处理。
- * 主线程仅负责预览渲染，不参与任何图像处理。
- * 人脸检测结果由外部回调 updateFaceDetection 注入，组件不持有检测逻辑。
- * 状态提示（人脸未检测到、床位未绑定等）由外部 StatusBar 管理。
+ * 渲染管线：QGraphicsVideoItem（GPU YUV→RGB，无 CPU 颜色空间转换）
+ *   + QOpenGLWidget viewport（GPU 合成）
+ *   + QGraphicsRectItem 人脸框覆盖层（同一 scene，z-order 可控）。
+ *
+ * 主线程完全不调用 toImage()；QVideoSink 仍挂在 captureSession，
+ * 仅用于向 VideoService 工作线程发射 QVideoFrame，供 OpenCV 处理。
  */
 class VideoWidget : public QWidget {
     Q_OBJECT
@@ -31,26 +35,32 @@ signals:
     void frameCaptured(const QVideoFrame &frame);
 
 public slots:
-    void updateFaceDetection(const QRect &rect, bool hasFace);
+    /** 由 VideoService::facePositionUpdated 信号驱动，更新人脸框覆盖层。 */
+    void updateFaceDetection(const QRect &rect, bool hasFace) const;
 
-private slots:
-    void processVideoFrame(const QVideoFrame &frame);
+protected:
+    void resizeEvent(QResizeEvent *event) override;
 
 private:
     /**
-     * @brief 从设备支持列表中匹配 1920×1080 @ 25-30fps 的格式
-     *
-     * 优先使用硬件原生格式，避免软件缩放带来的额外 CPU 开销。
+     * @brief 从设备支持列表中匹配 TARGET_WIDTH×TARGET_HEIGHT @ 25-30fps 的格式
      */
     void setupCameraFormat() const;
 
     QCamera *m_camera{nullptr};
     QMediaCaptureSession *m_captureSession{nullptr};
-    QVideoSink *m_videoSink{nullptr};
-    QLabel *m_displayLabel{nullptr};
 
-    QRect m_currentFaceRect;
-    bool m_hasFace{false};
+    // ── GPU 渲染管线 ──────────────────────────────────────────────────────
+    QGraphicsView *m_graphicsView{nullptr};
+    QGraphicsScene *m_scene{nullptr};
+    QGraphicsVideoItem *m_videoItem{nullptr};  ///< 视频层（GPU YUV→RGB shader）
+    QGraphicsRectItem *m_faceRect{nullptr};    ///< 人脸框叠加层（高于视频层）
+
+    // ── 工作线程管线（保留供 VideoService 使用，主线程不消费帧数据）────────
+    QVideoSink *m_videoSink{nullptr};
+
+    // ── 无摄像头提示标签 ──────────────────────────────────────────────────
+    QLabel *m_noDeviceLabel{nullptr};
 
     const int TARGET_WIDTH{1920};
     const int TARGET_HEIGHT{1080};
