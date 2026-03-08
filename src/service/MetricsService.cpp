@@ -66,7 +66,7 @@ void MetricsService::onServerMessage(const QString &jsonText) {
 
 void MetricsService::fetchLatestData() {
     const double hrVal = 60.0 + QRandomGenerator::global()->generateDouble() * 40.0;
-    const double sqVal = 50.0 + QRandomGenerator::global()->generateDouble() * 50.0;
+    const double sqVal = QRandomGenerator::global()->generateDouble();
 
     m_lastData = MetricsData(hrVal, sqVal);
     emit dataUpdated(m_lastData);

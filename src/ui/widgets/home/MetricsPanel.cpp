@@ -81,8 +81,8 @@ void MetricsPanel::updateData(const MetricsData &data) {
 }
 
 void MetricsPanel::addMetricCard(const QString &key, const QString &title, const QString &icon,
-                                 QColor chartColor, MetricChart::AxisMode axisMode,
-                                 bool showLowQualityWarning) {
+                                 const QColor chartColor, const MetricChart::AxisMode axisMode,
+                                 const bool showLowQualityWarning) {
     auto *card = new MetricCard(title, icon, chartColor,
                                 axisMode, showLowQualityWarning, this);
     card->setObjectName("Card" + key);

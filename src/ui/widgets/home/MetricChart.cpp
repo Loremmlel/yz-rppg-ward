@@ -43,11 +43,14 @@ MetricChart::MetricChart(QColor lineColor,
     m_axisY->setGridLineColor(QColor(220, 220, 220, 80));
     m_axisY->setLinePen(Qt::NoPen);
 
-    // 初始 Y 轴范围
     if (m_axisMode == AxisMode::Fixed01) {
         m_axisY->setRange(0.0, 1.0);
+        m_cachedYMin = 0.0;
+        m_cachedYMax = 1.0;
     } else {
         m_axisY->setRange(0.0, 100.0);
+        m_cachedYMin = 0.0;
+        m_cachedYMax = 100.0;
     }
 
     m_chart->addAxis(m_axisX, Qt::AlignBottom);
@@ -67,121 +70,200 @@ MetricChart::MetricChart(QColor lineColor,
 
 // ── 公开接口 ─────────────────────────────────────────────────
 void MetricChart::addDataPoint(std::optional<double> value, bool lowQuality) {
-    double newX = m_points.isEmpty() ? 0.0 : m_points.back().x + 1.0;
-    m_points.append({newX, value, lowQuality});
+    // 使用单调递增 x，不再每帧重对齐所有点
+    m_points.append({m_xCounter, value, lowQuality});
+    m_xCounter += 1.0;
 
     if (m_points.size() > kMaxPoints) {
         m_points.removeFirst();
     }
 
-    // 重新对齐 x 坐标到 [0, kMaxPoints-1]
-    double offset = m_points.first().x;
-    for (auto &pt : m_points) {
-        pt.x -= offset;
+    // 滑动 X 轴窗口：始终显示最近 kMaxPoints 个点
+    double xEnd   = m_points.back().x;
+    double xStart = xEnd - (kMaxPoints - 1);
+    m_axisX->setRange(xStart, xEnd);
+
+    // 计算新的 Y 轴范围
+    auto [yMin, yMax] = calcYRange();
+
+    // 计算当前拓扑
+    Topology topo = calcTopology();
+
+    if (!m_poolInitialized || topo != m_lastTopology) {
+        // 拓扑变化（或首次）：重建 series 池
+        rebuildSeriesPool(topo, yMin);
+        m_lastTopology = topo;
+        m_poolInitialized = true;
+    } else {
+        // 拓扑不变：仅用 replace() 更新点坐标（性能热路径）
+        updateSeriesData(topo, yMin);
     }
 
-    rebuildSeries();
+    updateYAxis(yMin, yMax);
 }
 
 void MetricChart::clearData() {
     m_points.clear();
-    rebuildSeries();
+    // xCounter 不重置，保持单调性（也可重置，无副作用）
+    m_xCounter = 0.0;
+    m_poolInitialized = false;
+    m_lastTopology = {};
+
+    // 移除所有 series，清空池
+    m_chart->removeAllSeries();
+    m_lineSeries.clear();
+    m_areaSeries.clear();
+
+    // 复位 X 轴
+    m_axisX->setRange(0, kMaxPoints - 1);
+
+    // 复位 Y 轴
+    if (m_axisMode == AxisMode::Fixed01) {
+        m_cachedYMin = 0.0; m_cachedYMax = 1.0;
+        m_axisY->setRange(0.0, 1.0);
+    } else {
+        m_cachedYMin = 0.0; m_cachedYMax = 100.0;
+        m_axisY->setRange(0.0, 100.0);
+    }
 }
 
-// ── 内部：重建所有 series ─────────────────────────────────────
-void MetricChart::rebuildSeries() {
-    m_chart->removeAllSeries();
+// ── 内部：计算分段拓扑 ────────────────────────────────────────
+MetricChart::Topology MetricChart::calcTopology() const {
+    Topology topo;
 
-    auto [yMin, yMax] = calcYRange();
-
-    // ── 辅助：构建一段折线 ──
-    auto makeSegmentSeries = [&](int from, int to) -> QLineSeries * {
-        auto *s = new QLineSeries();
-        QPen pen(m_lineColor, 2.0);
-        pen.setCapStyle(Qt::RoundCap);
-        pen.setJoinStyle(Qt::RoundJoin);
-        s->setPen(pen);
-        for (int i = from; i <= to; ++i) {
-            if (m_points[i].y.has_value()) {
-                s->append(m_points[i].x, m_points[i].y.value());
-            }
-        }
-        return s;
-    };
-
-    // ── 辅助：为指定点集创建红色渐变 area（从折线到 yMin）
-    //   注意：QAreaSeries 会接管 upper/lower 的所有权，
-    //   因此每次都新建独立的 QLineSeries，不与主折线对象共用。 ──
-    auto makeRedArea = [&](int from, int to) -> QAreaSeries * {
-        auto *upper = new QLineSeries();
-        auto *lower = new QLineSeries();
-        for (int i = from; i <= to; ++i) {
-            if (m_points[i].y.has_value()) {
-                double xv = m_points[i].x;
-                double yv = m_points[i].y.value();
-                upper->append(xv, yv);
-                lower->append(xv, yMin);
-            }
-        }
-        auto *area = new QAreaSeries(upper, lower);
-        area->setOpacity(1.0);
-        QLinearGradient grad(0, 0, 0, 1);
-        grad.setCoordinateMode(QGradient::ObjectMode);
-        grad.setColorAt(0.0, QColor(255, 60, 60, 110));
-        grad.setColorAt(1.0, QColor(255, 60, 60, 0));
-        area->setBrush(grad);
-        area->setPen(Qt::NoPen);
-        return area;
-    };
-
-    // ── 1. 按 null 断点切出连续有效段 ──
-    QList<QPair<int, int>> segments;
+    // 1. 有效（非null）连续段，用 x 坐标记录边界
     int segStart = -1;
     for (int i = 0; i < m_points.size(); ++i) {
         if (m_points[i].y.has_value()) {
             if (segStart < 0) segStart = i;
         } else {
             if (segStart >= 0) {
-                segments.append({segStart, i - 1});
+                topo.validSegs.append({m_points[segStart].x, m_points[i - 1].x});
                 segStart = -1;
             }
         }
     }
-    if (segStart >= 0) segments.append({segStart, m_points.size() - 1});
+    if (segStart >= 0)
+        topo.validSegs.append({m_points[segStart].x, m_points.back().x});
 
-    // ── 2. 对每个连续段，按 lowQuality 标记切出子段，分别绘制红色 area 和主折线 ──
-    for (const auto &[from, to] : segments) {
-        // 2a. 找出段内所有 lowQuality 连续子段，叠加红色渐变 area
-        int subStart = -1;
-        for (int i = from; i <= to; ++i) {
-            if (m_points[i].lowQuality) {
-                if (subStart < 0) subStart = i;
-            } else {
-                if (subStart >= 0) {
-                    auto *area = makeRedArea(subStart, i - 1);
-                    m_chart->addSeries(area);
-                    area->attachAxis(m_axisX);
-                    area->attachAxis(m_axisY);
-                    subStart = -1;
-                }
+    // 2. lowQuality 连续子段，用 x 坐标记录边界
+    int lqStart = -1;
+    for (int i = 0; i < m_points.size(); ++i) {
+        const bool isValid = m_points[i].y.has_value();
+        if (isValid && m_points[i].lowQuality) {
+            if (lqStart < 0) lqStart = i;
+        } else {
+            if (lqStart >= 0) {
+                topo.lowQualitySegs.append({m_points[lqStart].x, m_points[i - 1].x});
+                lqStart = -1;
             }
         }
-        if (subStart >= 0) {
-            auto *area = makeRedArea(subStart, to);
-            m_chart->addSeries(area);
-            area->attachAxis(m_axisX);
-            area->attachAxis(m_axisY);
-        }
+    }
+    if (lqStart >= 0)
+        topo.lowQualitySegs.append({m_points[lqStart].x, m_points.back().x});
 
-        // 2b. 主折线（覆盖在渐变上方，独立新建 series）
-        auto *line = makeSegmentSeries(from, to);
+    return topo;
+}
+
+// ── 辅助：配置一个 QAreaSeries 的样式 ────────────────────────
+static void configureAreaSeries(QAreaSeries *area) {
+    area->setOpacity(1.0);
+    QLinearGradient grad(0, 0, 0, 1);
+    grad.setCoordinateMode(QGradient::ObjectMode);
+    grad.setColorAt(0.0, QColor(255, 60, 60, 110));
+    grad.setColorAt(1.0, QColor(255, 60, 60, 0));
+    area->setBrush(grad);
+    area->setPen(Qt::NoPen);
+}
+
+// ── 内部：重建 series 池（拓扑变化时）────────────────────────
+void MetricChart::rebuildSeriesPool(const Topology &topo, double yMin) {
+    m_chart->removeAllSeries();
+    m_lineSeries.clear();
+    m_areaSeries.clear();
+
+    QPen linePen(m_lineColor, 2.0);
+    linePen.setCapStyle(Qt::RoundCap);
+    linePen.setJoinStyle(Qt::RoundJoin);
+
+    // ── 为每个 lowQuality 子段创建 QAreaSeries ──
+    for (const auto &seg : topo.lowQualitySegs) {
+        auto *upper = new QLineSeries();
+        auto *lower = new QLineSeries();
+        for (const auto &pt : m_points) {
+            if (pt.y.has_value() && pt.x >= seg.xFrom && pt.x <= seg.xTo) {
+                upper->append(pt.x, pt.y.value());
+                lower->append(pt.x, yMin);
+            }
+        }
+        auto *area = new QAreaSeries(upper, lower);
+        configureAreaSeries(area);
+        m_areaSeries.append(area);
+        m_chart->addSeries(area);
+        area->attachAxis(m_axisX);
+        area->attachAxis(m_axisY);
+    }
+
+    // ── 为每个有效段创建 QLineSeries（覆盖在 area 上方）──
+    for (const auto &seg : topo.validSegs) {
+        auto *line = new QLineSeries();
+        line->setPen(linePen);
+        for (const auto &pt : m_points) {
+            if (pt.y.has_value() && pt.x >= seg.xFrom && pt.x <= seg.xTo) {
+                line->append(pt.x, pt.y.value());
+            }
+        }
+        m_lineSeries.append(line);
         m_chart->addSeries(line);
         line->attachAxis(m_axisX);
         line->attachAxis(m_axisY);
     }
+}
 
-    // 所有 series attach 完毕后设置 Y 轴范围
-    m_axisY->setRange(yMin, yMax);
+// ── 内部：仅更新 series 点数据（拓扑不变，热路径）────────────
+void MetricChart::updateSeriesData(const Topology &topo, double yMin) {
+    // ── 更新 lowQuality area series ──
+    for (int si = 0; si < topo.lowQualitySegs.size(); ++si) {
+        const auto &seg = topo.lowQualitySegs[si];
+        QAreaSeries *area = m_areaSeries[si];
+        QLineSeries *upper = area->upperSeries();
+        QLineSeries *lower = area->lowerSeries();
+
+        QList<QPointF> upperPts, lowerPts;
+        for (const auto &pt : m_points) {
+            if (pt.y.has_value() && pt.x >= seg.xFrom && pt.x <= seg.xTo) {
+                upperPts.append({pt.x, pt.y.value()});
+                lowerPts.append({pt.x, yMin});
+            }
+        }
+        upper->replace(upperPts);
+        lower->replace(lowerPts);
+    }
+
+    // ── 更新主折线 series ──
+    for (int si = 0; si < topo.validSegs.size(); ++si) {
+        const auto &seg = topo.validSegs[si];
+        QLineSeries *line = m_lineSeries[si];
+
+        QList<QPointF> pts;
+        for (const auto &pt : m_points) {
+            if (pt.y.has_value() && pt.x >= seg.xFrom && pt.x <= seg.xTo) {
+                pts.append({pt.x, pt.y.value()});
+            }
+        }
+        line->replace(pts);
+    }
+}
+
+// ── 内部：更新 Y 轴（滞后抑制）────────────────────────────────
+void MetricChart::updateYAxis(double yMin, double yMax) {
+    if (std::abs(yMin - m_cachedYMin) > kYHysteresis ||
+        std::abs(yMax - m_cachedYMax) > kYHysteresis)
+    {
+        m_cachedYMin = yMin;
+        m_cachedYMax = yMax;
+        m_axisY->setRange(yMin, yMax);
+    }
 }
 
 // ── 内部：Y 轴范围计算 ────────────────────────────────────────
@@ -190,25 +272,21 @@ std::pair<double, double> MetricChart::calcYRange() const {
         return {0.0, 1.0};
     }
 
-    // ElasticFrom100：初始下限 0，上限至少 100，数据超出时弹性扩展
     double dMin = std::numeric_limits<double>::max();
     double dMax = std::numeric_limits<double>::lowest();
 
-    for (const auto &[x, y, lq] : m_points) {
-        if (y.has_value()) {
-            dMin = std::min(dMin, y.value());
-            dMax = std::max(dMax, y.value());
+    for (const auto &pt : m_points) {
+        if (pt.y.has_value()) {
+            dMin = std::min(dMin, pt.y.value());
+            dMax = std::max(dMax, pt.y.value());
         }
     }
 
-    if (dMin > dMax) return {0.0, 100.0};  // 无数据，保持初始范围
+    if (dMin > dMax) return {0.0, 100.0};
 
-    // 下限固定 0，上限至少 100
     double lo = 0.0;
     double hi = std::max(100.0, dMax);
-
     double span = hi - lo;
     constexpr double kPad = 0.10;
-    // 下限 padding 后 clamp 到 0：心率不可能为负
     return {std::max(0.0, lo - span * kPad), hi + span * kPad};
 }
