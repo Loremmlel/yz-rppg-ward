@@ -11,9 +11,10 @@
 #include <limits>
 
 // ── 构造 ─────────────────────────────────────────────────────────────────────
-TrendChart::TrendChart(const QColor lineColor, QWidget *parent)
+TrendChart::TrendChart(const QColor lineColor, const double yMaxHint, QWidget *parent)
     : QWidget(parent)
     , m_lineColor(lineColor)
+    , m_yMaxHint(yMaxHint)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     setMinimumHeight(160);
@@ -242,12 +243,25 @@ std::pair<double, double> TrendChart::calcYRange() const {
         dMax = std::max(dMax, m_refValue.value());
     }
 
-    if (dMin > dMax) return {0.0, 1.0};
+    if (dMin > dMax) {
+        // 无有效数据：若有 hint 则用 [0, hint]，否则默认范围
+        return m_yMaxHint > 0.0 ? std::make_pair(0.0, m_yMaxHint)
+                                 : std::make_pair(0.0, 1.0);
+    }
 
+    // 有软上限，且所有数据（含参考线）都落在 [0, hint] 内 → 固定范围
+    if (m_yMaxHint > 0.0 && dMin >= 0.0 && dMax <= m_yMaxHint) {
+        return {0.0, m_yMaxHint};
+    }
+
+    // 数据超出 hint 或无 hint → 动态计算（保留原有 ±15% padding）
     double span = dMax - dMin;
     if (span < 1e-9) span = std::max(1.0, std::abs(dMin) * 0.1);
 
     constexpr double kPad = 0.15;
-    return {dMin - span * kPad, dMax + span * kPad};
+    // 下限不低于 0（生理指标均非负）
+    const double lo = std::max(0.0, dMin - span * kPad);
+    const double hi = dMax + span * kPad;
+    return {lo, hi};
 }
 

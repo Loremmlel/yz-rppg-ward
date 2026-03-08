@@ -11,6 +11,7 @@ TrendCard::TrendCard(const QString    &title,
                      const MetricInfo &info,
                      const QString    &unit,
                      const QColor     &accentColor,
+                     const double      yMaxHint,
                      QWidget          *parent)
     : QFrame(parent)
     , m_unit(unit)
@@ -64,7 +65,7 @@ TrendCard::TrendCard(const QString    &title,
     mainLayout->addLayout(topRow);
 
     // ── 下部：折线图 ──
-    m_chart = new TrendChart(accentColor, this);
+    m_chart = new TrendChart(accentColor, yMaxHint, this);
     m_chart->setMinimumHeight(160);
     mainLayout->addWidget(m_chart, 1);
 }

@@ -38,22 +38,22 @@ TrendMetricsPanel::TrendMetricsPanel(QWidget *parent) : QWidget(parent) {
     scrollArea->setWidget(scrollContent);
     outerLayout->addWidget(scrollArea, 1);
 
-    // ── 创建所有卡片（无 icon，传 MetricInfo） ──
-    m_cardHrAvg  = new TrendCard(QStringLiteral("心率均值"),     kHrAvg,      QStringLiteral("bpm"), QColor(0xFF, 0x52, 0x52), scrollContent);
-    m_cardBrAvg  = new TrendCard(QStringLiteral("呼吸率均值"),   kBrAvg,      QStringLiteral("Hz"),  QColor(0x21, 0x96, 0xF3), scrollContent);
-    m_cardSqiAvg = new TrendCard(QStringLiteral("信号质量均值"), kSqiAvg,     QString{},             QColor(0x7E, 0x57, 0xC2), scrollContent);
+    // ── 创建所有卡片（无 icon，传 MetricInfo，传 Y 轴软上限） ──
+    m_cardHrAvg  = new TrendCard(QStringLiteral("心率均值"),     kHrAvg,      QStringLiteral("bpm"), QColor(0xFF, 0x52, 0x52), 120.0,  scrollContent);
+    m_cardBrAvg  = new TrendCard(QStringLiteral("呼吸率均值"),   kBrAvg,      QStringLiteral("Hz"),  QColor(0x21, 0x96, 0xF3), 0.4,    scrollContent);
+    m_cardSqiAvg = new TrendCard(QStringLiteral("信号质量均值"), kSqiAvg,     QString{},             QColor(0x7E, 0x57, 0xC2), 1.0,    scrollContent);
 
-    m_cardSdnn  = new TrendCard(QStringLiteral("SDNN 中位数"),  kSdnnMedian,  QStringLiteral("ms"), QColor(0x26, 0xA6, 0x9A), scrollContent);
-    m_cardRmssd = new TrendCard(QStringLiteral("RMSSD 中位数"), kRmssdMedian, QStringLiteral("ms"), QColor(0x26, 0xA6, 0x9A), scrollContent);
-    m_cardSdsd  = new TrendCard(QStringLiteral("SDSD 中位数"),  kSdsdMedian,  QStringLiteral("ms"), QColor(0x26, 0xA6, 0x9A), scrollContent);
-    m_cardPnn50 = new TrendCard(QStringLiteral("pNN50 中位数"), kPnn50Median, QString{},            QColor(0x00, 0x96, 0x88), scrollContent);
-    m_cardPnn20 = new TrendCard(QStringLiteral("pNN20 中位数"), kPnn20Median, QString{},            QColor(0x00, 0x96, 0x88), scrollContent);
+    m_cardSdnn  = new TrendCard(QStringLiteral("SDNN 中位数"),  kSdnnMedian,  QStringLiteral("ms"), QColor(0x26, 0xA6, 0x9A), 150.0, scrollContent);
+    m_cardRmssd = new TrendCard(QStringLiteral("RMSSD 中位数"), kRmssdMedian, QStringLiteral("ms"), QColor(0x26, 0xA6, 0x9A), 100.0, scrollContent);
+    m_cardSdsd  = new TrendCard(QStringLiteral("SDSD 中位数"),  kSdsdMedian,  QStringLiteral("ms"), QColor(0x26, 0xA6, 0x9A), 100.0, scrollContent);
+    m_cardPnn50 = new TrendCard(QStringLiteral("pNN50 中位数"), kPnn50Median, QString{},            QColor(0x00, 0x96, 0x88), 1.0,   scrollContent);
+    m_cardPnn20 = new TrendCard(QStringLiteral("pNN20 中位数"), kPnn20Median, QString{},            QColor(0x00, 0x96, 0x88), 1.0,   scrollContent);
 
-    m_cardLfHfRatio = new TrendCard(QStringLiteral("LF/HF 比值"), kLfHfRatio, QString{}, QColor(0xFF, 0x98, 0x00), scrollContent);
-    m_cardHf        = new TrendCard(QStringLiteral("HF 均值"),    kHfAvg,     QString{}, QColor(0x66, 0xBB, 0x6A), scrollContent);
-    m_cardLf        = new TrendCard(QStringLiteral("LF 均值"),    kLfAvg,     QString{}, QColor(0xFF, 0xB3, 0x00), scrollContent);
-    m_cardVlf       = new TrendCard(QStringLiteral("VLF 均值"),   kVlfAvg,    QString{}, QColor(0xEF, 0x53, 0x50), scrollContent);
-    m_cardTp        = new TrendCard(QStringLiteral("总功率均值"), kTpAvg,     QString{}, QColor(0x78, 0x90, 0x9C), scrollContent);
+    m_cardLfHfRatio = new TrendCard(QStringLiteral("LF/HF 比值"), kLfHfRatio, QString{}, QColor(0xFF, 0x98, 0x00), 5.0,  scrollContent);
+    m_cardHf        = new TrendCard(QStringLiteral("HF 均值"),    kHfAvg,     QString{}, QColor(0x66, 0xBB, 0x6A), 5.0,  scrollContent);
+    m_cardLf        = new TrendCard(QStringLiteral("LF 均值"),    kLfAvg,     QString{}, QColor(0xFF, 0xB3, 0x00), 5.0,  scrollContent);
+    m_cardVlf       = new TrendCard(QStringLiteral("VLF 均值"),   kVlfAvg,    QString{}, QColor(0xEF, 0x53, 0x50), 5.0,  scrollContent);
+    m_cardTp        = new TrendCard(QStringLiteral("总功率均值"), kTpAvg,     QString{}, QColor(0x78, 0x90, 0x9C), 10.0, scrollContent);
 
     // ── 布局三个分组 ──
     auto *contentLayout = new QVBoxLayout(scrollContent);

@@ -34,12 +34,14 @@ public:
      * @param info        详细解释信息（点击 ⓘ 弹出）
      * @param unit        单位字符串，如 "bpm"；为空则不显示
      * @param accentColor 左侧色带 & 折线颜色
+     * @param yMaxHint    Y 轴软上限（下限固定 0）；≤0 表示完全动态
      * @param parent      父控件
      */
     explicit TrendCard(const QString    &title,
                        const MetricInfo &info,
                        const QString    &unit,
                        const QColor     &accentColor,
+                       double            yMaxHint = 0.0,
                        QWidget          *parent = nullptr);
 
     /**

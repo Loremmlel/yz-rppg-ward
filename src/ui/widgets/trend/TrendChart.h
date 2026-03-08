@@ -16,12 +16,18 @@
  *  - Y 轴显示 5 个刻度（有参考线时用 TicksDynamic 使参考值恰好落在刻度上）
  *  - X 轴显示约 5 个时间刻度（HH:mm 格式）
  *  - 参考线：y = refValue 水平虚线，Y 轴上额外标注该值
+ *  - yMaxHint：Y 轴软上限；数据全部在 [0, hint] 内时固定使用此范围，
+ *              有数据超出时退回动态计算。
  */
 class TrendChart : public QWidget {
     Q_OBJECT
 
 public:
-    explicit TrendChart(QColor lineColor, QWidget *parent = nullptr);
+    /**
+     * @param lineColor  折线 & 散点颜色
+     * @param yMaxHint   Y 轴软上限（下限固定为 0）；≤0 表示完全动态计算
+     */
+    explicit TrendChart(QColor lineColor, double yMaxHint = 0.0, QWidget *parent = nullptr);
 
     /**
      * @brief 用新数据集全量替换图表内容
@@ -56,7 +62,8 @@ private:
     qint64                       m_intervalSecs{0}; ///< 时间粒度（秒），0 表示不做间隔检查
 
     // ── 配置 ──
-    QColor m_lineColor;
+    QColor  m_lineColor;
+    double  m_yMaxHint{0.0}; ///< Y 轴软上限（≤0 = 动态）
 
     // ── Qt Charts 对象 ──
     QChart        *m_chart{nullptr};
