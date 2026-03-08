@@ -76,17 +76,22 @@ AppController::~AppController() {
     // 先关闭UI，以关闭摄像头，防止死锁
     m_mainWindow.reset();
 
-    // 注意：不能在主线程 moveToThread——只有对象当前所在线程才能调用 moveToThread。
-    auto stopThread = [](QObject *obj, const std::unique_ptr<QThread> &thread) {
-        if (!obj || !thread) { return; }
 
-        obj->deleteLater();
-        thread->quit();
-        thread->wait();
-    };
+    if (m_videoThread && m_videoService && m_videoThread->isRunning()) {
+        m_videoService->deleteLater();
+        m_videoThread->quit();
+        m_videoThread->wait(3000);
+        qDebug() << "Video thread stopped";
+    }
 
-    stopThread(m_videoService.release(), m_videoThread);
-    stopThread(m_wsClient.release(), m_wsThread);
+    if (m_wsThread && m_wsClient && m_wsThread->isRunning()) {
+        m_wsClient->deleteLater();
+        m_wsThread->quit();
+        m_wsThread->wait(3000);
+        qDebug() << "WebSocket thread stopped";
+    }
+
+    qDebug() << "AppController destroyed";
 }
 
 void AppController::start() const {

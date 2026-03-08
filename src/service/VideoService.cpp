@@ -8,6 +8,7 @@
 #include <QtConcurrentRun>
 #include <QVideoFrame>
 #include <opencv2/imgcodecs.hpp>
+#include <QPointer>
 
 #include "../util/ImageHelper.h"
 
@@ -32,13 +33,11 @@ VideoService::VideoService(QObject *parent) : QObject(parent), m_statsTimer(new 
 }
 
 VideoService::~VideoService() {
-    m_statsTimer->stop();
-
+    qDebug() << "[VideoService] 正在销毁，等待后台任务完成...";
     if (m_processingFuture.isRunning()) {
-        // 忘加cancel导致死锁？
-        m_processingFuture.cancel();
         m_processingFuture.waitForFinished();
     }
+    qDebug() << "[VideoService] 已安全销毁";
 }
 
 void VideoService::processFrame(const QVideoFrame &videoFrame) {
