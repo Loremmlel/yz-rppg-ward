@@ -74,7 +74,7 @@ TrendMetricsPanel::TrendMetricsPanel(QWidget *parent) : QWidget(parent) {
 void TrendMetricsPanel::applyResult(const VitalsTrendService::TrendResult &r) const {
     m_statusLabel->setVisible(false);
 
-    auto apply = [&r](TrendCard *card, const VitalsTrendService::MetricSeries &s) {
+    auto apply = [&r](const TrendCard *card, const VitalsTrendService::MetricSeries &s) {
         card->setData(s.timestamps, s.points, s.refValue, r.queryStart, r.queryEnd);
     };
 
@@ -94,7 +94,7 @@ void TrendMetricsPanel::applyResult(const VitalsTrendService::TrendResult &r) co
 }
 
 // ── 槽：状态信息 ─────────────────────────────────────────────────────────────
-void TrendMetricsPanel::setStatus(const QString &message, bool isError) {
+void TrendMetricsPanel::setStatus(const QString &message, bool isError) const {
     m_statusLabel->setText(message);
     m_statusLabel->setProperty("state", isError ? "error" : "loading");
     m_statusLabel->setVisible(!message.isEmpty());
@@ -104,7 +104,7 @@ void TrendMetricsPanel::setStatus(const QString &message, bool isError) {
 
 // ── 槽：清空 ─────────────────────────────────────────────────────────────────
 void TrendMetricsPanel::clearAll() const {
-    for (auto *card : {
+    for (const auto *card : {
         m_cardHrAvg, m_cardBrAvg, m_cardSqiAvg,
         m_cardSdnn, m_cardRmssd, m_cardSdsd, m_cardPnn50, m_cardPnn20,
         m_cardLfHfRatio, m_cardHf, m_cardLf, m_cardVlf, m_cardTp

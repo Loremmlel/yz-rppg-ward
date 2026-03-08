@@ -1,12 +1,9 @@
 #pragma once
 
-#include <QWidget>
-#include <QList>
 #include <QDateTime>
 #include <optional>
 
 #include <QtCharts/QChartView>
-#include <QtCharts/QLineSeries>
 #include <QtCharts/QValueAxis>
 #include <QtCharts/QDateTimeAxis>
 

@@ -10,7 +10,7 @@
 #include <limits>
 
 // ── 构造 ─────────────────────────────────────────────────────────────────────
-TrendChart::TrendChart(QColor lineColor, QWidget *parent)
+TrendChart::TrendChart(const QColor lineColor, QWidget *parent)
     : QWidget(parent)
     , m_lineColor(lineColor)
 {

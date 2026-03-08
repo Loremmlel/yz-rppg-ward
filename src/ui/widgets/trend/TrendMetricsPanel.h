@@ -23,7 +23,7 @@ public slots:
     void applyResult(const VitalsTrendService::TrendResult &result) const;
 
     /** 显示状态信息（加载中 / 错误 / 清除） */
-    void setStatus(const QString &message, bool isError = false);
+    void setStatus(const QString &message, bool isError = false) const;
 
     /** 清空所有卡片数据 */
     void clearAll() const;

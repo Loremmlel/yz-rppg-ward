@@ -100,7 +100,7 @@ void TrendCard::clearData() const {
 }
 
 // ── 私有工具 ──────────────────────────────────────────────────────────────────
-QString TrendCard::formatValue(double v, int precision) {
+QString TrendCard::formatValue(const double v, const int precision) {
     const double factor = std::pow(10.0, precision);
     return QString::number(std::floor(v * factor) / factor, 'f', precision);
 }
