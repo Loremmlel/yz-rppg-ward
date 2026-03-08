@@ -80,14 +80,19 @@ AppController::~AppController() {
     if (m_videoThread && m_videoService && m_videoThread->isRunning()) {
         m_videoService->deleteLater();
         m_videoThread->quit();
-        m_videoThread->wait(3000);
+        // 等待一段时间后强制结束线程！
+        // 这时稳定触发0xC0000005，访问冲突被操作系统杀掉
+        // tmd被视频线程死锁问题困扰了好久，mdzz
+        // 老子不干了！
+        // 2026-03-09T01:04:00Z
+        m_videoThread->wait(2000);
         qDebug() << "Video thread stopped";
     }
 
     if (m_wsThread && m_wsClient && m_wsThread->isRunning()) {
         m_wsClient->deleteLater();
         m_wsThread->quit();
-        m_wsThread->wait(3000);
+        m_wsThread->wait(2000);
         qDebug() << "WebSocket thread stopped";
     }
 
