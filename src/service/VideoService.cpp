@@ -221,36 +221,36 @@ void VideoService::printStats() {
     if (m_statReceived == 0) return; // 无帧到达，保持静默
 
     const double captureFps = (STATS_INTERVAL_MS > 0)
-        ? m_statReceived * 1000.0 / STATS_INTERVAL_MS
-        : 0.0;
+                                  ? m_statReceived * 1000.0 / STATS_INTERVAL_MS
+                                  : 0.0;
     const double encodeFps = (STATS_INTERVAL_MS > 0)
-        ? m_statEncoded * 1000.0 / STATS_INTERVAL_MS
-        : 0.0;
+                                 ? m_statEncoded * 1000.0 / STATS_INTERVAL_MS
+                                 : 0.0;
 
     QString tsRange;
     if (m_statFirstTs > 0) {
         tsRange = QString("[%1 → %2, 跨度 %3ms]")
-            .arg(QDateTime::fromMSecsSinceEpoch(m_statFirstTs).toString("hh:mm:ss.zzz"))
-            .arg(QDateTime::fromMSecsSinceEpoch(m_statLastTs).toString("hh:mm:ss.zzz"))
-            .arg(m_statLastTs - m_statFirstTs);
+                .arg(QDateTime::fromMSecsSinceEpoch(m_statFirstTs).toString("hh:mm:ss.zzz"))
+                .arg(QDateTime::fromMSecsSinceEpoch(m_statLastTs).toString("hh:mm:ss.zzz"))
+                .arg(m_statLastTs - m_statFirstTs);
     }
 
     qDebug().noquote() << QString(
-        "[VideoService] 近 %1s | 采集 %2 (%3fps) | 编码 %4 (%5fps) | "
-        "无人脸丢弃 %6 | 编码忙丢弃 %7 | %8"
-    ).arg(STATS_INTERVAL_MS / 1000)
-     .arg(m_statReceived)
-     .arg(QString::number(captureFps, 'f', 1))
-     .arg(m_statEncoded)
-     .arg(QString::number(encodeFps, 'f', 1))
-     .arg(m_statDropNoFace)
-     .arg(m_statDropEncBusy)
-     .arg(tsRange);
+                "[VideoService] 近 %1s | 采集 %2 (%3fps) | 编码 %4 (%5fps) | "
+                "无人脸丢弃 %6 | 编码忙丢弃 %7 | %8"
+            ).arg(STATS_INTERVAL_MS / 1000)
+            .arg(m_statReceived)
+            .arg(QString::number(captureFps, 'f', 1))
+            .arg(m_statEncoded)
+            .arg(QString::number(encodeFps, 'f', 1))
+            .arg(m_statDropNoFace)
+            .arg(m_statDropEncBusy)
+            .arg(tsRange);
 
-    m_statReceived    = 0;
-    m_statEncoded     = 0;
-    m_statDropNoFace  = 0;
+    m_statReceived = 0;
+    m_statEncoded = 0;
+    m_statDropNoFace = 0;
     m_statDropEncBusy = 0;
-    m_statFirstTs     = 0;
-    m_statLastTs      = 0;
+    m_statFirstTs = 0;
+    m_statLastTs = 0;
 }

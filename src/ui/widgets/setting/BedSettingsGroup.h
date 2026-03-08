@@ -28,7 +28,10 @@ public:
 
     [[nodiscard]] qint64 bedId() const;
 
-private slots:
+private
+    slots:
+    
+
     void onWardChanged(const QString &wardCode);
 
     void onRoomChanged(const QString &roomNo);

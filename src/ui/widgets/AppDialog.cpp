@@ -13,7 +13,8 @@ AppDialog *AppDialog::instance() {
     return &s_instance;
 }
 
-AppDialog::AppDialog(QObject *parent) : QObject(parent) {}
+AppDialog::AppDialog(QObject *parent) : QObject(parent) {
+}
 
 void AppDialog::setParentWidget(QWidget *parent) {
     // 若传入的是 QMainWindow，使用 centralWidget 作为实际父控件，
@@ -27,27 +28,30 @@ void AppDialog::setParentWidget(QWidget *parent) {
 // ── 公开接口 ─────────────────────────────────────────────────────────────────
 void AppDialog::showInfo(const QString &title, const QString &content) {
     show(title, content, {
-        { QStringLiteral("知道了"), [this]{ close(); } }
-    });
+             {QStringLiteral("知道了"), [this] { close(); }}
+         });
 }
 
 void AppDialog::showConfirm(const QString &title,
-                             const QString &content,
-                             std::function<void()> onConfirm,
-                             const QString &confirmText,
-                             const QString &cancelText)
-{
+                            const QString &content,
+                            std::function<void()> onConfirm,
+                            const QString &confirmText,
+                            const QString &cancelText) {
     show(title, content, {
-        { cancelText,  [this]{ close(); } },
-        { confirmText, [this, onConfirm = std::move(onConfirm)]{ close(); onConfirm(); } }
-    });
+             {cancelText, [this] { close(); }},
+             {
+                 confirmText, [this, onConfirm = std::move(onConfirm)] {
+                     close();
+                     onConfirm();
+                 }
+             }
+         });
 }
 
 // ── 核心显示逻辑 ─────────────────────────────────────────────────────────────
 void AppDialog::show(const QString &title,
                      const QString &content,
-                     const QList<QPair<QString, std::function<void()>>> &buttons)
-{
+                     const QList<QPair<QString, std::function<void()> > > &buttons) {
     if (!m_parentWidget) return;
 
     // 关闭已有对话框
@@ -87,7 +91,7 @@ void AppDialog::show(const QString &title,
     contentScroll->setWidgetResizable(true);
     contentScroll->setFrameShape(QFrame::NoFrame);
     contentScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    contentScroll->setMaximumHeight(360);   // 超出时出现滚动条
+    contentScroll->setMaximumHeight(360); // 超出时出现滚动条
 
     m_contentLabel = new QLabel(content, contentScroll);
     m_contentLabel->setObjectName("dialogContent");
@@ -122,13 +126,13 @@ void AppDialog::show(const QString &title,
         }
 
         // 捕获 callback 副本并在点击时执行
-        connect(btn, &QPushButton::clicked, m_dialog, [cb = callback]{ cb(); });
+        connect(btn, &QPushButton::clicked, m_dialog, [cb = callback] { cb(); });
         btnLayout->addWidget(btn);
     }
 
     dialogLayout->addWidget(m_buttonRow);
 
-    m_dialog->show();   // show 先于 adjustSize，让 Qt 完成布局再计算尺寸
+    m_dialog->show(); // show 先于 adjustSize，让 Qt 完成布局再计算尺寸
     m_dialog->adjustSize();
     m_dialog->raise();
     updateGeometry();
@@ -146,21 +150,26 @@ void AppDialog::show(const QString &title,
 }
 
 void AppDialog::close() {
-    if (m_overlay) { m_overlay->deleteLater(); m_overlay = nullptr; }
-    if (m_dialog)  { m_dialog->deleteLater();  m_dialog  = nullptr; }
-    m_titleLabel   = nullptr;
+    if (m_overlay) {
+        m_overlay->deleteLater();
+        m_overlay = nullptr;
+    }
+    if (m_dialog) {
+        m_dialog->deleteLater();
+        m_dialog = nullptr;
+    }
+    m_titleLabel = nullptr;
     m_contentLabel = nullptr;
-    m_buttonRow    = nullptr;
+    m_buttonRow = nullptr;
 }
 
 // ── 居中定位 ──────────────────────────────────────────────────────────────────
 void AppDialog::updateGeometry() const {
     if (!m_dialog || !m_parentWidget) return;
     // m_dialog 是 m_parentWidget 的子 widget，坐标系相同
-    const QRect  pr = m_parentWidget->rect();
-    const QSize  ds = m_dialog->size();  // adjustSize 后已有正确尺寸
-    const int    x  = (pr.width()  - ds.width())  / 2;
-    const int    y  = (pr.height() - ds.height()) / 2 - 20; // 稍微偏上
+    const QRect pr = m_parentWidget->rect();
+    const QSize ds = m_dialog->size(); // adjustSize 后已有正确尺寸
+    const int x = (pr.width() - ds.width()) / 2;
+    const int y = (pr.height() - ds.height()) / 2 - 20; // 稍微偏上
     m_dialog->move(x, y);
 }
-

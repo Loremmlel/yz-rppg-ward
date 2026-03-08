@@ -12,8 +12,7 @@ MetricCard::MetricCard(const QString &title, const QString &icon,
                        bool showLowQualityWarning,
                        QWidget *parent)
     : QFrame(parent)
-    , m_showWarning(showLowQualityWarning)
-{
+      , m_showWarning(showLowQualityWarning) {
     // objectName 与 QSS 选择器绑定，修改时需同步更新样式文件
     this->setObjectName("MetricCard");
     this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);

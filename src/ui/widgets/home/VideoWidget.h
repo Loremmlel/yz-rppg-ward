@@ -30,12 +30,17 @@ public:
 
     ~VideoWidget() override;
 
-signals:
+    signals:
     /** 摄像头原始帧（QVideoFrame 引用计数浅拷贝），发往 VideoService 在工作线程处理。 */
+    
+
     void frameCaptured(const QVideoFrame &frame);
 
-public slots:
+public
+    slots:
     /** 由 VideoService::facePositionUpdated 信号驱动，更新人脸框覆盖层。 */
+    
+
     void updateFaceDetection(const QRect &rect, bool hasFace) const;
 
 protected:
@@ -53,8 +58,8 @@ private:
     // ── GPU 渲染管线 ──────────────────────────────────────────────────────
     QGraphicsView *m_graphicsView{nullptr};
     QGraphicsScene *m_scene{nullptr};
-    QGraphicsVideoItem *m_videoItem{nullptr};  ///< 视频层（GPU YUV→RGB shader）
-    QGraphicsRectItem *m_faceRect{nullptr};    ///< 人脸框叠加层（高于视频层）
+    QGraphicsVideoItem *m_videoItem{nullptr}; ///< 视频层（GPU YUV→RGB shader）
+    QGraphicsRectItem *m_faceRect{nullptr}; ///< 人脸框叠加层（高于视频层）
 
     // ── 工作线程管线（保留供 VideoService 使用，主线程不消费帧数据）────────
     QVideoSink *m_videoSink{nullptr};

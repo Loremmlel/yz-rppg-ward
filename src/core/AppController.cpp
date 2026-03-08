@@ -77,14 +77,14 @@ AppController::~AppController() {
     auto stopThread = [](const QObject *obj, const std::unique_ptr<QThread> &thread) {
         if (!obj || !thread) return;
         connect(thread.get(), &QThread::finished,
-                        thread.get(), [obj] { delete obj; },
-                        Qt::DirectConnection);
+                thread.get(), [obj] { delete obj; },
+                Qt::DirectConnection);
         thread->quit();
         thread->wait();
     };
 
     stopThread(m_videoService.release(), m_videoThread);
-    stopThread(m_wsClient.release(),     m_wsThread);
+    stopThread(m_wsClient.release(), m_wsThread);
 }
 
 void AppController::start() const {

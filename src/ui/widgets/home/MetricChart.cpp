@@ -14,9 +14,8 @@ MetricChart::MetricChart(QColor lineColor,
                          AxisMode axisMode,
                          QWidget *parent)
     : QWidget(parent)
-    , m_lineColor(lineColor)
-    , m_axisMode(axisMode)
-{
+      , m_lineColor(lineColor)
+      , m_axisMode(axisMode) {
     setMinimumHeight(50);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
@@ -79,7 +78,7 @@ void MetricChart::addDataPoint(std::optional<double> value, bool lowQuality) {
     }
 
     // 滑动 X 轴窗口：始终显示最近 kMaxPoints 个点
-    double xEnd   = m_points.back().x;
+    double xEnd = m_points.back().x;
     double xStart = xEnd - (kMaxPoints - 1);
     m_axisX->setRange(xStart, xEnd);
 
@@ -119,10 +118,12 @@ void MetricChart::clearData() {
 
     // 复位 Y 轴
     if (m_axisMode == AxisMode::Fixed01) {
-        m_cachedYMin = 0.0; m_cachedYMax = 1.0;
+        m_cachedYMin = 0.0;
+        m_cachedYMax = 1.0;
         m_axisY->setRange(0.0, 1.0);
     } else {
-        m_cachedYMin = 0.0; m_cachedYMax = 100.0;
+        m_cachedYMin = 0.0;
+        m_cachedYMax = 100.0;
         m_axisY->setRange(0.0, 100.0);
     }
 }
@@ -187,10 +188,10 @@ void MetricChart::rebuildSeriesPool(const Topology &topo, double yMin) {
     linePen.setJoinStyle(Qt::RoundJoin);
 
     // ── 为每个 lowQuality 子段创建 QAreaSeries ──
-    for (const auto &seg : topo.lowQualitySegs) {
+    for (const auto &seg: topo.lowQualitySegs) {
         auto *upper = new QLineSeries();
         auto *lower = new QLineSeries();
-        for (const auto &pt : m_points) {
+        for (const auto &pt: m_points) {
             if (pt.y.has_value() && pt.x >= seg.xFrom && pt.x <= seg.xTo) {
                 upper->append(pt.x, pt.y.value());
                 lower->append(pt.x, yMin);
@@ -205,10 +206,10 @@ void MetricChart::rebuildSeriesPool(const Topology &topo, double yMin) {
     }
 
     // ── 为每个有效段创建 QLineSeries（覆盖在 area 上方）──
-    for (const auto &seg : topo.validSegs) {
+    for (const auto &seg: topo.validSegs) {
         auto *line = new QLineSeries();
         line->setPen(linePen);
-        for (const auto &pt : m_points) {
+        for (const auto &pt: m_points) {
             if (pt.y.has_value() && pt.x >= seg.xFrom && pt.x <= seg.xTo) {
                 line->append(pt.x, pt.y.value());
             }
@@ -230,7 +231,7 @@ void MetricChart::updateSeriesData(const Topology &topo, double yMin) {
         QLineSeries *lower = area->lowerSeries();
 
         QList<QPointF> upperPts, lowerPts;
-        for (const auto &pt : m_points) {
+        for (const auto &pt: m_points) {
             if (pt.y.has_value() && pt.x >= seg.xFrom && pt.x <= seg.xTo) {
                 upperPts.append({pt.x, pt.y.value()});
                 lowerPts.append({pt.x, yMin});
@@ -246,7 +247,7 @@ void MetricChart::updateSeriesData(const Topology &topo, double yMin) {
         QLineSeries *line = m_lineSeries[si];
 
         QList<QPointF> pts;
-        for (const auto &pt : m_points) {
+        for (const auto &pt: m_points) {
             if (pt.y.has_value() && pt.x >= seg.xFrom && pt.x <= seg.xTo) {
                 pts.append({pt.x, pt.y.value()});
             }
@@ -258,8 +259,7 @@ void MetricChart::updateSeriesData(const Topology &topo, double yMin) {
 // ── 内部：更新 Y 轴（滞后抑制）────────────────────────────────
 void MetricChart::updateYAxis(double yMin, double yMax) {
     if (std::abs(yMin - m_cachedYMin) > kYHysteresis ||
-        std::abs(yMax - m_cachedYMax) > kYHysteresis)
-    {
+        std::abs(yMax - m_cachedYMax) > kYHysteresis) {
         m_cachedYMin = yMin;
         m_cachedYMax = yMax;
         m_axisY->setRange(yMin, yMax);
@@ -275,7 +275,7 @@ std::pair<double, double> MetricChart::calcYRange() const {
     double dMin = std::numeric_limits<double>::max();
     double dMax = std::numeric_limits<double>::lowest();
 
-    for (const auto &pt : m_points) {
+    for (const auto &pt: m_points) {
         if (pt.y.has_value()) {
             dMin = std::min(dMin, pt.y.value());
             dMax = std::max(dMax, pt.y.value());

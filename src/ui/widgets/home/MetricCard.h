@@ -24,6 +24,7 @@ public:
                         QWidget *parent = nullptr);
 
     void setValue(const QString &value) const;
+
     void setIcon(const QString &iconStr) const;
 
     /**
@@ -42,10 +43,10 @@ public:
     void setLowQualityWarning(bool show) const;
 
 private:
-    QLabel      *m_iconLabel{nullptr};
-    QLabel      *m_titleLabel{nullptr};
-    QLabel      *m_valueLabel{nullptr};
-    QLabel      *m_warningLabel{nullptr};  ///< "信号质量不佳" 警告（可为 nullptr）
+    QLabel *m_iconLabel{nullptr};
+    QLabel *m_titleLabel{nullptr};
+    QLabel *m_valueLabel{nullptr};
+    QLabel *m_warningLabel{nullptr}; ///< "信号质量不佳" 警告（可为 nullptr）
 
     MetricChart *m_chart{nullptr};
 

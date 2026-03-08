@@ -116,7 +116,7 @@ void WebSocketClient::onDisconnected() {
         const int delayMs = qMin(k_reconnectBaseMs << m_reconnectAttempts, k_reconnectMaxMs);
         ++m_reconnectAttempts;
         qDebug() << "[WebSocketClient] 将在" << delayMs << "ms 后尝试重连（第"
-                 << m_reconnectAttempts << "次）";
+                << m_reconnectAttempts << "次）";
         m_reconnectTimer->start(delayMs);
     }
 }
@@ -165,7 +165,7 @@ void WebSocketClient::logDropped(const QString &what) const {
     if (now - m_lastDropLogMs >= k_dropLogIntervalMs) {
         if (m_dropLogSuppressed > 1) {
             qWarning() << "[WebSocketClient] 未连接，已丢弃" << m_dropLogSuppressed
-                       << "条消息（最新：" << what << "）";
+                    << "条消息（最新：" << what << "）";
         } else {
             qWarning() << "[WebSocketClient] 未连接，丢弃" << what;
         }
@@ -173,4 +173,3 @@ void WebSocketClient::logDropped(const QString &what) const {
         m_lastDropLogMs = now;
     }
 }
-

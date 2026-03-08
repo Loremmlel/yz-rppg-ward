@@ -191,7 +191,11 @@ void BedSettingsGroup::onBedsFetched(const QJsonArray &beds) {
     m_bedCombo->setPlaceholderText(
         m_bedCombo->count() > 0 ? QStringLiteral("请选择床位") : QStringLiteral("暂无床位"));
 
-    if (m_isRestoringSelection && m_savedBedId > 0) {
+    if (m_isRestoringSelection &&m_savedBedId 
+    >
+    0
+    )
+    {
         for (int i = 0; i < m_bedCombo->count(); ++i) {
             if (m_bedCombo->itemData(i).toLongLong() == m_savedBedId) {
                 m_bedCombo->setCurrentIndex(i);
@@ -199,7 +203,9 @@ void BedSettingsGroup::onBedsFetched(const QJsonArray &beds) {
             }
         }
         m_isRestoringSelection = false;
-    } else {
+    }
+    else
+    {
         m_bedCombo->setCurrentIndex(-1);
         m_isRestoringSelection = false;
     }

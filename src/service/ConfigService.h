@@ -37,11 +37,13 @@ public:
      */
     void saveConfig(const AppConfig &newConfig);
 
-signals:
+    signals:
     /**
      * @brief 配置已保存并生效时发出
      * @param config 最新的配置快照
      */
+    
+
     void configChanged(const AppConfig &config);
 
 private:

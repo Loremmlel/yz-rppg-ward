@@ -68,13 +68,13 @@ void FrameUploadService::printStats() {
     const double uploadFps = m_statUploaded * 1000.0 / STATS_INTERVAL_MS;
 
     qDebug().noquote() << QString(
-        "[FrameUpload] 近 %1s | 到达 %2 | 上传 %3 (%4fps) | 无床位丢弃 %5"
-    ).arg(STATS_INTERVAL_MS / 1000)
-     .arg(arrived)
-     .arg(m_statUploaded)
-     .arg(QString::number(uploadFps, 'f', 1))
-     .arg(m_statDropNoBed);
+                "[FrameUpload] 近 %1s | 到达 %2 | 上传 %3 (%4fps) | 无床位丢弃 %5"
+            ).arg(STATS_INTERVAL_MS / 1000)
+            .arg(arrived)
+            .arg(m_statUploaded)
+            .arg(QString::number(uploadFps, 'f', 1))
+            .arg(m_statDropNoBed);
 
-    m_statUploaded  = 0;
+    m_statUploaded = 0;
     m_statDropNoBed = 0;
 }

@@ -12,7 +12,7 @@ VitalsTrendPage::VitalsTrendPage(QWidget *parent) : QWidget(parent) {
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
-    m_controlBar   = new TrendControlBar(this);
+    m_controlBar = new TrendControlBar(this);
     m_metricsPanel = new TrendMetricsPanel(this);
 
     layout->addWidget(m_controlBar);
@@ -49,9 +49,8 @@ VitalsTrendPage::VitalsTrendPage(QWidget *parent) : QWidget(parent) {
 }
 
 void VitalsTrendPage::onQueryRequested(const QDateTime &start,
-                                        const QDateTime &end,
-                                        const QString   &interval) const
-{
+                                       const QDateTime &end,
+                                       const QString &interval) const {
     const AppConfig cfg = ConfigService::instance()->config();
     if (!cfg.hasBed()) {
         m_metricsPanel->setStatus(QStringLiteral("⚠ 请先在设置页面配置床位信息"), true);

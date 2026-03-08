@@ -21,24 +21,30 @@ public:
 
     ~FrameUploadService() override;
 
-public slots:
+public
+    slots:
     /** 接收已编码的图像帧（8B 时间戳 + imageData），转发至 WebSocket。 */
+    
+
     void sendEncodedFrame(const QByteArray &frame);
 
     /** 配置变更时更新床位绑定状态。 */
     void onConfigChanged(const AppConfig &config);
 
-private slots:
+private
+    slots:
+    
+
     void printStats();
 
 private:
     WebSocketClient *m_wsClient{nullptr}; ///< 不持有所有权
-    bool m_bedBound{false};               ///< 是否已绑定有效床位
+    bool m_bedBound{false}; ///< 是否已绑定有效床位
 
     // ── 统计计数器（每个统计周期重置）──────────────────────────────────────
     QTimer *m_statsTimer;
     static constexpr int STATS_INTERVAL_MS = 5000;
 
-    int m_statUploaded{0};   ///< 已上传帧数
-    int m_statDropNoBed{0};  ///< 因未绑定床位丢弃帧数
+    int m_statUploaded{0}; ///< 已上传帧数
+    int m_statDropNoBed{0}; ///< 因未绑定床位丢弃帧数
 };

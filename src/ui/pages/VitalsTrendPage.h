@@ -33,13 +33,15 @@ class VitalsTrendPage : public QWidget {
 public:
     explicit VitalsTrendPage(QWidget *parent = nullptr);
 
-private slots:
+private
+    slots:
+    
+
     void onQueryRequested(const QDateTime &start,
                           const QDateTime &end,
-                          const QString   &interval) const;
+                          const QString &interval) const;
 
 private:
-    TrendControlBar  *m_controlBar{nullptr};
+    TrendControlBar *m_controlBar{nullptr};
     TrendMetricsPanel *m_metricsPanel{nullptr};
 };
-

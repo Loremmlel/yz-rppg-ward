@@ -69,4 +69,3 @@ void ApiClient::getJson(const QString &path,
         if (onSuccess) onSuccess(doc);
     });
 }
-

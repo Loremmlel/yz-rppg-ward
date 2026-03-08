@@ -40,9 +40,9 @@ void MainWindow::initUI() {
     m_settingsPage = new SettingsPage(m_stackedWidget);
     m_vitalsTrendPage = new VitalsTrendPage(m_stackedWidget);
 
-    m_stackedWidget->addWidget(m_homePage);       // index 0
-    m_stackedWidget->addWidget(m_settingsPage);   // index 1
-    m_stackedWidget->addWidget(m_vitalsTrendPage);// index 2
+    m_stackedWidget->addWidget(m_homePage); // index 0
+    m_stackedWidget->addWidget(m_settingsPage); // index 1
+    m_stackedWidget->addWidget(m_vitalsTrendPage); // index 2
 
     // ——— 顶部导航栏 ———
     setupNavBar();

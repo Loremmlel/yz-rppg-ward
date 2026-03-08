@@ -18,8 +18,11 @@ class TrendMetricsPanel : public QWidget {
 public:
     explicit TrendMetricsPanel(QWidget *parent = nullptr);
 
-public slots:
+public
+    slots:
     /** 将一次查询结果分发到各卡片 */
+    
+
     void applyResult(const VitalsTrendService::TrendResult &result) const;
 
     /** 显示状态信息（加载中 / 错误 / 清除） */
@@ -30,8 +33,8 @@ public slots:
 
 private:
     static void buildGroup(QVBoxLayout *layout,
-                          const QString &title,
-                          const QList<TrendCard *> &cards);
+                           const QString &title,
+                           const QList<TrendCard *> &cards);
 
     // 基础生命体征
     TrendCard *m_cardHrAvg{nullptr};
@@ -52,6 +55,3 @@ private:
 
     QLabel *m_statusLabel{nullptr};
 };
-
-
-

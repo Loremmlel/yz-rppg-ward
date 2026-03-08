@@ -32,17 +32,25 @@ public:
 
     ~VideoService() override;
 
-public slots:
+public
+    slots:
     /** 接收摄像头原始帧（QVideoFrame 引用计数浅拷贝），在工作线程内完成 YUV→RGB 转换与 ROI 编码。 */
+    
+
     void processFrame(const QVideoFrame &frame);
 
-signals:
+    signals:
+    
+
     void facePositionUpdated(const QRect &rect, bool hasFace);
 
     /** 已编码的图像帧（含 8 字节时间戳头），可直接通过 WebSocket 发送。 */
     void faceRoiEncoded(const QByteArray &frame);
 
-private slots:
+private
+    slots:
+    
+
     void printStats();
 
 private:
@@ -80,10 +88,10 @@ private:
     QTimer *m_statsTimer;
     static constexpr int STATS_INTERVAL_MS = 5000;
 
-    int m_statReceived{0};      ///< 摄像头送入的帧总数
-    int m_statEncoded{0};       ///< 成功进入编码队列的帧数
-    int m_statDropNoFace{0};    ///< 因未检测到人脸丢弃的帧数
-    int m_statDropEncBusy{0};   ///< 因编码线程忙丢弃的帧数
-    qint64 m_statFirstTs{0};    ///< 本统计周期首帧采集时间戳
-    qint64 m_statLastTs{0};     ///< 本统计周期末帧采集时间戳
+    int m_statReceived{0}; ///< 摄像头送入的帧总数
+    int m_statEncoded{0}; ///< 成功进入编码队列的帧数
+    int m_statDropNoFace{0}; ///< 因未检测到人脸丢弃的帧数
+    int m_statDropEncBusy{0}; ///< 因编码线程忙丢弃的帧数
+    qint64 m_statFirstTs{0}; ///< 本统计周期首帧采集时间戳
+    qint64 m_statLastTs{0}; ///< 本统计周期末帧采集时间戳
 };

@@ -13,9 +13,8 @@
 // ── 构造 ─────────────────────────────────────────────────────────────────────
 TrendChart::TrendChart(const QColor lineColor, const double yMaxHint, QWidget *parent)
     : QWidget(parent)
-    , m_lineColor(lineColor)
-    , m_yMaxHint(yMaxHint)
-{
+      , m_lineColor(lineColor)
+      , m_yMaxHint(yMaxHint) {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     setMinimumHeight(160);
 
@@ -69,18 +68,17 @@ TrendChart::TrendChart(const QColor lineColor, const double yMaxHint, QWidget *p
 }
 
 // ── 公开接口 ─────────────────────────────────────────────────────────────────
-void TrendChart::setData(const QList<QDateTime>             &timestamps,
-                         const QList<std::optional<double>> &points,
-                         std::optional<double>               refValue,
-                         const QDateTime                    &axisStart,
-                         const QDateTime                    &axisEnd,
-                         qint64                              intervalSecs)
-{
-    m_timestamps   = timestamps;
-    m_points       = points;
-    m_refValue     = refValue;
-    m_axisStart    = axisStart;
-    m_axisEnd      = axisEnd;
+void TrendChart::setData(const QList<QDateTime> &timestamps,
+                         const QList<std::optional<double> > &points,
+                         std::optional<double> refValue,
+                         const QDateTime &axisStart,
+                         const QDateTime &axisEnd,
+                         qint64 intervalSecs) {
+    m_timestamps = timestamps;
+    m_points = points;
+    m_refValue = refValue;
+    m_axisStart = axisStart;
+    m_axisEnd = axisEnd;
     m_intervalSecs = intervalSecs;
     rebuildSeries();
 }
@@ -109,7 +107,7 @@ void TrendChart::rebuildSeries() {
 
     // ── X 轴范围：优先使用外部指定的起止时间，否则退回首尾时间戳 ──
     const QDateTime xStart = m_axisStart.isValid() ? m_axisStart : m_timestamps.first();
-    const QDateTime xEnd   = m_axisEnd.isValid()   ? m_axisEnd   : m_timestamps.last();
+    const QDateTime xEnd = m_axisEnd.isValid() ? m_axisEnd : m_timestamps.last();
     m_axisX->setRange(xStart, xEnd);
 
     // 跨度超过 23 小时显示 HH:mm + 日期，否则仅显示 HH:mm
@@ -138,7 +136,7 @@ void TrendChart::rebuildSeries() {
         if (m_intervalSecs <= 0) return true; // 无粒度信息 → 全连线
         if (k + 1 >= validIdx.size()) return false;
         const qint64 gap = m_timestamps[validIdx[k]].secsTo(
-                               m_timestamps[validIdx[k + 1]]);
+            m_timestamps[validIdx[k + 1]]);
         return gap <= m_intervalSecs * 3 / 2; // 1.5 倍容差
     };
 
@@ -190,7 +188,7 @@ void TrendChart::rebuildSeries() {
     }
 
     // attach 所有折线到坐标轴
-    for (auto *s : m_chart->series()) {
+    for (auto *s: m_chart->series()) {
         s->attachAxis(m_axisX);
         s->attachAxis(m_axisY);
     }
@@ -198,8 +196,8 @@ void TrendChart::rebuildSeries() {
     // ── 2. 参考线（y = refValue）水平虚线 ──
     if (m_refValue.has_value()) {
         const double rv = m_refValue.value();
-        const qreal  rxStart = static_cast<qreal>(xStart.toMSecsSinceEpoch());
-        const qreal  rxEnd   = static_cast<qreal>(xEnd.toMSecsSinceEpoch());
+        const qreal rxStart = static_cast<qreal>(xStart.toMSecsSinceEpoch());
+        const qreal rxEnd = static_cast<qreal>(xEnd.toMSecsSinceEpoch());
 
         auto *refLine = new QLineSeries();
         QPen dashPen(m_lineColor.lighter(170), 1.6);
@@ -207,7 +205,7 @@ void TrendChart::rebuildSeries() {
         dashPen.setDashPattern({6.0, 4.0});
         refLine->setPen(dashPen);
         refLine->append(rxStart, rv);
-        refLine->append(rxEnd,   rv);
+        refLine->append(rxEnd, rv);
 
         m_chart->addSeries(refLine);
         refLine->attachAxis(m_axisX);
@@ -232,7 +230,7 @@ std::pair<double, double> TrendChart::calcYRange() const {
     double dMin = std::numeric_limits<double>::max();
     double dMax = std::numeric_limits<double>::lowest();
 
-    for (const auto &pt : m_points) {
+    for (const auto &pt: m_points) {
         if (pt.has_value()) {
             dMin = std::min(dMin, pt.value());
             dMax = std::max(dMax, pt.value());
@@ -245,8 +243,9 @@ std::pair<double, double> TrendChart::calcYRange() const {
 
     if (dMin > dMax) {
         // 无有效数据：若有 hint 则用 [0, hint]，否则默认范围
-        return m_yMaxHint > 0.0 ? std::make_pair(0.0, m_yMaxHint)
-                                 : std::make_pair(0.0, 1.0);
+        return m_yMaxHint > 0.0
+                   ? std::make_pair(0.0, m_yMaxHint)
+                   : std::make_pair(0.0, 1.0);
     }
 
     // 有软上限，且所有数据（含参考线）都落在 [0, hint] 内 → 固定范围
@@ -264,4 +263,3 @@ std::pair<double, double> TrendChart::calcYRange() const {
     const double hi = dMax + span * kPad;
     return {lo, hi};
 }
-

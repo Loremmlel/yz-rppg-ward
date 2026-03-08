@@ -16,7 +16,10 @@ class SettingsPage : public QWidget {
 public:
     explicit SettingsPage(QWidget *parent = nullptr);
 
-private slots:
+private
+    slots:
+    
+
     void onSaveClicked();
 
 private:

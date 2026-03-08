@@ -19,7 +19,10 @@ class MetricsPanel : public QWidget {
 public:
     explicit MetricsPanel(QWidget *parent = nullptr);
 
-public slots:
+public
+    slots:
+    
+
     void updateData(const MetricsData &data);
 
 private:

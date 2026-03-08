@@ -41,21 +41,30 @@ TrendMetricsPanel::TrendMetricsPanel(QWidget *parent) : QWidget(parent) {
     outerLayout->addWidget(scrollArea, 1);
 
     // ── 创建所有卡片（无 icon，传 MetricInfo，传 Y 轴软上限） ──
-    m_cardHrAvg  = new TrendCard(QStringLiteral("心率均值"),     kHrAvg,      QStringLiteral("bpm"), kColorHrAvg,     kYMaxHrAvg,     scrollContent);
-    m_cardBrAvg  = new TrendCard(QStringLiteral("呼吸率均值"),   kBrAvg,      QStringLiteral("Hz"),  kColorBrAvg,     kYMaxBrAvg,     scrollContent);
-    m_cardSqiAvg = new TrendCard(QStringLiteral("信号质量均值"), kSqiAvg,     QString{},             kColorSqiAvg,    kYMaxSqiAvg,    scrollContent);
+    m_cardHrAvg = new TrendCard(QStringLiteral("心率均值"), kHrAvg, QStringLiteral("bpm"), kColorHrAvg, kYMaxHrAvg,
+                                scrollContent);
+    m_cardBrAvg = new TrendCard(QStringLiteral("呼吸率均值"), kBrAvg, QStringLiteral("Hz"), kColorBrAvg, kYMaxBrAvg,
+                                scrollContent);
+    m_cardSqiAvg = new TrendCard(QStringLiteral("信号质量均值"), kSqiAvg, QString{}, kColorSqiAvg, kYMaxSqiAvg,
+                                 scrollContent);
 
-    m_cardSdnn  = new TrendCard(QStringLiteral("SDNN 中位数"),  kSdnnMedian,  QStringLiteral("ms"), kColorSdnn,      kYMaxSdnn,      scrollContent);
-    m_cardRmssd = new TrendCard(QStringLiteral("RMSSD 中位数"), kRmssdMedian, QStringLiteral("ms"), kColorRmssd,     kYMaxRmssd,     scrollContent);
-    m_cardSdsd  = new TrendCard(QStringLiteral("SDSD 中位数"),  kSdsdMedian,  QStringLiteral("ms"), kColorSdsd,      kYMaxSdsd,      scrollContent);
-    m_cardPnn50 = new TrendCard(QStringLiteral("pNN50 中位数"), kPnn50Median, QString{},            kColorPnn50,     kYMaxPnn50,     scrollContent);
-    m_cardPnn20 = new TrendCard(QStringLiteral("pNN20 中位数"), kPnn20Median, QString{},            kColorPnn20,     kYMaxPnn20,     scrollContent);
+    m_cardSdnn = new TrendCard(QStringLiteral("SDNN 中位数"), kSdnnMedian, QStringLiteral("ms"), kColorSdnn, kYMaxSdnn,
+                               scrollContent);
+    m_cardRmssd = new TrendCard(QStringLiteral("RMSSD 中位数"), kRmssdMedian, QStringLiteral("ms"), kColorRmssd,
+                                kYMaxRmssd, scrollContent);
+    m_cardSdsd = new TrendCard(QStringLiteral("SDSD 中位数"), kSdsdMedian, QStringLiteral("ms"), kColorSdsd, kYMaxSdsd,
+                               scrollContent);
+    m_cardPnn50 = new TrendCard(QStringLiteral("pNN50 中位数"), kPnn50Median, QString{}, kColorPnn50, kYMaxPnn50,
+                                scrollContent);
+    m_cardPnn20 = new TrendCard(QStringLiteral("pNN20 中位数"), kPnn20Median, QString{}, kColorPnn20, kYMaxPnn20,
+                                scrollContent);
 
-    m_cardLfHfRatio = new TrendCard(QStringLiteral("LF/HF 比值"), kLfHfRatio, QString{}, kColorLfHfRatio, kYMaxLfHfRatio, scrollContent);
-    m_cardHf        = new TrendCard(QStringLiteral("HF 均值"),    kHfAvg,     QString{}, kColorHfAvg,     kYMaxHfAvg,     scrollContent);
-    m_cardLf        = new TrendCard(QStringLiteral("LF 均值"),    kLfAvg,     QString{}, kColorLfAvg,     kYMaxLfAvg,     scrollContent);
-    m_cardVlf       = new TrendCard(QStringLiteral("VLF 均值"),   kVlfAvg,    QString{}, kColorVlfAvg,    kYMaxVlfAvg,    scrollContent);
-    m_cardTp        = new TrendCard(QStringLiteral("总功率均值"), kTpAvg,     QString{}, kColorTpAvg,     kYMaxTpAvg,     scrollContent);
+    m_cardLfHfRatio = new TrendCard(QStringLiteral("LF/HF 比值"), kLfHfRatio, QString{}, kColorLfHfRatio, kYMaxLfHfRatio,
+                                    scrollContent);
+    m_cardHf = new TrendCard(QStringLiteral("HF 均值"), kHfAvg, QString{}, kColorHfAvg, kYMaxHfAvg, scrollContent);
+    m_cardLf = new TrendCard(QStringLiteral("LF 均值"), kLfAvg, QString{}, kColorLfAvg, kYMaxLfAvg, scrollContent);
+    m_cardVlf = new TrendCard(QStringLiteral("VLF 均值"), kVlfAvg, QString{}, kColorVlfAvg, kYMaxVlfAvg, scrollContent);
+    m_cardTp = new TrendCard(QStringLiteral("总功率均值"), kTpAvg, QString{}, kColorTpAvg, kYMaxTpAvg, scrollContent);
 
     // ── 布局三个分组 ──
     auto *contentLayout = new QVBoxLayout(scrollContent);
@@ -63,11 +72,11 @@ TrendMetricsPanel::TrendMetricsPanel(QWidget *parent) : QWidget(parent) {
     contentLayout->setSpacing(20);
 
     buildGroup(contentLayout, QStringLiteral("基础生命体征"),
-               { m_cardHrAvg, m_cardBrAvg, m_cardSqiAvg });
+               {m_cardHrAvg, m_cardBrAvg, m_cardSqiAvg});
     buildGroup(contentLayout, QStringLiteral("HRV 时域中位数"),
-               { m_cardSdnn, m_cardRmssd, m_cardSdsd, m_cardPnn50, m_cardPnn20 });
+               {m_cardSdnn, m_cardRmssd, m_cardSdsd, m_cardPnn50, m_cardPnn20});
     buildGroup(contentLayout, QStringLiteral("HRV 频域均值"),
-               { m_cardLfHfRatio, m_cardHf, m_cardLf, m_cardVlf, m_cardTp });
+               {m_cardLfHfRatio, m_cardHf, m_cardLf, m_cardVlf, m_cardTp});
 
     contentLayout->addStretch();
 }
@@ -80,19 +89,19 @@ void TrendMetricsPanel::applyResult(const VitalsTrendService::TrendResult &r) co
         card->setData(s.timestamps, s.points, s.refValue, r.queryStart, r.queryEnd, r.intervalSecs);
     };
 
-    apply(m_cardHrAvg,      r.hrAvg);
-    apply(m_cardBrAvg,      r.brAvg);
-    apply(m_cardSqiAvg,     r.sqiAvg);
-    apply(m_cardSdnn,       r.sdnnMedian);
-    apply(m_cardRmssd,      r.rmssdMedian);
-    apply(m_cardSdsd,       r.sdsdMedian);
-    apply(m_cardPnn50,      r.pnn50Median);
-    apply(m_cardPnn20,      r.pnn20Median);
-    apply(m_cardLfHfRatio,  r.lfHfRatio);
-    apply(m_cardHf,         r.hfAvg);
-    apply(m_cardLf,         r.lfAvg);
-    apply(m_cardVlf,        r.vlfAvg);
-    apply(m_cardTp,         r.tpAvg);
+    apply(m_cardHrAvg, r.hrAvg);
+    apply(m_cardBrAvg, r.brAvg);
+    apply(m_cardSqiAvg, r.sqiAvg);
+    apply(m_cardSdnn, r.sdnnMedian);
+    apply(m_cardRmssd, r.rmssdMedian);
+    apply(m_cardSdsd, r.sdsdMedian);
+    apply(m_cardPnn50, r.pnn50Median);
+    apply(m_cardPnn20, r.pnn20Median);
+    apply(m_cardLfHfRatio, r.lfHfRatio);
+    apply(m_cardHf, r.hfAvg);
+    apply(m_cardLf, r.lfAvg);
+    apply(m_cardVlf, r.vlfAvg);
+    apply(m_cardTp, r.tpAvg);
 }
 
 // ── 槽：状态信息 ─────────────────────────────────────────────────────────────
@@ -106,18 +115,17 @@ void TrendMetricsPanel::setStatus(const QString &message, bool isError) const {
 
 // ── 槽：清空 ─────────────────────────────────────────────────────────────────
 void TrendMetricsPanel::clearAll() const {
-    for (const auto *card : {
-        m_cardHrAvg, m_cardBrAvg, m_cardSqiAvg,
-        m_cardSdnn, m_cardRmssd, m_cardSdsd, m_cardPnn50, m_cardPnn20,
-        m_cardLfHfRatio, m_cardHf, m_cardLf, m_cardVlf, m_cardTp
-    }) { card->clearData(); }
+    for (const auto *card: {
+             m_cardHrAvg, m_cardBrAvg, m_cardSqiAvg,
+             m_cardSdnn, m_cardRmssd, m_cardSdsd, m_cardPnn50, m_cardPnn20,
+             m_cardLfHfRatio, m_cardHf, m_cardLf, m_cardVlf, m_cardTp
+         }) { card->clearData(); }
 }
 
 // ── 私有：构建分组 ────────────────────────────────────────────────────────────
 void TrendMetricsPanel::buildGroup(QVBoxLayout *layout,
                                    const QString &title,
-                                   const QList<TrendCard *> &cards)
-{
+                                   const QList<TrendCard *> &cards) {
     auto *group = new QGroupBox(title);
     group->setObjectName("TrendGroup");
 

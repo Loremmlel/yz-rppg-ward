@@ -7,16 +7,15 @@
 #include <QPushButton>
 #include <cmath>
 
-TrendCard::TrendCard(const QString    &title,
+TrendCard::TrendCard(const QString &title,
                      const MetricInfo &info,
-                     const QString    &unit,
-                     const QColor     &accentColor,
-                     const double      yMaxHint,
-                     QWidget          *parent)
+                     const QString &unit,
+                     const QColor &accentColor,
+                     const double yMaxHint,
+                     QWidget *parent)
     : QFrame(parent)
-    , m_unit(unit)
-    , m_accentColor(accentColor)
-{
+      , m_unit(unit)
+      , m_accentColor(accentColor) {
     setObjectName("TrendCard");
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     setFrameShape(QFrame::StyledPanel);
@@ -71,16 +70,18 @@ TrendCard::TrendCard(const QString    &title,
 }
 
 // ── 公开接口 ──────────────────────────────────────────────────────────────────
-void TrendCard::setData(const QList<QDateTime>             &timestamps,
-                        const QList<std::optional<double>> &points,
-                        const std::optional<double>         refValue,
-                        const QDateTime                    &axisStart,
-                        const QDateTime                    &axisEnd,
-                        qint64                              intervalSecs) const
-{
+void TrendCard::setData(const QList<QDateTime> &timestamps,
+                        const QList<std::optional<double> > &points,
+                        const std::optional<double> refValue,
+                        const QDateTime &axisStart,
+                        const QDateTime &axisEnd,
+                        qint64 intervalSecs) const {
     std::optional<double> lastValid;
     for (auto i = points.size() - 1; i >= 0; --i) {
-        if (points[i].has_value()) { lastValid = points[i]; break; }
+        if (points[i].has_value()) {
+            lastValid = points[i];
+            break;
+        }
     }
 
     if (lastValid.has_value()) {
@@ -110,15 +111,15 @@ QString TrendCard::formatValue(const double v, const int precision) {
 QString TrendCard::buildDialogContent(const MetricInfo &info) {
     // 用 HTML 构建带样式的多节内容
     return QString(
-        "<p style='margin:0 0 10px 0;'>"
-        "  <span style='color:#212529;font-weight:bold;'>%1</span>"
-        "</p>"
-        "<p style='margin:0 0 6px 0;color:#6C757D;font-size:12px;'>📖 含义</p>"
-        "<p style='margin:0 0 12px 0;color:#343A40;'>%2</p>"
-        "<p style='margin:0 0 6px 0;color:#6C757D;font-size:12px;'>✅ 正常范围</p>"
-        "<p style='margin:0 0 12px 0;color:#343A40;'>%3</p>"
-        "<p style='margin:0 0 6px 0;color:#6C757D;font-size:12px;'>⚠️ 异常提示</p>"
-        "<p style='margin:0;color:#343A40;'>%4</p>"
-    )
-    .arg(info.name, info.meaning, info.normalRange, info.abnormal);
+                "<p style='margin:0 0 10px 0;'>"
+                "  <span style='color:#212529;font-weight:bold;'>%1</span>"
+                "</p>"
+                "<p style='margin:0 0 6px 0;color:#6C757D;font-size:12px;'>📖 含义</p>"
+                "<p style='margin:0 0 12px 0;color:#343A40;'>%2</p>"
+                "<p style='margin:0 0 6px 0;color:#6C757D;font-size:12px;'>✅ 正常范围</p>"
+                "<p style='margin:0 0 12px 0;color:#343A40;'>%3</p>"
+                "<p style='margin:0 0 6px 0;color:#6C757D;font-size:12px;'>⚠️ 异常提示</p>"
+                "<p style='margin:0;color:#343A40;'>%4</p>"
+            )
+            .arg(info.name, info.meaning, info.normalRange, info.abnormal);
 }

@@ -24,8 +24,10 @@ public:
     /** 获取指定病区指定病房下的所有床位 */
     void fetchBeds(const QString &wardCode, const QString &roomNo);
 
-signals:
+    signals:
     /** 病区列表已获取 */
+    
+
     void wardsFetched(const QStringList &wardCodes);
 
     /** 病房列表已获取（JSON 数组，每个元素含 roomNo 和 beds） */

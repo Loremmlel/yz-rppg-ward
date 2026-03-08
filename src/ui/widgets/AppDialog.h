@@ -52,7 +52,7 @@ public:
                      const QString &content,
                      std::function<void()> onConfirm,
                      const QString &confirmText = QStringLiteral("确认"),
-                     const QString &cancelText  = QStringLiteral("取消"));
+                     const QString &cancelText = QStringLiteral("取消"));
 
     /** 关闭当前对话框 */
     void close();
@@ -62,19 +62,18 @@ private:
 
     void show(const QString &title,
               const QString &content,
-              const QList<QPair<QString, std::function<void()>>> &buttons);
+              const QList<QPair<QString, std::function<void()> > > &buttons);
 
     void updateGeometry() const;
 
-    QWidget    *m_parentWidget{nullptr};
+    QWidget *m_parentWidget{nullptr};
 
     // ── 覆盖层（半透明遮罩） ──
-    QWidget    *m_overlay{nullptr};
+    QWidget *m_overlay{nullptr};
 
     // ── 对话框容器 ──
-    QFrame     *m_dialog{nullptr};
-    QLabel     *m_titleLabel{nullptr};
-    QLabel     *m_contentLabel{nullptr};
-    QWidget    *m_buttonRow{nullptr};
+    QFrame *m_dialog{nullptr};
+    QLabel *m_titleLabel{nullptr};
+    QLabel *m_contentLabel{nullptr};
+    QWidget *m_buttonRow{nullptr};
 };
-

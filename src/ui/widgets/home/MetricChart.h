@@ -28,7 +28,7 @@ class MetricChart : public QWidget {
 public:
     enum class AxisMode {
         ElasticFrom100, ///< 初始 [0,100]，数据超出时弹性扩展 (HR)
-        Fixed01         ///< 固定 [0,1] (SQI)
+        Fixed01 ///< 固定 [0,1] (SQI)
     };
 
     explicit MetricChart(QColor lineColor,
@@ -59,18 +59,20 @@ private:
     struct SegRange {
         double xFrom{0.0};
         double xTo{0.0};
+
         bool operator==(const SegRange &o) const {
             return xFrom == o.xFrom && xTo == o.xTo;
         }
     };
 
     struct Topology {
-        QList<SegRange> validSegs;      ///< 有效（非null）连续段，按 x 坐标描述
+        QList<SegRange> validSegs; ///< 有效（非null）连续段，按 x 坐标描述
         QList<SegRange> lowQualitySegs; ///< lowQuality 连续子段，按 x 坐标描述
 
         bool operator==(const Topology &o) const {
             return validSegs == o.validSegs && lowQualitySegs == o.lowQualitySegs;
         }
+
         bool operator!=(const Topology &o) const { return !(*this == o); }
     };
 
@@ -94,7 +96,7 @@ private:
 
     // ── 数据 ─────────────────────────────────────────────────
     QList<Point> m_points;
-    double m_xCounter{0.0};  ///< 单调递增 x，避免每帧重对齐
+    double m_xCounter{0.0}; ///< 单调递增 x，避免每帧重对齐
 
     // ── Y 轴缓存（滞后抑制） ──────────────────────────────────
     double m_cachedYMin{0.0};
@@ -102,20 +104,20 @@ private:
     static constexpr double kYHysteresis = 0.5; ///< 变化小于此值不触发轴更新
 
     // ── 配置 ─────────────────────────────────────────────────
-    QColor   m_lineColor;
+    QColor m_lineColor;
     AxisMode m_axisMode;
 
     // ── Qt Charts 对象 ───────────────────────────────────────
-    QChart      *m_chart{nullptr};
-    QChartView  *m_chartView{nullptr};
-    QValueAxis  *m_axisX{nullptr};
-    QValueAxis  *m_axisY{nullptr};
+    QChart *m_chart{nullptr};
+    QChartView *m_chartView{nullptr};
+    QValueAxis *m_axisX{nullptr};
+    QValueAxis *m_axisY{nullptr};
 
     // ── Series 持久化池 ──────────────────────────────────────
     // 每个有效段对应一个 QLineSeries
-    QList<QLineSeries *>  m_lineSeries;
+    QList<QLineSeries *> m_lineSeries;
     // 每个 lowQuality 子段对应一个 QAreaSeries（含内部 upper/lower QLineSeries）
-    QList<QAreaSeries *>  m_areaSeries;
+    QList<QAreaSeries *> m_areaSeries;
 
     // 上一帧的拓扑，用于判断是否需要重建
     Topology m_lastTopology;

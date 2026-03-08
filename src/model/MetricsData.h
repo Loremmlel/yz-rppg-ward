@@ -9,15 +9,14 @@
  * 在 Service、Controller 与 View 之间传递，不持有状态，不触发副作用。
  */
 struct MetricsData {
-    std::optional<double> hr;   ///< 心率，单位 bpm
-    std::optional<double> sqi;  ///< 信号质量指数，0-1
+    std::optional<double> hr; ///< 心率，单位 bpm
+    std::optional<double> sqi; ///< 信号质量指数，0-1
 
     MetricsData() = default;
 
     MetricsData(std::optional<double> h, std::optional<double> s)
-        : hr(h), sqi(s)
-    {}
+        : hr(h), sqi(s) {
+    }
 };
 
 Q_DECLARE_METATYPE(MetricsData)
-

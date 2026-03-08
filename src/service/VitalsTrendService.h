@@ -24,16 +24,16 @@ class VitalsTrendService : public QObject {
 public:
     /** 单条指标序列的完整数据包，供 TrendCard 直接消费 */
     struct MetricSeries {
-        QList<QDateTime>             timestamps; ///< 各 bucket 时刻（本地时间）
-        QList<std::optional<double>> points;     ///< 各 bucket 数值，nullopt 表示缺失
-        std::optional<double>        refValue;   ///< 参考线值（均值 or 中位数）
+        QList<QDateTime> timestamps; ///< 各 bucket 时刻（本地时间）
+        QList<std::optional<double> > points; ///< 各 bucket 数值，nullopt 表示缺失
+        std::optional<double> refValue; ///< 参考线值（均值 or 中位数）
     };
 
     /** 一次查询结果，包含全部 13 个指标序列 */
     struct TrendResult {
-        QDateTime queryStart;  ///< 用户选择的查询起始时刻（本地时间）
-        QDateTime queryEnd;    ///< 用户选择的查询结束时刻（本地时间）
-        qint64    intervalSecs{0}; ///< 时间粒度（秒），用于判断相邻点是否连续
+        QDateTime queryStart; ///< 用户选择的查询起始时刻（本地时间）
+        QDateTime queryEnd; ///< 用户选择的查询结束时刻（本地时间）
+        qint64 intervalSecs{0}; ///< 时间粒度（秒），用于判断相邻点是否连续
         // 基础生命体征
         MetricSeries hrAvg;
         MetricSeries brAvg;
@@ -67,10 +67,12 @@ public:
     void query(qint64 bedId,
                const QDateTime &startTime,
                const QDateTime &endTime,
-               const QString   &interval);
+               const QString &interval);
 
-signals:
+    signals:
     /** 查询成功，携带完整结果 */
+    
+
     void resultReady(const TrendResult &result);
 
     /** 查询失败或数据为空 */
@@ -92,11 +94,10 @@ private:
     static qint64 parseIntervalSecs(const QString &interval);
 
     /** 计算均值 */
-    static std::optional<double> calcMean(const QList<std::optional<double>> &pts);
+    static std::optional<double> calcMean(const QList<std::optional<double> > &pts);
 
     /** 计算中位数 */
-    static std::optional<double> calcMedian(const QList<std::optional<double>> &pts);
+    static std::optional<double> calcMedian(const QList<std::optional<double> > &pts);
 };
 
 Q_DECLARE_METATYPE(VitalsTrendService::TrendResult)
-

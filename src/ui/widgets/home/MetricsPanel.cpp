@@ -37,7 +37,7 @@ MetricsPanel::MetricsPanel(QWidget *parent) : QWidget(parent) {
     m_listLayout->setSpacing(15);
 
     // HR 卡片：主题色红，弹性 Y 轴（初始 0-100），无文字警告
-    addMetricCard("HR",  QStringLiteral("心率"),     ":/icons/Heartbeat.png",
+    addMetricCard("HR", QStringLiteral("心率"), ":/icons/Heartbeat.png",
                   QColor(0xFF, 0x52, 0x52), MetricChart::AxisMode::ElasticFrom100, false);
     // SQI 卡片：主题色紫，固定 0-1 Y 轴，显示文字警告
     addMetricCard("SQI", QStringLiteral("信号质量"), ":/icons/Sqi.png",
@@ -89,4 +89,3 @@ void MetricsPanel::addMetricCard(const QString &key, const QString &title, const
     m_listLayout->addWidget(card, 1);
     m_cards.insert(key, card);
 }
-

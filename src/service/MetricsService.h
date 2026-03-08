@@ -27,16 +27,21 @@ public:
 
     void stopCollection() const;
 
-signals:
+    signals:
+    
+
     void dataUpdated(const MetricsData &data);
 
-public slots:
+public
+    slots:
     /**
      * @brief 解析服务器推送的指标 JSON，连接到 WebSocketClient::textMessageReceived。
      *
      * 期望格式：{ "heart_rate": 72.3, "sqi": 85.6 }
      * 字段缺失时保留上一次的值。
      */
+    
+
     void onServerMessage(const QString &jsonText);
 
     /** WebSocket 已连接：停止模拟，切换为在线数据。 */
@@ -45,7 +50,10 @@ public slots:
     /** WebSocket 已断开：恢复模拟，防止 UI 数据冻结。 */
     void onWsDisconnected();
 
-private slots:
+private
+    slots:
+    
+
     void fetchLatestData();
 
 private:

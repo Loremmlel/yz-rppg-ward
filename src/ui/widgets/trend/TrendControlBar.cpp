@@ -4,18 +4,21 @@
 #include <QHBoxLayout>
 
 namespace {
-    struct IntervalItem { QString label; QString apiValue; };
+    struct IntervalItem {
+        QString label;
+        QString apiValue;
+    };
 
     const QList<IntervalItem> kIntervals = {
-        { QStringLiteral("1 分钟"),  QStringLiteral("1m")  },
-        { QStringLiteral("5 分钟"),  QStringLiteral("5m")  },
-        { QStringLiteral("10 分钟"), QStringLiteral("10m") },
-        { QStringLiteral("15 分钟"), QStringLiteral("15m") },
-        { QStringLiteral("30 分钟"), QStringLiteral("30m") },
-        { QStringLiteral("1 小时"),  QStringLiteral("1h")  },
-        { QStringLiteral("6 小时"),  QStringLiteral("6h")  },
-        { QStringLiteral("12 小时"), QStringLiteral("12h") },
-        { QStringLiteral("1 天"),    QStringLiteral("1d")  },
+        {QStringLiteral("1 分钟"), QStringLiteral("1m")},
+        {QStringLiteral("5 分钟"), QStringLiteral("5m")},
+        {QStringLiteral("10 分钟"), QStringLiteral("10m")},
+        {QStringLiteral("15 分钟"), QStringLiteral("15m")},
+        {QStringLiteral("30 分钟"), QStringLiteral("30m")},
+        {QStringLiteral("1 小时"), QStringLiteral("1h")},
+        {QStringLiteral("6 小时"), QStringLiteral("6h")},
+        {QStringLiteral("12 小时"), QStringLiteral("12h")},
+        {QStringLiteral("1 天"), QStringLiteral("1d")},
     };
 }
 
@@ -39,7 +42,7 @@ void TrendControlBar::initUI() {
     m_intervalCombo = new QComboBox(this);
     m_intervalCombo->setObjectName("TrendCombo");
     m_intervalCombo->setFixedWidth(110);
-    for (const auto &item : kIntervals)
+    for (const auto &item: kIntervals)
         m_intervalCombo->addItem(item.label, item.apiValue);
     m_intervalCombo->setCurrentIndex(1); // 默认 5 分钟
 
@@ -51,12 +54,12 @@ void TrendControlBar::initUI() {
     shortcutLabel->setObjectName("trendLabel");
     row1->addWidget(shortcutLabel);
 
-    const QList<QPair<QString, int>> shortcuts = {
-        { QStringLiteral("最近 1 小时"),  1  },
-        { QStringLiteral("最近 6 小时"),  6  },
-        { QStringLiteral("最近 24 小时"), 24 },
+    const QList<QPair<QString, int> > shortcuts = {
+        {QStringLiteral("最近 1 小时"), 1},
+        {QStringLiteral("最近 6 小时"), 6},
+        {QStringLiteral("最近 24 小时"), 24},
     };
-    for (const auto &[btnText, hours] : shortcuts) {
+    for (const auto &[btnText, hours]: shortcuts) {
         auto *btn = new QPushButton(btnText, this);
         btn->setObjectName("TrendShortcutButton");
         btn->setCursor(Qt::PointingHandCursor);
@@ -139,9 +142,9 @@ void TrendControlBar::onShortcutClicked(const int hours) const {
 
     // 根据时间范围自动选择合适粒度
     QString autoInterval;
-    if (hours <= 1)      autoInterval = QStringLiteral("1m");
+    if (hours <= 1) autoInterval = QStringLiteral("1m");
     else if (hours <= 6) autoInterval = QStringLiteral("5m");
-    else                 autoInterval = QStringLiteral("15m");
+    else autoInterval = QStringLiteral("15m");
 
     for (int i = 0; i < m_intervalCombo->count(); ++i) {
         if (m_intervalCombo->itemData(i).toString() == autoInterval) {
@@ -150,4 +153,3 @@ void TrendControlBar::onShortcutClicked(const int hours) const {
         }
     }
 }
-

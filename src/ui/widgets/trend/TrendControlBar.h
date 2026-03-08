@@ -31,27 +31,32 @@ public:
     /** 设置加载中状态（禁用/启用查询按钮） */
     void setLoading(bool loading) const;
 
-signals:
+    signals:
     /**
      * @brief 用户请求查询
      * @param startTime 开始时间（本地时间）
      * @param endTime   结束时间（本地时间）
      * @param interval  时间粒度，如 "5m"
      */
+    
+
     void queryRequested(const QDateTime &startTime,
                         const QDateTime &endTime,
-                        const QString   &interval);
+                        const QString &interval);
 
-private slots:
+private
+    slots:
+    
+
     void onQueryClicked();
+
     void onShortcutClicked(int hours) const;
 
 private:
     void initUI();
 
-    QComboBox     *m_intervalCombo{nullptr};
+    QComboBox *m_intervalCombo{nullptr};
     QDateTimeEdit *m_startEdit{nullptr};
     QDateTimeEdit *m_endEdit{nullptr};
-    QPushButton   *m_queryBtn{nullptr};
+    QPushButton *m_queryBtn{nullptr};
 };
-

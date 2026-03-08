@@ -76,9 +76,9 @@ VideoWidget::VideoWidget(QWidget *parent) : QWidget(parent) {
     QVideoSink *renderSink = m_videoItem->videoSink();
     connect(m_videoSink, &QVideoSink::videoFrameChanged,
             this, [this, renderSink](const QVideoFrame &frame) {
-        renderSink->setVideoFrame(frame); // GPU 渲染
-        emit frameCaptured(frame);        // 工作线程
-    });
+                renderSink->setVideoFrame(frame); // GPU 渲染
+                emit frameCaptured(frame); // 工作线程
+            });
 
     m_camera->start();
 }
@@ -106,13 +106,13 @@ void VideoWidget::updateFaceDetection(const QRect &rect, const bool hasFace) con
 
     // 将检测结果坐标（原始帧坐标系）映射到 videoItem 本地坐标系
     const QRectF itemBounds = m_videoItem->boundingRect();
-    const double scaleX = itemBounds.width()  / videoNativeSize.width();
+    const double scaleX = itemBounds.width() / videoNativeSize.width();
     const double scaleY = itemBounds.height() / videoNativeSize.height();
 
     const QRectF mappedRect(
         itemBounds.x() + rect.x() * scaleX,
         itemBounds.y() + rect.y() * scaleY,
-        rect.width()  * scaleX,
+        rect.width() * scaleX,
         rect.height() * scaleY
     );
 
@@ -132,7 +132,7 @@ void VideoWidget::resizeEvent(QResizeEvent *event) {
 
 void VideoWidget::setupCameraFormat() const {
     QCameraFormat bestFormat;
-    for (const auto &format : m_camera->cameraDevice().videoFormats()) {
+    for (const auto &format: m_camera->cameraDevice().videoFormats()) {
         if (format.resolution() == QSize(TARGET_WIDTH, TARGET_HEIGHT) &&
             format.maxFrameRate() >= 25.0f && format.maxFrameRate() <= 30.0f) {
             bestFormat = format;
@@ -146,6 +146,6 @@ void VideoWidget::setupCameraFormat() const {
     } else {
         const auto defaultFormat = m_camera->cameraDevice().videoFormats().first();
         qWarning() << "未找到目标格式，使用系统默认:" << defaultFormat.resolution()
-                   << defaultFormat.maxFrameRate() << "FPS";
+                << defaultFormat.maxFrameRate() << "FPS";
     }
 }
