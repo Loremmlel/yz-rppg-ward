@@ -72,10 +72,12 @@ TrendCard::TrendCard(const QString    &title,
 // ── 公开接口 ──────────────────────────────────────────────────────────────────
 void TrendCard::setData(const QList<QDateTime>             &timestamps,
                         const QList<std::optional<double>> &points,
-                        const std::optional<double>         refValue) const
+                        const std::optional<double>         refValue,
+                        const QDateTime                    &axisStart,
+                        const QDateTime                    &axisEnd) const
 {
     std::optional<double> lastValid;
-    for (int i = points.size() - 1; i >= 0; --i) {
+    for (auto i = points.size() - 1; i >= 0; --i) {
         if (points[i].has_value()) { lastValid = points[i]; break; }
     }
 
@@ -89,7 +91,7 @@ void TrendCard::setData(const QList<QDateTime>             &timestamps,
         m_valueLabel->setText("--");
     }
 
-    m_chart->setData(timestamps, points, refValue);
+    m_chart->setData(timestamps, points, refValue, axisStart, axisEnd);
 }
 
 void TrendCard::clearData() const {

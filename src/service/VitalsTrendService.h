@@ -31,6 +31,8 @@ public:
 
     /** 一次查询结果，包含全部 13 个指标序列 */
     struct TrendResult {
+        QDateTime queryStart; ///< 用户选择的查询起始时刻（本地时间）
+        QDateTime queryEnd;   ///< 用户选择的查询结束时刻（本地时间）
         // 基础生命体征
         MetricSeries hrAvg;
         MetricSeries brAvg;
@@ -80,7 +82,9 @@ private:
     explicit VitalsTrendService(QObject *parent = nullptr);
 
     /** 将解析完的 records 转换为 TrendResult */
-    static TrendResult buildResult(const QList<VitalsTrendData> &records);
+    static TrendResult buildResult(const QList<VitalsTrendData> &records,
+                                   const QDateTime &queryStart,
+                                   const QDateTime &queryEnd);
 
     /** 计算均值 */
     static std::optional<double> calcMean(const QList<std::optional<double>> &pts);

@@ -44,10 +44,15 @@ public:
 
     /**
      * @brief 用完整数据列表刷新卡片
+     *
+     * @param axisStart  X 轴起点（用户选择的查询开始时间），无效则取首个时间戳
+     * @param axisEnd    X 轴终点（用户选择的查询结束时间），无效则取最后时间戳
      */
     void setData(const QList<QDateTime>             &timestamps,
                  const QList<std::optional<double>> &points,
-                 std::optional<double>               refValue = std::nullopt) const;
+                 std::optional<double>               refValue  = std::nullopt,
+                 const QDateTime                    &axisStart = QDateTime{},
+                 const QDateTime                    &axisEnd   = QDateTime{}) const;
 
     /** @brief 清空数据，显示 "--" */
     void clearData() const;

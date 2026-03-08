@@ -74,8 +74,8 @@ TrendMetricsPanel::TrendMetricsPanel(QWidget *parent) : QWidget(parent) {
 void TrendMetricsPanel::applyResult(const VitalsTrendService::TrendResult &r) const {
     m_statusLabel->setVisible(false);
 
-    auto apply = [](TrendCard *card, const VitalsTrendService::MetricSeries &s) {
-        card->setData(s.timestamps, s.points, s.refValue);
+    auto apply = [&r](TrendCard *card, const VitalsTrendService::MetricSeries &s) {
+        card->setData(s.timestamps, s.points, s.refValue, r.queryStart, r.queryEnd);
     };
 
     apply(m_cardHrAvg,      r.hrAvg);

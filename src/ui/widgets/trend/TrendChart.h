@@ -31,10 +31,14 @@ public:
      * @param timestamps  每个数据点对应的 bucket 时刻（本地时间）
      * @param points      对应的数值，nullopt 表示该 bucket 缺失
      * @param refValue    参考线值（均值或中位数），nullopt 则不绘制参考线
+     * @param axisStart   X 轴起点（用户选择的查询开始时间），无效则取首个时间戳
+     * @param axisEnd     X 轴终点（用户选择的查询结束时间），无效则取最后时间戳
      */
     void setData(const QList<QDateTime>              &timestamps,
                  const QList<std::optional<double>>  &points,
-                 std::optional<double>                refValue = std::nullopt);
+                 std::optional<double>                refValue = std::nullopt,
+                 const QDateTime                     &axisStart = QDateTime{},
+                 const QDateTime                     &axisEnd   = QDateTime{});
 
     /** @brief 清空图表 */
     void clearData();
@@ -47,6 +51,8 @@ private:
     QList<QDateTime>             m_timestamps;
     QList<std::optional<double>> m_points;
     std::optional<double>        m_refValue;
+    QDateTime                    m_axisStart; ///< X 轴强制起点（无效则自动取首个时间戳）
+    QDateTime                    m_axisEnd;   ///< X 轴强制终点（无效则自动取最后时间戳）
 
     // ── 配置 ──
     QColor m_lineColor;

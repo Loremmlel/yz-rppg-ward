@@ -34,10 +34,14 @@ void VitalsTrendService::query(const qint64 bedId,
     q.addQueryItem(QStringLiteral("endTime"),   endTime.toUTC().toString(Qt::ISODate));
     q.addQueryItem(QStringLiteral("interval"),  interval);
 
+    // 捕获本地时间供 buildResult 使用
+    const QDateTime localStart = startTime.toLocalTime();
+    const QDateTime localEnd   = endTime.toLocalTime();
+
     ApiClient::instance()->getJson(
         QStringLiteral("/api/vitals/trend"),
         q,
-        [this](const QJsonDocument &doc) {
+        [this, localStart, localEnd](const QJsonDocument &doc) {
             emit loadingChanged(false);
 
             if (!doc.isArray()) {
@@ -92,7 +96,7 @@ void VitalsTrendService::query(const qint64 bedId,
                 emit errorOccurred(QStringLiteral("📭 该时间段内暂无数据"));
                 return;
             }
-            emit resultReady(buildResult(records));
+            emit resultReady(buildResult(records, localStart, localEnd));
         },
         [this](const QString &err) {
             emit loadingChanged(false);
@@ -103,7 +107,9 @@ void VitalsTrendService::query(const qint64 bedId,
 
 // ── 结果构建 ─────────────────────────────────────────────────────────────────
 VitalsTrendService::TrendResult
-VitalsTrendService::buildResult(const QList<VitalsTrendData> &records)
+VitalsTrendService::buildResult(const QList<VitalsTrendData> &records,
+                                const QDateTime &queryStart,
+                                const QDateTime &queryEnd)
 {
     // 提取时间戳（本地时间）
     QList<QDateTime> ts;
@@ -125,6 +131,8 @@ VitalsTrendService::buildResult(const QList<VitalsTrendData> &records)
     };
 
     TrendResult res;
+    res.queryStart = queryStart;
+    res.queryEnd   = queryEnd;
     // 基础生命体征 → 均值参考线
     res.hrAvg  = make([](const VitalsTrendData &r){ return r.basicVitals.hrAvg;  }, false);
     res.brAvg  = make([](const VitalsTrendData &r){ return r.basicVitals.brAvg;  }, false);

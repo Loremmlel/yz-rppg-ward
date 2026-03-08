@@ -69,11 +69,15 @@ TrendChart::TrendChart(QColor lineColor, QWidget *parent)
 // ── 公开接口 ─────────────────────────────────────────────────────────────────
 void TrendChart::setData(const QList<QDateTime>             &timestamps,
                          const QList<std::optional<double>> &points,
-                         std::optional<double>               refValue)
+                         std::optional<double>               refValue,
+                         const QDateTime                    &axisStart,
+                         const QDateTime                    &axisEnd)
 {
     m_timestamps = timestamps;
     m_points     = points;
     m_refValue   = refValue;
+    m_axisStart  = axisStart;
+    m_axisEnd    = axisEnd;
     rebuildSeries();
 }
 
@@ -99,11 +103,13 @@ void TrendChart::rebuildSeries() {
         return;
     }
 
-    // ── X 轴范围（用首尾时间戳） ──
-    m_axisX->setRange(m_timestamps.first(), m_timestamps.last());
+    // ── X 轴范围：优先使用外部指定的起止时间，否则退回首尾时间戳 ──
+    const QDateTime xStart = m_axisStart.isValid() ? m_axisStart : m_timestamps.first();
+    const QDateTime xEnd   = m_axisEnd.isValid()   ? m_axisEnd   : m_timestamps.last();
+    m_axisX->setRange(xStart, xEnd);
 
-    // 跨度超过 1 小时显示 HH:mm，跨度在日期边界时附加日期
-    const qint64 spanSecs = m_timestamps.first().secsTo(m_timestamps.last());
+    // 跨度超过 23 小时显示 HH:mm + 日期，否则仅显示 HH:mm
+    const qint64 spanSecs = xStart.secsTo(xEnd);
     if (spanSecs > 23 * 3600) {
         m_axisX->setFormat(QStringLiteral("MM-dd HH:mm"));
     } else {
@@ -141,16 +147,16 @@ void TrendChart::rebuildSeries() {
     // ── 2. 参考线（y = refValue）水平虚线 ──
     if (m_refValue.has_value()) {
         const double rv = m_refValue.value();
-        const qreal  xStart = static_cast<qreal>(m_timestamps.first().toMSecsSinceEpoch());
-        const qreal  xEnd   = static_cast<qreal>(m_timestamps.last().toMSecsSinceEpoch());
+        const qreal  rxStart = static_cast<qreal>(xStart.toMSecsSinceEpoch());
+        const qreal  rxEnd   = static_cast<qreal>(xEnd.toMSecsSinceEpoch());
 
         auto *refLine = new QLineSeries();
         QPen dashPen(m_lineColor.lighter(170), 1.6);
         dashPen.setStyle(Qt::CustomDashLine);
         dashPen.setDashPattern({6.0, 4.0});
         refLine->setPen(dashPen);
-        refLine->append(xStart, rv);
-        refLine->append(xEnd,   rv);
+        refLine->append(rxStart, rv);
+        refLine->append(rxEnd,   rv);
 
         m_chart->addSeries(refLine);
         refLine->attachAxis(m_axisX);
