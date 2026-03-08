@@ -4,7 +4,6 @@
 #include "widgets/AppDialog.h"
 
 #include <QVBoxLayout>
-#include <QHBoxLayout>
 #include <QFrame>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {

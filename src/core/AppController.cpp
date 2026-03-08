@@ -7,9 +7,9 @@ AppController::AppController(QObject *parent)
       m_metricsService(std::make_unique<MetricsService>(this)),
       m_videoService(std::make_unique<VideoService>()),
       m_frameUploadService(std::make_unique<FrameUploadService>(m_wsClient.get(), this)),
-      m_mainWindow(std::make_unique<MainWindow>()),
       m_videoThread(std::make_unique<QThread>(this)),
-      m_wsThread(std::make_unique<QThread>(this)) {
+      m_wsThread(std::make_unique<QThread>(this)),
+      m_mainWindow(std::make_unique<MainWindow>()) {
     m_videoService->moveToThread(m_videoThread.get());
     // WebSocketClient 必须与其 QWebSocket 成员在同一线程，单独给它一个线程
     m_wsClient->moveToThread(m_wsThread.get());
@@ -73,12 +73,14 @@ AppController::AppController(QObject *parent)
 }
 
 AppController::~AppController() {
+    // 先关闭UI，以关闭摄像头，防止死锁
+    m_mainWindow.reset();
+
     // 注意：不能在主线程 moveToThread——只有对象当前所在线程才能调用 moveToThread。
-    auto stopThread = [](const QObject *obj, const std::unique_ptr<QThread> &thread) {
-        if (!obj || !thread) return;
-        connect(thread.get(), &QThread::finished,
-                thread.get(), [obj] { delete obj; },
-                Qt::DirectConnection);
+    auto stopThread = [](QObject *obj, const std::unique_ptr<QThread> &thread) {
+        if (!obj || !thread) { return; }
+
+        obj->deleteLater();
         thread->quit();
         thread->wait();
     };

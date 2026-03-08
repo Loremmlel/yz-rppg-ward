@@ -38,6 +38,7 @@ void FrameUploadService::sendEncodedFrame(const QByteArray &frame) {
 #ifdef QT_DEBUG
     static QLabel *previewLabel = [] {
         auto *label = new QLabel();
+        label->setAttribute(Qt::WA_QuitOnClose, false);
         label->setWindowTitle("DEBUG: Face ROI Stream");
         label->setAlignment(Qt::AlignCenter);
         label->show();

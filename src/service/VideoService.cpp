@@ -29,7 +29,6 @@ VideoService::VideoService(QObject *parent) : QObject(parent), m_statsTimer(new 
 
     m_statsTimer->setInterval(STATS_INTERVAL_MS);
     connect(m_statsTimer, &QTimer::timeout, this, &VideoService::printStats);
-    m_statsTimer->start();
 }
 
 VideoService::~VideoService() {
@@ -44,6 +43,10 @@ VideoService::~VideoService() {
 
 void VideoService::processFrame(const QVideoFrame &videoFrame) {
     if (!videoFrame.isValid()) return;
+
+    if (!m_statsTimer->isActive()) {
+        m_statsTimer->start();
+    }
 
     // 摄像头采集时间戳：帧进入管线的第一时间记录
     const qint64 captureTimestampMs = QDateTime::currentMSecsSinceEpoch();
