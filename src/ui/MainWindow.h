@@ -1,12 +1,12 @@
 #pragma once
 #include <QMainWindow>
 #include <QStackedWidget>
-#include <QPushButton>
 #include <QButtonGroup>
 
 #include "pages/HomePage.h"
 #include "pages/SettingsPage.h"
 #include "pages/VitalsTrendPage.h"
+#include "pages/HealthReportPage.h"
 #include "widgets/StatusBar.h"
 
 /**
@@ -31,6 +31,7 @@ public:
     [[nodiscard]] HomePage *homePage() const { return m_homePage; }
     [[nodiscard]] SettingsPage *settingsPage() const { return m_settingsPage; }
     [[nodiscard]] VitalsTrendPage *vitalsTrendPage() const { return m_vitalsTrendPage; }
+    [[nodiscard]] HealthReportPage *healthReportPage() const { return m_healthReportPage; }
 
 private:
     void initUI();
@@ -46,4 +47,6 @@ private:
     HomePage *m_homePage = nullptr;
     SettingsPage *m_settingsPage = nullptr;
     VitalsTrendPage *m_vitalsTrendPage = nullptr;
+    HealthReportPage *m_healthReportPage = nullptr;
 };
+

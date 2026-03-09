@@ -4,6 +4,7 @@
 #include <QJsonDocument>
 #include <QNetworkAccessManager>
 #include <QUrlQuery>
+#include <QJsonObject>
 
 #include <functional>
 
@@ -23,6 +24,7 @@ public:
 
     using SuccessCallback = std::function<void(const QJsonDocument &)>;
     using ErrorCallback = std::function<void(const QString &)>;
+    using TextSuccessCallback = std::function<void(const QString &)>;
 
     /**
      * @brief 发起 GET 请求并以 JSON 形式回调
@@ -45,6 +47,18 @@ public:
                  const QUrlQuery &query,
                  const SuccessCallback &onSuccess,
                  const ErrorCallback &onError = nullptr);
+
+    /**
+     * @brief 发起 POST(JSON) 请求，并以文本回调响应体
+     * @param path URL 路径，如 "/api/report/generate"
+     * @param body 请求 JSON
+     * @param onSuccess 成功回调（2xx）
+     * @param onError 失败回调（网络错误或非 2xx）
+     */
+    void postJsonText(const QString &path,
+                      const QJsonObject &body,
+                      const TextSuccessCallback &onSuccess,
+                      const ErrorCallback &onError = nullptr);
 
 private:
     explicit ApiClient(QObject *parent = nullptr);

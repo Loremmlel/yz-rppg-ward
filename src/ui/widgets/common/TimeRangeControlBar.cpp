@@ -1,38 +1,37 @@
-#include "TrendControlBar.h"
+#include "TimeRangeControlBar.h"
 
-#include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QVBoxLayout>
 
 namespace {
-    struct IntervalItem {
-        QString label;
-        QString apiValue;
-    };
+struct IntervalItem {
+    QString label;
+    QString apiValue;
+};
 
-    const QList<IntervalItem> kIntervals = {
-        {QStringLiteral("1 分钟"), QStringLiteral("1m")},
-        {QStringLiteral("5 分钟"), QStringLiteral("5m")},
-        {QStringLiteral("10 分钟"), QStringLiteral("10m")},
-        {QStringLiteral("15 分钟"), QStringLiteral("15m")},
-        {QStringLiteral("30 分钟"), QStringLiteral("30m")},
-        {QStringLiteral("1 小时"), QStringLiteral("1h")},
-        {QStringLiteral("6 小时"), QStringLiteral("6h")},
-        {QStringLiteral("12 小时"), QStringLiteral("12h")},
-        {QStringLiteral("1 天"), QStringLiteral("1d")},
-    };
+const QList<IntervalItem> kIntervals = {
+    {QStringLiteral("1 分钟"), QStringLiteral("1m")},
+    {QStringLiteral("5 分钟"), QStringLiteral("5m")},
+    {QStringLiteral("10 分钟"), QStringLiteral("10m")},
+    {QStringLiteral("15 分钟"), QStringLiteral("15m")},
+    {QStringLiteral("30 分钟"), QStringLiteral("30m")},
+    {QStringLiteral("1 小时"), QStringLiteral("1h")},
+    {QStringLiteral("6 小时"), QStringLiteral("6h")},
+    {QStringLiteral("12 小时"), QStringLiteral("12h")},
+    {QStringLiteral("1 天"), QStringLiteral("1d")},
+};
 }
 
-TrendControlBar::TrendControlBar(QWidget *parent) : QFrame(parent) {
+TimeRangeControlBar::TimeRangeControlBar(QWidget *parent) : QFrame(parent) {
     setObjectName("trendControlPanel");
     initUI();
 }
 
-void TrendControlBar::initUI() {
+void TimeRangeControlBar::initUI() {
     auto *panelLayout = new QVBoxLayout(this);
     panelLayout->setContentsMargins(20, 12, 20, 12);
     panelLayout->setSpacing(10);
 
-    // ── 第一行：时间粒度 + 快捷时间按钮 ──
     auto *row1 = new QHBoxLayout();
     row1->setSpacing(8);
 
@@ -44,7 +43,7 @@ void TrendControlBar::initUI() {
     m_intervalCombo->setFixedWidth(110);
     for (const auto &item: kIntervals)
         m_intervalCombo->addItem(item.label, item.apiValue);
-    m_intervalCombo->setCurrentIndex(1); // 默认 5 分钟
+    m_intervalCombo->setCurrentIndex(1);
 
     row1->addWidget(intervalLabel);
     row1->addWidget(m_intervalCombo);
@@ -70,7 +69,6 @@ void TrendControlBar::initUI() {
     }
     row1->addStretch();
 
-    // ── 第二行：自定义时间范围 + 查询按钮 ──
     auto *row2 = new QHBoxLayout();
     row2->setSpacing(8);
 
@@ -96,7 +94,7 @@ void TrendControlBar::initUI() {
     m_queryBtn->setObjectName("PrimaryButton");
     m_queryBtn->setFixedSize(80, 32);
     m_queryBtn->setCursor(Qt::PointingHandCursor);
-    connect(m_queryBtn, &QPushButton::clicked, this, &TrendControlBar::onQueryClicked);
+    connect(m_queryBtn, &QPushButton::clicked, this, &TimeRangeControlBar::onQueryClicked);
 
     row2->addWidget(startLabel);
     row2->addWidget(m_startEdit);
@@ -111,36 +109,33 @@ void TrendControlBar::initUI() {
     panelLayout->addLayout(row2);
 }
 
-// ── 公开访问器 ────────────────────────────────────────────────────────────────
-QString TrendControlBar::interval() const {
+QString TimeRangeControlBar::interval() const {
     return m_intervalCombo->currentData().toString();
 }
 
-QDateTime TrendControlBar::startTime() const {
+QDateTime TimeRangeControlBar::startTime() const {
     return m_startEdit->dateTime();
 }
 
-QDateTime TrendControlBar::endTime() const {
+QDateTime TimeRangeControlBar::endTime() const {
     return m_endEdit->dateTime();
 }
 
-void TrendControlBar::setLoading(bool loading) const {
+void TimeRangeControlBar::setLoading(const bool loading) const {
     m_queryBtn->setEnabled(!loading);
 }
 
-// ── 槽 ───────────────────────────────────────────────────────────────────────
-void TrendControlBar::onQueryClicked() {
+void TimeRangeControlBar::onQueryClicked() {
     emit queryRequested(m_startEdit->dateTime(),
                         m_endEdit->dateTime(),
                         m_intervalCombo->currentData().toString());
 }
 
-void TrendControlBar::onShortcutClicked(const int hours) const {
+void TimeRangeControlBar::onShortcutClicked(const int hours) const {
     const QDateTime now = QDateTime::currentDateTime();
     m_endEdit->setDateTime(now);
     m_startEdit->setDateTime(now.addSecs(-static_cast<qint64>(hours) * 3600));
 
-    // 根据时间范围自动选择合适粒度
     QString autoInterval;
     if (hours <= 1) autoInterval = QStringLiteral("1m");
     else if (hours <= 6) autoInterval = QStringLiteral("5m");
@@ -153,3 +148,4 @@ void TrendControlBar::onShortcutClicked(const int hours) const {
         }
     }
 }
+

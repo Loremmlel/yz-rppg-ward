@@ -5,6 +5,7 @@
 #include <QNetworkReply>
 #include <QUrlQuery>
 #include <QDebug>
+#include <QNetworkRequest>
 
 ApiClient::ApiClient(QObject *parent)
     : QObject(parent),
@@ -67,5 +68,34 @@ void ApiClient::getJson(const QString &path,
 
         const auto doc = QJsonDocument::fromJson(reply->readAll());
         if (onSuccess) onSuccess(doc);
+    });
+}
+
+void ApiClient::postJsonText(const QString &path,
+                             const QJsonObject &body,
+                             const TextSuccessCallback &onSuccess,
+                             const ErrorCallback &onError) {
+    const QUrl url = buildUrl(path);
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, QStringLiteral("application/json"));
+
+    auto *reply = m_nam->post(request, QJsonDocument(body).toJson(QJsonDocument::Compact));
+
+    connect(reply, &QNetworkReply::finished, this, [reply, onSuccess, onError] {
+        reply->deleteLater();
+
+        const QString responseText = QString::fromUtf8(reply->readAll());
+        const int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+
+        if (reply->error() != QNetworkReply::NoError || statusCode < 200 || statusCode >= 300) {
+            const QString err = statusCode > 0
+                                    ? QStringLiteral("HTTP %1: %2").arg(statusCode).arg(responseText)
+                                    : reply->errorString();
+            qWarning() << "[ApiClient] POST 失败:" << reply->url().toString() << err;
+            if (onError) onError(err);
+            return;
+        }
+
+        if (onSuccess) onSuccess(responseText);
     });
 }

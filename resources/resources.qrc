@@ -9,6 +9,7 @@
         <file>styles/settings.qss</file>
         <file>styles/status_bar.qss</file>
         <file>styles/vitals_trend_page.qss</file>
+        <file>styles/health_report_page.qss</file>
         <file>styles/app_dialog.qss</file>
     </qresource>
     <qresource prefix="/">
