@@ -8,11 +8,8 @@
 #include <QPen>
 #include <QResizeEvent>
 
-#include "../../../util/StyleLoader.h"
-
 VideoWidget::VideoWidget(QWidget *parent) : QWidget(parent) {
     this->setObjectName("videoWidget");
-    StyleLoader::apply(this, QStringLiteral(":/styles/video_widget.qss"));
 
     auto *layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);

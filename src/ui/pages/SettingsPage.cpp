@@ -3,7 +3,6 @@
 #include <QHBoxLayout>
 
 #include "../../service/ConfigService.h"
-#include "../../util/StyleLoader.h"
 #include "../widgets/setting/NetworkSettingsGroup.h"
 #include "../widgets/setting/BedSettingsGroup.h"
 #include "../widgets/AppDialog.h"
@@ -11,7 +10,6 @@
 SettingsPage::SettingsPage(QWidget *parent) : QWidget(parent) {
     initUI();
     loadCurrentConfig();
-    StyleLoader::apply(this, QStringLiteral(":/styles/settings.qss"));
 }
 
 void SettingsPage::initUI() {

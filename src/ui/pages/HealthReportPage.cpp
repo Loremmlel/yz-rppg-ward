@@ -7,7 +7,6 @@
 #include <QVBoxLayout>
 
 #include "../../service/ConfigService.h"
-#include "../../util/StyleLoader.h"
 
 HealthReportPage::HealthReportPage(QWidget *parent) : QWidget(parent) {
     setObjectName("HealthReportPage");
@@ -41,7 +40,6 @@ HealthReportPage::HealthReportPage(QWidget *parent) : QWidget(parent) {
             });
 
     refreshHistory();
-    StyleLoader::apply(this, QStringLiteral(":/styles/health_report_page.qss"));
 }
 
 void HealthReportPage::initUI() {

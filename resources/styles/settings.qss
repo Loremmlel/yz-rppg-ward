@@ -1,4 +1,4 @@
-﻿﻿/* ============================================================
+﻿﻿﻿/* ============================================================
  * 设置页样式
  * ============================================================ */
 /* ---------- 分组框 ---------- */
@@ -150,22 +150,4 @@ QSpinBox#SettingsInput::down-arrow {
     border-right: 4px solid transparent;
     border-top: 5px solid #495057;
 }
-/* ---------- 主操作按钮 ---------- */
-QPushButton#PrimaryButton {
-    background-color: #4A90D9;
-    color: #FFFFFF;
-    border: none;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: bold;
-    padding: 8px 24px;
-}
-QPushButton#PrimaryButton:hover {
-    background-color: #357ABD;
-}
-QPushButton#PrimaryButton:pressed {
-    background-color: #2C6EA6;
-}
-QPushButton#PrimaryButton:disabled {
-    background-color: #ADB5BD;
-}
+/* PrimaryButton 已移至 global.qss */

@@ -11,6 +11,7 @@
  *   Surface:        #FFFFFF
  *   Border:         #DEE2E6
  *   Border Hover:   #CED4DA
+ *   Card Border:    #E0E4E8
  *   Text Primary:   #212529
  *   Text Secondary: #495057
  *   Text Muted:     #6C757D
@@ -161,101 +162,168 @@ QLabel#Toast {
     border: 1px solid rgba(255, 255, 255, 30);
 }
 
-/* ---------- AppDialog 全局对话框 ---------- */
-QWidget#dialogOverlay {
-    background-color: rgba(0, 0, 0, 120);
-}
+/* ============================================================
+ * 公共组件 — 跨页面复用
+ * ============================================================ */
 
-QFrame#AppDialog {
-    background-color: #FFFFFF;
-    border-radius: 12px;
-    border: 1px solid #DEE2E6;
-}
-
-QLabel#dialogTitle {
-    font-size: 16px;
-    font-weight: bold;
-    color: #212529;
-    margin-bottom: 12px;
-    background: transparent;
-}
-
-QFrame#dialogDivider {
-    color: #E9ECEF;
-    margin-bottom: 14px;
-}
-
-QLabel#dialogContent {
-    font-size: 13px;
-    color: #495057;
-    margin-bottom: 20px;
-    background: transparent;
-}
-
-QScrollArea#dialogContentScroll {
-    background: transparent;
-}
-
-QScrollArea#dialogContentScroll > QWidget > QWidget {
-    background: transparent;
-}
-
-QPushButton#dialogPrimaryButton {
+/* ---------- PrimaryButton 主操作按钮 ---------- */
+QPushButton#PrimaryButton {
     background-color: #4A90D9;
     color: #FFFFFF;
     border: none;
     border-radius: 6px;
     font-size: 13px;
     font-weight: bold;
+    padding: 5px 16px;
 }
 
-QPushButton#dialogPrimaryButton:hover   { background-color: #357ABD; }
-QPushButton#dialogPrimaryButton:pressed { background-color: #2C6EA6; }
+QPushButton#PrimaryButton:hover {
+    background-color: #357ABD;
+}
 
-QPushButton#dialogSecondaryButton {
-    background-color: #F8F9FA;
-    color: #495057;
-    border: 1px solid #DEE2E6;
+QPushButton#PrimaryButton:pressed {
+    background-color: #2C6EA6;
+}
+
+QPushButton#PrimaryButton:disabled {
+    background-color: #ADB5BD;
+}
+
+/* ---------- TrendShortcutButton 快捷时间按钮 ---------- */
+QPushButton#TrendShortcutButton {
+    background-color: #F0F4F8;
+    color: #4A90D9;
+    border: 1px solid #C6D8EE;
     border-radius: 6px;
     font-size: 13px;
+    padding: 5px 12px;
+    min-height: 28px;
 }
 
-QPushButton#dialogSecondaryButton:hover   { background-color: #E9ECEF; }
-QPushButton#dialogSecondaryButton:pressed { background-color: #DEE2E6; }
+QPushButton#TrendShortcutButton:hover {
+    background-color: #D9EAFB;
+    border-color: #4A90D9;
+}
 
-/* ---------- TrendCard 指标卡片（静态部分） ---------- */
-TrendCard {
+QPushButton#TrendShortcutButton:pressed {
+    background-color: #B3D4F5;
+    border-color: #357ABD;
+}
+
+/* ---------- trendControlPanel 顶部控制面板 ---------- */
+#trendControlPanel {
     background-color: #FFFFFF;
-    border: 1px solid #E0E4E8;
-    border-radius: 10px;
+    border-bottom: 1px solid #DEE2E6;
 }
 
-TrendCard:hover {
-    background-color: #FAFBFC;
+/* ---------- trendLabel 控制栏文字标签 ---------- */
+#trendLabel {
+    font-size: 13px;
+    color: #495057;
+    font-weight: 500;
+}
+
+/* ---------- TrendCombo 时间粒度下拉框 ---------- */
+QComboBox#TrendCombo {
+    background-color: #FFFFFF;
+    border: 1px solid #DEE2E6;
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 13px;
+    color: #212529;
+    min-height: 28px;
+}
+
+QComboBox#TrendCombo:focus {
+    border-color: #4A90D9;
+}
+
+QComboBox#TrendCombo:hover {
     border-color: #CED4DA;
 }
 
-QLabel#trendCardTitle {
-    font-size: 12px;
-    color: #495057;
-    font-weight: 600;
-    background: transparent;
+QComboBox#TrendCombo::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: center right;
+    width: 22px;
+    border-left: 1px solid #DEE2E6;
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+    background-color: #F8F9FA;
 }
 
-QPushButton#trendCardInfoBtn {
-    background: transparent;
-    border: none;
-    color: #ADB5BD;
+QComboBox#TrendCombo::drop-down:hover {
+    background-color: #E9ECEF;
+}
+
+QComboBox#TrendCombo::down-arrow {
+    image: none;
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid #495057;
+}
+
+QComboBox#TrendCombo QAbstractItemView {
+    background-color: #FFFFFF;
+    border: 1px solid #DEE2E6;
+    border-radius: 4px;
+    selection-background-color: #4A90D9;
+    selection-color: #FFFFFF;
+    outline: none;
+    padding: 4px;
     font-size: 13px;
-    padding: 0;
+    color: #212529;
 }
 
-QPushButton#trendCardInfoBtn:hover   { color: #4A90D9; }
-QPushButton#trendCardInfoBtn:pressed { color: #357ABD; }
+QComboBox#TrendCombo QAbstractItemView::item {
+    padding: 5px 12px;
+    border-radius: 3px;
+}
 
-QLabel#trendCardValue {
-    font-size: 20px;
-    font-weight: bold;
-    font-family: "Segoe UI", "PingFang SC", sans-serif;
-    background: transparent;
+QComboBox#TrendCombo QAbstractItemView::item:hover {
+    background-color: #E9ECEF;
+}
+
+/* ---------- TrendDateTimeEdit 日期时间选择器 ---------- */
+QDateTimeEdit#TrendDateTimeEdit {
+    background-color: #FFFFFF;
+    border: 1px solid #DEE2E6;
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 13px;
+    color: #212529;
+    min-height: 28px;
+}
+
+QDateTimeEdit#TrendDateTimeEdit:focus {
+    border-color: #4A90D9;
+}
+
+QDateTimeEdit#TrendDateTimeEdit:hover {
+    border-color: #CED4DA;
+}
+
+QDateTimeEdit#TrendDateTimeEdit::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: center right;
+    width: 22px;
+    border-left: 1px solid #DEE2E6;
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+    background-color: #F8F9FA;
+}
+
+QDateTimeEdit#TrendDateTimeEdit::drop-down:hover {
+    background-color: #E9ECEF;
+}
+
+QDateTimeEdit#TrendDateTimeEdit::down-arrow {
+    image: none;
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid #495057;
 }

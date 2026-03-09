@@ -4,7 +4,6 @@
 #include <QFile>
 #include <QPixmap>
 
-#include "../../../util/StyleLoader.h"
 
 MetricCard::MetricCard(const QString &title, const QString &icon,
                        QColor chartColor,
@@ -17,7 +16,6 @@ MetricCard::MetricCard(const QString &title, const QString &icon,
     this->setObjectName("MetricCard");
     this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     this->setFrameShape(QFrame::StyledPanel);
-    StyleLoader::apply(this, QStringLiteral(":/styles/metric_card.qss"));
 
     // ── 整体纵向布局：上部信息行 + 下部趋势图 ──
     auto *mainLayout = new QVBoxLayout(this);

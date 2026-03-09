@@ -3,7 +3,6 @@
 #include <QVBoxLayout>
 
 #include "../../service/ConfigService.h"
-#include "../../util/StyleLoader.h"
 
 VitalsTrendPage::VitalsTrendPage(QWidget *parent) : QWidget(parent) {
     setObjectName("VitalsTrendPage");
@@ -44,8 +43,6 @@ VitalsTrendPage::VitalsTrendPage(QWidget *parent) : QWidget(parent) {
                 else
                     m_metricsPanel->setStatus(QString{}, false); // 清除加载提示
             });
-
-    StyleLoader::apply(this, QStringLiteral(":/styles/vitals_trend_page.qss"));
 }
 
 void VitalsTrendPage::onQueryRequested(const QDateTime &start,

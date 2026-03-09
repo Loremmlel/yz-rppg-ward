@@ -1,5 +1,4 @@
 #include "StatusBar.h"
-#include "../../util/StyleLoader.h"
 #include <QStyle>
 
 StatusBar::StatusBar(QWidget *parent) : QWidget(parent) {
@@ -9,8 +8,6 @@ StatusBar::StatusBar(QWidget *parent) : QWidget(parent) {
 
     // 初始无横幅时不占空间
     setVisible(false);
-
-    StyleLoader::apply(this, QStringLiteral(":/styles/status_bar.qss"));
 }
 
 void StatusBar::showBanner(const QString &id, const QString &text, Severity severity) {

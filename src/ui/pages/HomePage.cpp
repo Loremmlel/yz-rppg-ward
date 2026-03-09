@@ -1,9 +1,7 @@
 #include "HomePage.h"
-#include "../../util/StyleLoader.h"
 
 HomePage::HomePage(QWidget *parent) : QWidget(parent) {
     initUI();
-    StyleLoader::apply(this, QStringLiteral(":/styles/home.qss"));
 }
 
 void HomePage::initUI() {

@@ -1,10 +1,10 @@
 #include "MainWindow.h"
-#include "../util/StyleLoader.h"
 #include "widgets/ToastManager.h"
 #include "widgets/AppDialog.h"
 
 #include <QFrame>
 #include <QHBoxLayout>
+#include <QVBoxLayout>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     setWindowTitle(QStringLiteral("病房端监控终端"));
@@ -15,12 +15,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     ToastManager::instance()->setParentWidget(this);
     // 全局对话框绑定到主窗口
     AppDialog::instance()->setParentWidget(this);
-
-    // 全局样式 + 导航栏样式
-    setStyleSheet(StyleLoader::loadMultiple({
-        QStringLiteral(":/styles/global.qss"),
-        QStringLiteral(":/styles/main_window.qss")
-    }));
 }
 
 void MainWindow::initUI() {

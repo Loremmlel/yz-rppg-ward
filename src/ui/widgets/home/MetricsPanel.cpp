@@ -2,7 +2,6 @@
 #include <QVBoxLayout>
 #include <QLabel>
 
-#include "../../../util/StyleLoader.h"
 
 namespace {
     double truncateDecimal(const double value, const int precision) {
@@ -18,7 +17,6 @@ namespace {
 
 MetricsPanel::MetricsPanel(QWidget *parent) : QWidget(parent) {
     this->setObjectName("metricsPanel");
-    StyleLoader::apply(this, QStringLiteral(":/styles/metrics_panel.qss"));
 
     auto *mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
